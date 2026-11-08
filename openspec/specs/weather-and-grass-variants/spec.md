@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Server-wide weather turns ordinary mowing into shared events: for a few minutes everyone on the land chases the same sky, because weather creates high-value grass variants.
+
+**Phase:** Phase 3 (v1.2)
 
 ## Requirements
 

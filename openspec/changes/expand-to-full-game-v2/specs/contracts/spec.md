@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Contracts are timed client jobs taken from a job board: mow a client's yard to a target before the deadline, alone or with your party, for Coins, Clovers and Company experience.
+
+**Phase:** Phase 3 (v1.2)
 
 ## ADDED Requirements
 

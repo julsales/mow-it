@@ -1,6 +1,9 @@
 ## Purpose
 
+
 The player's land is their persistent, private property and the game's main progression: one contiguous plot that grows expansion by expansion from a house yard to automated mega-fields.
+
+**Phase:** Phase 1 (v1)
 
 ## Requirements
 

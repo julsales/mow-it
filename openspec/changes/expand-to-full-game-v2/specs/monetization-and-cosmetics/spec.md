@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Robux monetization in the full genre style — convenience passes, currency packs, luck and shortcut products — plus deep cosmetics, all presented transparently so spending is a choice, never a trap.
+
+**Phase:** Phase 5 (v1.4)
 
 ## ADDED Requirements
 

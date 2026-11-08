@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Crew are primarily obtained from a rotating market in the lobby whose stock refreshes globally every five minutes, creating the shared anticipation of a restock moment, plus the surprise of finding Crew while mowing.
+
+**Phase:** Phase 2 (v1.1)
 
 ## ADDED Requirements
 

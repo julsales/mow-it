@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Three currencies with separate jobs keep every system purchasable without breaking the others: Coins for the mowing economy, Clovers for Crew and social systems, Franchise Points for prestige only.
+
+**Phase:** Phase 1 (v1) — Clovers active Phase 2, Franchise Points Phase 4
 
 ## Requirements
 

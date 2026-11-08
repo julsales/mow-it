@@ -1,6 +1,9 @@
 ## Purpose
 
+
 The public lobby is the social front door: a showcase mini-base for flex, the restock market, leaderboards, and the two ways into play — solo to your own land, or a party of up to four to the host's land.
+
+**Phase:** Phase 1 (v1)
 
 ## ADDED Requirements
 

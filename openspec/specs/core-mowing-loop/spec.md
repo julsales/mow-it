@@ -1,6 +1,9 @@
 ## Purpose
 
+
 The moment-to-moment mowing loop: cutting grass, carrying it under a storage limit, and selling it. This is the behavior every other system feeds into or rewards.
+
+**Phase:** Phase 1 (v1) — variants complete in Phase 3
 
 ## Requirements
 

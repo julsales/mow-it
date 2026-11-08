@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Player progress is valuable and persistent: profiles must save safely, the server must be the authority on anything worth currency, and future trading must be designed so it cannot scam or duplicate items.
+
+**Phase:** Phase 1 (v1) — trading itself is a Later update
 
 ## Requirements
 

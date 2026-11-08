@@ -2,7 +2,8 @@
 
 The implementation checklist lives in OpenSpec:
 [`openspec/changes/expand-to-full-game-v2/tasks.md`](../openspec/changes/expand-to-full-game-v2/tasks.md).
-This page is the release-level view. Rule from day one: **assets → maps →
+Full phase-by-phase separation (assets/maps/code/exit criteria per update):
+[`PHASES.md`](PHASES.md). This page is the short release table. Rule from day one: **assets → maps →
 code**, every slice playable end-to-end (Play Solo) before the next starts.
 
 ## Release slices

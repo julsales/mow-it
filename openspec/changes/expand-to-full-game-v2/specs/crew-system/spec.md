@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Crew are the game's showy companions — garden animals, garden-fantasy creatures and personality machines — that follow the player or work stationed in place, cutting grass, multiplying earnings, and working offline.
+
+**Phase:** Phase 2 (v1.1) — offline work completes in Phase 4
 
 ## ADDED Requirements
 

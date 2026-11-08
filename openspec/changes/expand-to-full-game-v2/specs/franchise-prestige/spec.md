@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Franchising is the prestige loop with the game's own flavor: sell your lawn-care company, start a new one, and grow permanently stronger through a Franchise Points upgrade tree.
+
+**Phase:** Phase 4 (v1.3)
 
 ## ADDED Requirements
 

@@ -1,6 +1,9 @@
 ## Purpose
 
+
 The daily and seasonal reasons to come back: a guided first minutes, daily login and quests, redeemable codes, achievement badges, and a monthly themed event layered over the everyday weather.
+
+**Phase:** Phase 5 (v1.4) — guided first loop ships in Phase 1
 
 ## ADDED Requirements
 

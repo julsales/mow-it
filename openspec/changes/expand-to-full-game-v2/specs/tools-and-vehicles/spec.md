@@ -1,6 +1,9 @@
 ## Purpose
 
+
 The tool ladder is the game's central fantasy: from a nail clipper to gigantic machines, including rideable mowers the player actually drives over the grass, with a fuel system that can be refilled manually, by limited automation, or by an infinite-fuel pass.
+
+**Phase:** Phase 1 (v1) ladder — rideable + fuel in Phase 4
 
 ## ADDED Requirements
 

@@ -1,6 +1,9 @@
 ## Purpose
 
+
 Seed plots give the player's land a planting layer: special grass grown deliberately in limited beds, contrasting with the wild grass that simply regrows in every expansion.
+
+**Phase:** Phase 3 (v1.2)
 
 ## Requirements
 

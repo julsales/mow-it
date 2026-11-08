@@ -17,6 +17,7 @@ Lobby parties of up to **4 players** teleport together into a private match.
 | [docs/ASSETS.md](docs/ASSETS.md) | **Reusable asset map** — ready-made icons/UI/models/audio with links & licenses. Map first, import second. |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Roblox games are normally structured (researched), our Rojo layout, and the Studio map contract |
 | [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) | Phased plan: **assets → maps → code** |
+| [docs/PHASES.md](docs/PHASES.md) | Every system separated by phase/update (v1 → v1.4 → later) |
 
 ## Quick start (Studio)
 
