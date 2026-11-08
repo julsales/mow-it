@@ -1,0 +1,15 @@
+# Rojo build outputs
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+!assets/**/*.rbxm
+
+# Rokit / Wally local installs
+/rokit.lock
+~/.rokit
+
+# OS / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json

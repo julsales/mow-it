@@ -1,0 +1,107 @@
+# Mow It! — Architecture & Research Notes
+
+How normal Roblox games are structured, what we took from research, and how
+this repo applies it. Sources are linked so any decision can be re-checked.
+
+## The standard shape of a Roblox game
+
+Research summary (sources below):
+
+1. **Two or more *places* under one universe.** A start place (lobby) and
+   sub-places for gameplay. Players move between them with
+   `TeleportService`. Private parties use **reserved servers**: generate a
+   GUID with `HttpService:GenerateGUID(false)`, set
+   `TeleportOptions.ReservedServerId`, call `TeleportAsync(placeId, players,
+   options)`. First teleport with a new GUID creates the server; reusing it
+   joins the same one. The old `ReserveServer()` /
+   `TeleportToPrivateServer()` pattern is **deprecated** — don't copy it
+   from old tutorials.
+   → Applied: `GameConfig.LobbyPlaceId/GamePlaceId`, `LobbyService`
+   (queue of up to 4 on a physical pad, countdown, one teleport for the party).
+
+2. **Filesystem projects with Rojo** are the professional default for
+   code-in-git: a `*.project.json` describes the DataModel tree; folders on
+   disk map to services. Conventions that keep showing up:
+   - `ServerScriptService/` — server-only code, organized as *Services*.
+   - `ReplicatedStorage/` — shared modules (configs, utilities) + remotes.
+   - `StarterPlayer/StarterPlayerScripts/` — client entry points.
+   - `.server.luau` / `.client.luau` / `.luau` suffixes decide script type.
+   - UI should be **cloned on the client** (from ReplicatedStorage/
+     ReplicatedFirst) instead of relying on StarterGui copies, which cost
+     server memory.
+   → Applied: two project files sharing one `src/` tree
+   (`default.project.json` = Game place, `lobby.project.json` = Lobby),
+   `Workspace.$ignoreUnknownInstances: true` so maps built by hand in
+   Studio are never deleted by a sync.
+
+3. **Server authority, always.** Clients send *requests* ("I swung"),
+   servers validate cooldown, distance, capacity, prices and ownership
+   before changing state. That's how the copied `roblox` skill and every
+   serious tutorial structure remotes.
+   → Applied: `EconomyService` (cut validation), `ShopService` (all price/
+   zone checks server-side), rate limiting by tool cooldown.
+
+4. **Data = one profile table per player**, saved with DataStores
+   (`pcall` everything, defaults-reconcile so new fields don't break old
+   saves, autosave + `BindToClose` + save on leave).
+   → Applied: `ProfileService`.
+
+5. **Config-driven content.** Tools/zones/prices live in shared config
+   modules that server, client UI and balance tests all read. Adding a
+   tool = one row, not a code change.
+   → Applied: `Shared/Config/{Tools,Backpacks,Zones,Buffs,GameConfig}.luau`.
+
+6. **Maps are built in Studio, code defines a contract.** Builders make
+   the world; programmers agree on names/tags. Art can be replaced without
+   touching gameplay.
+   → Applied, the map contract below. `GrayboxService` stamps out labeled
+   placeholder blocks when the contract instances don't exist yet, so the
+   game is playable before any building happens.
+
+## Map contract (what builders must create in Studio)
+
+```
+Workspace/
+  Lobby/
+    JoinPad            (Part) stepping on it joins/leaves the party queue
+    LobbySpawn         (SpawnLocation)
+  Zones/
+    front_yard/  backyard/  sunny_farm/  big_ranch/  golf_estate/  mega_fields/
+      GrassArea        (Part) footprint where grass tufts spawn for this zone
+      SellPad          (Part) standing on/near it sells carried grass
+      ZoneGate         (Part, zones 2-6) visual gate; gameplay lock is in profile data
+  GrassTufts/          (Folder, created by the server — don't build here)
+```
+
+Folder names must match `Zones.luau` `Id`s exactly. Everything else
+(terrain, houses, decorations) is free building inside the zone folders.
+
+## What we reused from `Roblox_Game` (and what we didn't)
+
+Reused, deliberately:
+
+- **The `roblox` agent skill** — copied verbatim to
+  `.agents/skills/roblox/` (source: `julsales/Roblox_Game@a9e8728`).
+  It routes Luau work to specialist guidance and lists the constraints we
+  follow (server authority, `pcall` cloud calls, modern APIs, limits).
+- **Repo organization patterns**, not code or assets:
+  - `src/` mirroring the DataModel (`ServerScriptService/Services`,
+    `ReplicatedStorage/Shared/Config`, `StarterPlayerScripts`) — same
+    mental model, recreated clean here with Rojo project files (the old
+    repo syncs by hand; this one doesn't have to).
+  - Docs as first-class files + a phased plan with a kanban-style
+    checklist (`docs/DEVELOPMENT_PLAN.md` plays the role its
+    `PROJECT_KANBAN.md` plays, without the generator script).
+
+**Not** reused: any model, item catalog, generated map code, UI images or
+economy numbers from that repo. Different game, unverified asset
+provenance, embedded-script risk. See `docs/ASSETS.md` Rule #2.
+
+## Sources
+
+- Rojo project format — https://rojo.space/docs/v7/project-format/
+- Fully-managed Rojo layout walkthrough — https://solarhorizon.dev/2024/07/30/top-to-bottom-fully-managed-rojo/
+- *Organizing your game* (DevForum, UI placement & service layout) — https://devforum.roblox.com/t/organizing-your-game/3560964
+- *Teleport between places* (official docs, ReservedServerId pattern) — https://create.roblox.com/docs/en-us/projects/teleport.md
+- `TeleportOptions` reference — https://create.roblox.com/docs/reference/engine/classes/TeleportOptions.md
+- Engine API reference (source of truth for classes) — https://create.roblox.com/docs/reference/engine

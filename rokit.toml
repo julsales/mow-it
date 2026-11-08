@@ -1,0 +1,7 @@
+# Toolchain pinned with Rokit (https://github.com/rojo-rbx/rokit).
+# Install once:  rokit install
+# Then serve:    rojo serve            (Game place, default.project.json)
+#         or:    rojo serve lobby.project.json
+
+[tools]
+rojo = "rojo-rbx/rojo@7.6.1"
