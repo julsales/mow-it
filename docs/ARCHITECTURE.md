@@ -1,5 +1,13 @@
 # Mow It! — Architecture & Research Notes
 
+> **v2 update (OpenSpec change `expand-to-full-game-v2`):** the world model
+> below evolved. The Game place is now the **Land place** (reserved sessions
+> load the *host's* private land; former zones are its expansions), and the
+> lobby gained **showcase mini-base lots** (snapshots, no economy).
+> Behavioral truth: [`openspec/specs/`](../openspec/specs). The research and
+> structure guidance in this document still applies.
+
+
 How normal Roblox games are structured, what we took from research, and how
 this repo applies it. Sources are linked so any decision can be re-checked.
 

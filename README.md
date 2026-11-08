@@ -1,7 +1,8 @@
 # Mow It! 🌿✂️
 
-A co-op Roblox grass-cutting simulator. Start with a **nail clipper**,
-end with **MOWZILLA** and a crew of robot mowers doing the work for you.
+A Roblox grass-cutting simulator about **your land, your Crew, your company**.
+Start in your front yard with a **nail clipper**; end with automated mega-fields
+and a Crew of creatures and machines mowing for you — even while you're offline.
 
 Cut grass → fill your (tiny) storage → sell it → buy absurdly better
 tools → unlock new zones, from your front yard to automated mega-fields.
@@ -11,7 +12,8 @@ Lobby parties of up to **4 players** teleport together into a private match.
 
 | File | What |
 |---|---|
-| [docs/GDD.md](docs/GDD.md) | Full game design: loop, tools, zones, economy, lobby, automation |
+| [openspec/specs/](openspec/specs) | **Behavioral source of truth (OpenSpec):** 14 capabilities, SHALL requirements + scenarios |
+| [docs/GDD.md](docs/GDD.md) | Readable v2 design summary (OpenSpec wins on disagreement) |
 | [docs/ASSETS.md](docs/ASSETS.md) | **Reusable asset map** — ready-made icons/UI/models/audio with links & licenses. Map first, import second. |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Roblox games are normally structured (researched), our Rojo layout, and the Studio map contract |
 | [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) | Phased plan: **assets → maps → code** |

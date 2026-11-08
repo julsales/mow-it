@@ -1,0 +1,75 @@
+--!strict
+-- Crew roster (spec: openspec/specs/crew-system). 60 Crew: 10 per expansion,
+-- theme progresses animals -> garden fantasy -> personality machines.
+-- Power = own cutting power in Follow/Station mode. MultiplierPercent applies
+-- to the owner's earnings while equipped. OfflineRate = grass/min offline.
+
+export type CrewDef = { Id: string, DisplayName: string, Rarity: string, Expansion: string, Power: number, MultiplierPercent: number, OfflineRate: number }
+
+local Crew: { CrewDef } = {
+	{ Id = "garden_snail", DisplayName = "Garden Snail", Rarity = "Common", Expansion = "front_yard", Power = 3, MultiplierPercent = 2, OfflineRate = 0.6 },
+	{ Id = "biscuit_the_pup", DisplayName = "Biscuit the Pup", Rarity = "Common", Expansion = "front_yard", Power = 6, MultiplierPercent = 2, OfflineRate = 1.2 },
+	{ Id = "house_cat_milo", DisplayName = "House Cat Milo", Rarity = "Common", Expansion = "front_yard", Power = 9, MultiplierPercent = 2, OfflineRate = 1.8 },
+	{ Id = "clover_rabbit", DisplayName = "Clover Rabbit", Rarity = "Uncommon", Expansion = "front_yard", Power = 12, MultiplierPercent = 4, OfflineRate = 2.4 },
+	{ Id = "goat_kid_pip", DisplayName = "Goat Kid Pip", Rarity = "Uncommon", Expansion = "front_yard", Power = 15, MultiplierPercent = 4, OfflineRate = 3.0 },
+	{ Id = "hedgehog_bram", DisplayName = "Hedgehog Bram", Rarity = "Rare", Expansion = "front_yard", Power = 18, MultiplierPercent = 7, OfflineRate = 3.6 },
+	{ Id = "ducky", DisplayName = "Ducky", Rarity = "Rare", Expansion = "front_yard", Power = 21, MultiplierPercent = 7, OfflineRate = 4.2 },
+	{ Id = "goose_guard", DisplayName = "Goose Guard", Rarity = "Epic", Expansion = "front_yard", Power = 24, MultiplierPercent = 12, OfflineRate = 4.8 },
+	{ Id = "golden_goat", DisplayName = "Golden Goat", Rarity = "Legendary", Expansion = "front_yard", Power = 27, MultiplierPercent = 20, OfflineRate = 5.4 },
+	{ Id = "mower_9000_prototype", DisplayName = "MOWER-9000 Prototype", Rarity = "Mythic", Expansion = "front_yard", Power = 30, MultiplierPercent = 35, OfflineRate = 6.0 },
+	{ Id = "ladybug_lulu", DisplayName = "Ladybug Lulu", Rarity = "Common", Expansion = "backyard", Power = 33, MultiplierPercent = 2, OfflineRate = 0.6 },
+	{ Id = "bee_buddy", DisplayName = "Bee Buddy", Rarity = "Common", Expansion = "backyard", Power = 36, MultiplierPercent = 2, OfflineRate = 1.2 },
+	{ Id = "butterfly_bea", DisplayName = "Butterfly Bea", Rarity = "Common", Expansion = "backyard", Power = 39, MultiplierPercent = 2, OfflineRate = 1.8 },
+	{ Id = "frog_prince_jr", DisplayName = "Frog Prince Jr.", Rarity = "Uncommon", Expansion = "backyard", Power = 42, MultiplierPercent = 4, OfflineRate = 2.4 },
+	{ Id = "mushroom_sprite", DisplayName = "Mushroom Sprite", Rarity = "Uncommon", Expansion = "backyard", Power = 45, MultiplierPercent = 4, OfflineRate = 3.0 },
+	{ Id = "garden_gnome_gus", DisplayName = "Garden Gnome Gus", Rarity = "Rare", Expansion = "backyard", Power = 48, MultiplierPercent = 7, OfflineRate = 3.6 },
+	{ Id = "firefly_knight", DisplayName = "Firefly Knight", Rarity = "Rare", Expansion = "backyard", Power = 51, MultiplierPercent = 7, OfflineRate = 4.2 },
+	{ Id = "treant_sprout", DisplayName = "Treant Sprout", Rarity = "Epic", Expansion = "backyard", Power = 54, MultiplierPercent = 12, OfflineRate = 4.8 },
+	{ Id = "queen_bee_aurelia", DisplayName = "Queen Bee Aurelia", Rarity = "Legendary", Expansion = "backyard", Power = 57, MultiplierPercent = 20, OfflineRate = 5.4 },
+	{ Id = "living_gnome_king", DisplayName = "Living Gnome King", Rarity = "Mythic", Expansion = "backyard", Power = 60, MultiplierPercent = 35, OfflineRate = 6.0 },
+	{ Id = "farm_chicken", DisplayName = "Farm Chicken", Rarity = "Common", Expansion = "sunny_farm", Power = 63, MultiplierPercent = 2, OfflineRate = 0.6 },
+	{ Id = "piglet_ham", DisplayName = "Piglet Ham", Rarity = "Common", Expansion = "sunny_farm", Power = 66, MultiplierPercent = 2, OfflineRate = 1.2 },
+	{ Id = "sheep_shearer", DisplayName = "Sheep Shearer", Rarity = "Common", Expansion = "sunny_farm", Power = 69, MultiplierPercent = 2, OfflineRate = 1.8 },
+	{ Id = "cow_calf_moo", DisplayName = "Cow Calf Moo", Rarity = "Uncommon", Expansion = "sunny_farm", Power = 72, MultiplierPercent = 4, OfflineRate = 2.4 },
+	{ Id = "donkey_kick", DisplayName = "Donkey Kick", Rarity = "Uncommon", Expansion = "sunny_farm", Power = 75, MultiplierPercent = 4, OfflineRate = 3.0 },
+	{ Id = "scarecrow_sam", DisplayName = "Scarecrow Sam", Rarity = "Rare", Expansion = "sunny_farm", Power = 78, MultiplierPercent = 7, OfflineRate = 3.6 },
+	{ Id = "harvest_mouse", DisplayName = "Harvest Mouse", Rarity = "Rare", Expansion = "sunny_farm", Power = 81, MultiplierPercent = 7, OfflineRate = 4.2 },
+	{ Id = "barn_owl_sage", DisplayName = "Barn Owl Sage", Rarity = "Epic", Expansion = "sunny_farm", Power = 84, MultiplierPercent = 12, OfflineRate = 4.8 },
+	{ Id = "prize_bull_titan", DisplayName = "Prize Bull Titan", Rarity = "Legendary", Expansion = "sunny_farm", Power = 87, MultiplierPercent = 20, OfflineRate = 5.4 },
+	{ Id = "scarecrow_the_ancient", DisplayName = "Scarecrow the Ancient", Rarity = "Mythic", Expansion = "sunny_farm", Power = 90, MultiplierPercent = 35, OfflineRate = 6.0 },
+	{ Id = "ranch_horse", DisplayName = "Ranch Horse", Rarity = "Common", Expansion = "big_ranch", Power = 93, MultiplierPercent = 2, OfflineRate = 0.6 },
+	{ Id = "coyote_pup", DisplayName = "Coyote Pup", Rarity = "Common", Expansion = "big_ranch", Power = 96, MultiplierPercent = 2, OfflineRate = 1.2 },
+	{ Id = "eagle_scout", DisplayName = "Eagle Scout", Rarity = "Common", Expansion = "big_ranch", Power = 99, MultiplierPercent = 2, OfflineRate = 1.8 },
+	{ Id = "bison_calf", DisplayName = "Bison Calf", Rarity = "Uncommon", Expansion = "big_ranch", Power = 102, MultiplierPercent = 4, OfflineRate = 2.4 },
+	{ Id = "armadillo_tank", DisplayName = "Armadillo Tank", Rarity = "Uncommon", Expansion = "big_ranch", Power = 105, MultiplierPercent = 4, OfflineRate = 3.0 },
+	{ Id = "cactus_cowboy", DisplayName = "Cactus Cowboy", Rarity = "Rare", Expansion = "big_ranch", Power = 108, MultiplierPercent = 7, OfflineRate = 3.6 },
+	{ Id = "dust_devil_imp", DisplayName = "Dust Devil Imp", Rarity = "Rare", Expansion = "big_ranch", Power = 111, MultiplierPercent = 7, OfflineRate = 4.2 },
+	{ Id = "mustang_spirit", DisplayName = "Mustang Spirit", Rarity = "Epic", Expansion = "big_ranch", Power = 114, MultiplierPercent = 12, OfflineRate = 4.8 },
+	{ Id = "thunder_bison", DisplayName = "Thunder Bison", Rarity = "Legendary", Expansion = "big_ranch", Power = 117, MultiplierPercent = 20, OfflineRate = 5.4 },
+	{ Id = "storm_rider_colossus", DisplayName = "Storm Rider Colossus", Rarity = "Mythic", Expansion = "big_ranch", Power = 120, MultiplierPercent = 35, OfflineRate = 6.0 },
+	{ Id = "caddy_bunny", DisplayName = "Caddy Bunny", Rarity = "Common", Expansion = "golf_estate", Power = 123, MultiplierPercent = 2, OfflineRate = 0.6 },
+	{ Id = "peacock_pride", DisplayName = "Peacock Pride", Rarity = "Common", Expansion = "golf_estate", Power = 126, MultiplierPercent = 2, OfflineRate = 1.2 },
+	{ Id = "swan_duchess", DisplayName = "Swan Duchess", Rarity = "Common", Expansion = "golf_estate", Power = 129, MultiplierPercent = 2, OfflineRate = 1.8 },
+	{ Id = "fox_caddie", DisplayName = "Fox Caddie", Rarity = "Uncommon", Expansion = "golf_estate", Power = 132, MultiplierPercent = 4, OfflineRate = 2.4 },
+	{ Id = "fountain_frog_prince", DisplayName = "Fountain Frog Prince", Rarity = "Uncommon", Expansion = "golf_estate", Power = 135, MultiplierPercent = 4, OfflineRate = 3.0 },
+	{ Id = "topiary_lion", DisplayName = "Topiary Lion", Rarity = "Rare", Expansion = "golf_estate", Power = 138, MultiplierPercent = 7, OfflineRate = 3.6 },
+	{ Id = "crystal_deer", DisplayName = "Crystal Deer", Rarity = "Rare", Expansion = "golf_estate", Power = 141, MultiplierPercent = 7, OfflineRate = 4.2 },
+	{ Id = "royal_peacock_empress", DisplayName = "Royal Peacock Empress", Rarity = "Epic", Expansion = "golf_estate", Power = 144, MultiplierPercent = 12, OfflineRate = 4.8 },
+	{ Id = "aurora_stag", DisplayName = "Aurora Stag", Rarity = "Legendary", Expansion = "golf_estate", Power = 147, MultiplierPercent = 20, OfflineRate = 5.4 },
+	{ Id = "the_golden_caddy", DisplayName = "The Golden Caddy", Rarity = "Mythic", Expansion = "golf_estate", Power = 150, MultiplierPercent = 35, OfflineRate = 6.0 },
+	{ Id = "drone_bit", DisplayName = "Drone Bit", Rarity = "Common", Expansion = "mega_fields", Power = 153, MultiplierPercent = 2, OfflineRate = 0.6 },
+	{ Id = "robo_pup_rex", DisplayName = "Robo-Pup Rex", Rarity = "Common", Expansion = "mega_fields", Power = 156, MultiplierPercent = 2, OfflineRate = 1.2 },
+	{ Id = "mower_bot_mki", DisplayName = "Mower Bot Mk.I", Rarity = "Common", Expansion = "mega_fields", Power = 159, MultiplierPercent = 2, OfflineRate = 1.8 },
+	{ Id = "laser_drone_lux", DisplayName = "Laser Drone Lux", Rarity = "Uncommon", Expansion = "mega_fields", Power = 162, MultiplierPercent = 4, OfflineRate = 2.4 },
+	{ Id = "harvester_drone_hive", DisplayName = "Harvester Drone Hive", Rarity = "Uncommon", Expansion = "mega_fields", Power = 165, MultiplierPercent = 4, OfflineRate = 3.0 },
+	{ Id = "mecha_goat_z", DisplayName = "Mecha Goat Z", Rarity = "Rare", Expansion = "mega_fields", Power = 168, MultiplierPercent = 7, OfflineRate = 3.6 },
+	{ Id = "quantum_mower_wraith", DisplayName = "Quantum Mower Wraith", Rarity = "Rare", Expansion = "mega_fields", Power = 171, MultiplierPercent = 7, OfflineRate = 4.2 },
+	{ Id = "titan_mower_prime", DisplayName = "Titan Mower Prime", Rarity = "Epic", Expansion = "mega_fields", Power = 174, MultiplierPercent = 12, OfflineRate = 4.8 },
+	{ Id = "starforge_harvester", DisplayName = "Starforge Harvester", Rarity = "Legendary", Expansion = "mega_fields", Power = 177, MultiplierPercent = 20, OfflineRate = 5.4 },
+	{ Id = "mowzilla_core", DisplayName = "MOWZILLA CORE", Rarity = "Mythic", Expansion = "mega_fields", Power = 180, MultiplierPercent = 35, OfflineRate = 6.0 },
+}
+
+local byId: { [string]: CrewDef } = {}
+for _, c in Crew do byId[c.Id] = c end
+
+return { List = Crew, ById = byId, Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic" } }

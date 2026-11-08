@@ -9,6 +9,7 @@ export type ZoneDef = {
 	DisplayName: string,
 	Subtitle: string,
 	UnlockPrice: number, -- Coins, 0 = open from the start
+	RequiredLevel: number, -- Company Level (spec: private-land-progression)
 	GrassValue: number, -- Coins per unit of grass sold from this zone
 	GrassHealth: number, -- tool Power needed to clear one tuft
 	TuftCount: number, -- how many grass tufts the server keeps alive here
@@ -16,12 +17,12 @@ export type ZoneDef = {
 }
 
 local Zones: { ZoneDef } = {
-	{ Id = "front_yard", DisplayName = "Front Yard", Subtitle = "Your house. Your lawn. Your problem.", UnlockPrice = 0, GrassValue = 1, GrassHealth = 1, TuftCount = 60, ThemeColor = Color3.fromRGB(106, 190, 74) },
-	{ Id = "backyard", DisplayName = "Backyard Garden", Subtitle = "Flowers, fences and thicker grass.", UnlockPrice = 1_000, GrassValue = 3, GrassHealth = 6, TuftCount = 80, ThemeColor = Color3.fromRGB(74, 170, 90) },
-	{ Id = "sunny_farm", DisplayName = "Sunny Farm", Subtitle = "The neighbors will pay you now.", UnlockPrice = 15_000, GrassValue = 8, GrassHealth = 25, TuftCount = 110, ThemeColor = Color3.fromRGB(232, 183, 75) },
-	{ Id = "big_ranch", DisplayName = "Big Ranch", Subtitle = "Acres of it. All yours to cut.", UnlockPrice = 120_000, GrassValue = 20, GrassHealth = 110, TuftCount = 140, ThemeColor = Color3.fromRGB(196, 132, 58) },
-	{ Id = "golf_estate", DisplayName = "Golf Estate", Subtitle = "Rich people grass. Rich people prices.", UnlockPrice = 900_000, GrassValue = 50, GrassHealth = 450, TuftCount = 170, ThemeColor = Color3.fromRGB(64, 160, 140) },
-	{ Id = "mega_fields", DisplayName = "Mega Fields", Subtitle = "Automation country. Let the machines work.", UnlockPrice = 6_000_000, GrassValue = 130, GrassHealth = 1_800, TuftCount = 220, ThemeColor = Color3.fromRGB(120, 110, 220) },
+	{ Id = "front_yard", DisplayName = "Front Yard", Subtitle = "Your house. Your lawn. Your problem.", UnlockPrice = 0, RequiredLevel = 1, GrassValue = 1, GrassHealth = 1, TuftCount = 60, ThemeColor = Color3.fromRGB(106, 190, 74) },
+	{ Id = "backyard", DisplayName = "Backyard Garden", Subtitle = "Flowers, fences and thicker grass.", UnlockPrice = 1_000, RequiredLevel = 2, GrassValue = 3, GrassHealth = 6, TuftCount = 80, ThemeColor = Color3.fromRGB(74, 170, 90) },
+	{ Id = "sunny_farm", DisplayName = "Sunny Farm", Subtitle = "The neighbors will pay you now.", UnlockPrice = 15_000, RequiredLevel = 5, GrassValue = 8, GrassHealth = 25, TuftCount = 110, ThemeColor = Color3.fromRGB(232, 183, 75) },
+	{ Id = "big_ranch", DisplayName = "Big Ranch", Subtitle = "Acres of it. All yours to cut.", UnlockPrice = 120_000, RequiredLevel = 9, GrassValue = 20, GrassHealth = 110, TuftCount = 140, ThemeColor = Color3.fromRGB(196, 132, 58) },
+	{ Id = "golf_estate", DisplayName = "Golf Estate", Subtitle = "Rich people grass. Rich people prices.", UnlockPrice = 900_000, RequiredLevel = 14, GrassValue = 50, GrassHealth = 450, TuftCount = 170, ThemeColor = Color3.fromRGB(64, 160, 140) },
+	{ Id = "mega_fields", DisplayName = "Mega Fields", Subtitle = "Automation country. Let the machines work.", UnlockPrice = 6_000_000, RequiredLevel = 20, GrassValue = 130, GrassHealth = 1_800, TuftCount = 220, ThemeColor = Color3.fromRGB(120, 110, 220) },
 }
 
 local byId: { [string]: ZoneDef } = {}

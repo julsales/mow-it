@@ -2,7 +2,9 @@
 
 Read before working in this repo:
 
-1. **Design source of truth:** `docs/GDD.md`. Progression numbers live in
+1. **Design source of truth:** OpenSpec — `openspec/specs/` (behavior) and
+   `openspec/changes/expand-to-full-game-v2/tasks.md` (implementation order).
+   `docs/GDD.md` is a summary. Update specs in the same change as behavior. Progression numbers live in
    `src/ReplicatedStorage/Shared/Config/*.luau` — change numbers there,
    never hard-code them in systems.
 2. **Assets:** `docs/ASSETS.md` is a gate, not a suggestion. Map →

@@ -1,125 +1,83 @@
-# Mow It! — Game Design Document
+# Mow It! — Game Design Document (v2 summary)
 
-**Genre:** Co-op grass-cutting simulator / incremental progression
-**Platform:** Roblox · **Language:** English (all player-facing text)
-**Players:** 1–4 per match (reserved server), lobby supports full public servers
-**Session:** Drop-in mowing loop, persistent progression across sessions
+> **Behavioral source of truth: OpenSpec.** Every system below is specified
+> normatively in [`openspec/specs/`](../openspec/specs) (14 capabilities,
+> SHALL requirements + WHEN/THEN scenarios) and tracked as the change
+> [`expand-to-full-game-v2`](../openspec/changes/expand-to-full-game-v2).
+> This document is the readable summary. If they disagree, OpenSpec wins.
 
 ## Pitch
 
-You start in front of your house with a **nail clipper** and a lawn that
-doesn't care. Snip grass, fill your pocket, sell the clippings, buy real
-scissors. Then shears. Then a trimmer, a mower, a tractor, a combine
-harvester — until you're conducting a swarm of mower drones over automated
-mega-fields and the grass works for *you*.
+Your land, your Crew, your company. You start in the front yard of your
+house with a **nail clipper**. You end with automated mega-fields, a swarm
+of showy Crew creatures and machines mowing for you — even while you're
+offline — and a lawn-care franchise that keeps getting stronger.
 
-## Core loop (30 seconds)
+## The world (this changed in v2)
 
-```
-CUT grass → fill storage (limited!) → SELL at the Sell Pad → earn Coins
-   ↑                                                              ↓
-   └────── buy better TOOLS / STORAGE / BUFFS, unlock ZONES ◄────┘
-```
+- **Your private land is the game.** One persistent property that grows
+  expansion by expansion, all joined together: Front Yard (your house) →
+  Backyard Garden → Sunny Farm → Big Ranch → Golf Estate → Mega Fields.
+  Expansions unlock **in order**, for **Coins + Company Level**, each with
+  its own **physical shop**, grass tier and roster.
+- **The lobby is public and social:** a street where your **showcase
+  mini-base** (a safe, simplified copy: house, best Crew, parked vehicles,
+  trophies) is displayed for flex, the **Crew Restock Market**, shops that
+  only sell what you already unlocked, and leaderboards.
+- **Entering play:** `PLAY` takes you solo to your land. The **party
+  block** groups up to **4 players** and takes everyone to the **host's
+  land** — helpers earn full personal rewards; only the host's land
+  progresses.
 
-1. **Cut** — click/tap swings your tool. Grass tufts near you lose health;
-   cleared tufts become carried **Grass**.
-2. **Carry** — storage is limited (first backpack: *Your Pocket*, 10 grass).
-   Full storage = no more cutting. This limit is the engine of the early game.
-3. **Sell** — stand on any Sell Pad: all carried grass → **Coins**, priced by
-   zone value (see Zones).
-4. **Upgrade** — spend Coins on the next tool, bigger storage, buffs, and
-   zone gates. Every upgrade is visibly bigger/faster than the last.
+## Core loop
 
-## Tool evolution (the fantasy)
+Cut grass (tagged by variant) → fill limited storage → sell at a pad →
+Coins → tools/storage/buffs + next expansion. Planted **seed plots** add
+a deliberate, offline-growing layer on top of wild regrowing grass.
 
-Full stats/prices: `src/ReplicatedStorage/Shared/Config/Tools.luau` (source of truth).
+- **48 tools** in 6 families (`Config/Tools.luau`): nail clipper →
+  scissors → electrics → push mowers → **rideable** mowers/tractors you
+  drive over grass → combines, drone swarms, **MOWZILLA**. Fueled tools
+  refuel manually, via capped automation, or with the Infinite Fuel pass.
+- **Crew replaces pets:** ~60 companions (`Config/Crew.luau`) — garden
+  animals → garden fantasy → personality machines — in **6 rarities**.
+  They **follow you** cutting, or **stay stationed** cutting a spot; they
+  work **offline** up to a growing cap. Copies can be **equipped stacking**
+  and **merged to evolve**. Crew is collection: prestige never removes it.
+- **Getting Crew:** the lobby's **global restock market** (same shelf on
+  every server, refreshes every **5 minutes**, priced in **Clovers**,
+  commons always there, Mythics rarely) — plus the surprise of **shining
+  tufts** that reveal Crew while you mow.
+- **Grass variants & weather:** carried grass is counted per variant
+  (Normal/Wet/Golden/Lunar/Rainbow…, `Config/Weather.luau`); server-wide
+  weather opens variant windows everyone chases together.
+- **Contracts:** a job board of timed client yards, solo or party,
+  paying Coins + Clovers + Company XP; late = reduced pay, never a
+  punishment spiral.
+- **Franchise (prestige):** sell the company, reset progress (never
+  collection), earn **Franchise Points** for a permanent upgrade tree.
+  First franchise tuned for ~1–2 weeks of casual daily play.
 
-| # | Tool | Zone | Fantasy beat |
-|---|---|---|---|
-| 1 | Nail Clipper | Front Yard | Absurd, funny, humble start |
-| 2 | Safety Scissors | Front Yard | "Real" scissors at last |
-| 3 | Kitchen Scissors | Front Yard | Wrong tool, right spirit |
-| 4 | Garden Shears | Front Yard | Actual gardener arc begins |
-| 5 | Electric Hedge Trimmer | Backyard | First motor |
-| 6 | String Trimmer | Backyard | Edge everything |
-| 7 | Push Mower | Farm | The classic |
-| 8 | Self-Propelled Mower | Farm | It walks for you |
-| 9 | Riding Mower | Ranch | Sit & mow |
-| 10 | Zero-Turn Mower | Ranch | Pro handling |
-| 11 | Commercial Stand-On Mower | Golf Estate | The pros' choice |
-| 12 | Tractor Mower | Golf Estate | Farm machinery scale |
-| 13 | Combine Harvester | Mega Fields | Fields end where you say |
-| 14 | Industrial Mega Mower | Mega Fields | Permit required |
-| 15 | Mower Drone Swarm | Mega Fields | You conduct, they cut |
-| 16 | MOWZILLA | Mega Fields | Gigantic endgame toy |
+## Currencies
 
-Design rules: each tool increases **Power** (grass/hit), **Radius**, and
-swing speed. No tool is a pure number bump in the final game — each gets a
-model, sound tier and swing feel (Assets/Map phases).
+**Coins** (mowing economy) · **Clovers** (Crew, quests, contracts) ·
+**Franchise Points** (prestige only). Event currencies exist only inside
+their events.
 
-## Storage ladder
+## Retention & live
 
-Pocket (10) → Plastic Bag → School Backpack → Duffel Bag → Trash Bin →
-Wheelbarrow → Pickup Truck Bed → Hay Trailer → Dump Truck → Vacuum Silo →
-Auto-Conveyor Rig (500k). Full table: `Config/Backpacks.luau`.
+Guided first loop (~3 min to first scissors), 7-day login, daily/weekly
+quests, codes, badges on your showcase, monthly themed events, weekly
+featured weather, and offline Crew production to collect on your land.
 
-## Zones (one map, gated areas)
+## Monetization
 
-Full stats: `Config/Zones.luau`. Zones unlock **in order**, cost Coins, and
-each one stocks stronger gear (tools/backpacks/buffs gate on `RequiredZone`).
+Full genre catalog (2x Coins, Crew slots, Auto-Sell, Infinite Fuel, VIP,
+currency packs, restocks, luck, shortcuts) under strict transparency
+rules, plus cosmetics for tools/vehicles, land/showcase and avatar.
+Specs: `openspec/specs/monetization-and-cosmetics`.
 
-| # | Zone | Unlock | Grass ¢/unit | What changes |
-|---|---|---|---|---|
-| 1 | Front Yard (house) | free | 1 | Tutorial space. Nail clipper lawn. |
-| 2 | Backyard Garden | 1K | 3 | Flowers/fences, first motors |
-| 3 | Sunny Farm | 15K | 8 | Neighbors pay you; first mowers, first automation (Auto-Swing, Hired Gardener) |
-| 4 | Big Ranch | 120K | 20 | Riding mowers, big acres |
-| 5 | Golf Estate | 900K | 50 | Rich grass, drones, commercial gear |
-| 6 | Mega Fields | 6M | 130 | **Automation endgame:** robot crews, auto-sell, drone swarms |
+## Later (designed, not launch)
 
-Grass gets tougher per zone (`GrassHealth`), so going back to the Front
-Yard with MOWZILLA is a power fantasy, and bringing a nail clipper to the
-Mega Fields is a joke the game lets you tell once.
-
-## Buffs & automation (progression of laziness)
-
-Full table: `Config/Buffs.luau`.
-
-- **Stat buffs:** Swift Boots (speed), Grass Magnet (radius), Golden Blades
-  (crit ×3 cuts).
-- **Small automations on the way:** Auto-Swing (Zone 3), Hired Gardener NPC
-  (Zone 3), Mower Drone (Zone 5).
-- **Final-zone automation focus:** Auto-Sell Conveyor (never walk to a pad
-  again), Robot Mower Crew (robots roam and mow for you), Drone Swarm tool.
-  Endgame play = managing/expanding your operation, not clicking.
-
-## Lobby & multiplayer (up to 4)
-
-- The **Lobby** is the start place: hangout, shops preview, leaderboards.
-- Step on the **Join Pad** (a physical block) → you join the party queue
-  (max **4**). A countdown starts with the first player; a full party of 4
-  starts immediately. Step on the pad again to leave.
-- The whole party teleports together into a **reserved server** of the Game
-  place — private to the party, friends can't crash it.
-- In the Game place everyone mows the same shared fields; grass/economy are
-  per-player, fields are shared, so co-op = racing for tufts or splitting
-  areas. (Co-op bonuses are a Phase-6 stretch goal.)
-
-## Persistence
-
-Per player: Coins, carried Grass, lifetime grass, owned/equipped tool &
-backpack, unlocked zones, buff stacks. Server-side DataStore with session
-cache and autosave (`ProfileService`). In Studio, profiles are session-only
-so testing never pollutes real data.
-
-## Monetization (planned, Phase 7 — not in MVP)
-
-Robux: 2× Coins gamepass, VIP (lobby area + daily bonus), starter pack,
-extra robot crew slot. Rules from the copied `roblox` skill apply: single
-`ProcessReceipt`, server-granted, idempotent. No pay-to-skip zone order.
-
-## Win / endgame
-
-There is no "ending" — endgame is Mega Fields fully automated + MOWZILLA +
-leaderboards (Coins earned, lifetime grass). Future updates: seasons,
-prestige ("New Lawn+"), events. See DEVELOPMENT_PLAN Phase 8+.
+Trading (Crew are already unique, tradable-by-design items; atomic
+two-sided trades ship in their own change) and the Crewdex album.
