@@ -411,8 +411,9 @@ function MapService.BuildIfMissing()
 	end
 
 	-- 5. Terrain: one slab of wild ground, then lawns and paths painted in.
-	local size = MapLayout.ForestOuterRadius * 2 + 40
-	terrain:FillBlock(CFrame.new(0, GROUND_TOP - 2, 0), Vector3.new(size, 4, size), MapService.Materials.Wild)
+	-- Round ground (one full voxel layer, top exactly at GROUND_TOP); its
+	-- edge hides behind the rim hills built in step 8.
+	terrain:FillCylinder(CFrame.new(0, GROUND_TOP - 4, 0), 4, MapLayout.ForestOuterRadius + 40, MapService.Materials.Wild)
 	local painted = 0
 	for _, cells in lawnCells do
 		for _, center in cells do
@@ -468,6 +469,16 @@ function MapService.BuildIfMissing()
 		local hillRadius = 20 + rng:NextNumber() * 26
 		local p = Geo.Point(angle, radius)
 		terrain:FillBall(Vector3.new(p.X, GROUND_TOP - hillRadius * 0.55, p.Z), hillRadius, MapService.Materials.Wild)
+	end
+
+	-- Rim hills: a ring of big hills where the ground ends, so the world
+	-- fades into hills and haze instead of a visible edge.
+	local rimCount = 18
+	for i = 1, rimCount do
+		local angle = (i + rng:NextNumber() * 0.6) * 360 / rimCount
+		local hillRadius = 45 + rng:NextNumber() * 25
+		local p = Geo.Point(angle, MapLayout.ForestOuterRadius + 10)
+		terrain:FillBall(Vector3.new(p.X, GROUND_TOP - hillRadius * 0.35, p.Z), hillRadius, MapService.Materials.Wild)
 	end
 
 	zonesFolder.Parent = Workspace

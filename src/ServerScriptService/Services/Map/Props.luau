@@ -12,7 +12,9 @@ local Players = game:GetService("Players")
 
 local Props = {}
 
-local GROUND_TOP = 1
+-- Smooth terrain draws the top of a full voxel layer [-4, 0] at y = 2
+-- (surfaces sit mid-voxel), so the ground is at 2 and everything stands on it.
+local GROUND_TOP = 2
 local RAD45 = math.rad(45)
 local RAD90 = math.rad(90)
 Props.GroundTop = GROUND_TOP
