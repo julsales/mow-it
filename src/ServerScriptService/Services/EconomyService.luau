@@ -54,8 +54,11 @@ local function tryCut(player: Player)
 	end
 	lastSwingAt[player] = now
 
-	if profile.Grass >= capacityOf(profile) then
-		remotes:FindFirstChild("Notify"):FireClient(player, "Storage full! Sell your grass.")
+	local feedback = remotes:FindFirstChild("CutFeedback") :: RemoteEvent
+	local capacity = capacityOf(profile)
+	if profile.Grass >= capacity then
+		(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, "Storage full! Sell your grass.")
+		feedback:FireClient(player, 0, true)
 		-- Auto-Sell Conveyor (final-zone automation) empties it for you.
 		if buffStacks(profile, "auto_sell") > 0 then
 			EconomyService.SellAll(player)
@@ -63,39 +66,34 @@ local function tryCut(player: Player)
 		return
 	end
 
-	local tufts = GrassService.GetTuftsInRadius(root.Position, radius)
-	if #tufts == 0 then
-		return
-	end
+	-- Locked zones cannot be farmed by standing on the fence line.
+	local cells = GrassService.GetCellsInRadius(root.Position, radius, function(zoneId)
+		return profile.UnlockedZoneIds[zoneId] == true
+	end)
 
 	local harvested = 0
-	for _, tuft in tufts do
-		local zoneId = tuft:GetAttribute("ZoneId") :: string
-		-- Locked zones cannot be farmed by standing on the fence line.
-		if not profile.UnlockedZoneIds[zoneId] then
-			continue
-		end
-		local health = (tuft:GetAttribute("Health") :: number) or 1
-		health -= tool.Power
-		if health <= 0 then
-			GrassService.Harvest(tuft)
+	local hit = 0
+	for _, cell in cells do
+		hit += 1
+		if GrassService.Damage(cell, tool.Power) then
 			local gain = 1
 			if math.random() < critChance then
 				gain = 3 -- Golden Blades critical cut
 			end
 			harvested += gain
-		else
-			tuft:SetAttribute("Health", health)
-			tuft.Transparency = 1 - (health / (Zones.ById[zoneId].GrassHealth)) * 0.7
 		end
 	end
 
+	local stored = 0
 	if harvested > 0 then
-		local room = capacityOf(profile) - profile.Grass
-		profile.Grass += math.min(harvested, room)
+		stored = math.min(harvested, capacity - profile.Grass)
+		profile.Grass += stored
 		profile.LifetimeGrass += harvested
 		ProfileService.NotifyChanged(player)
 	end
+	-- Client plays snip/mow sounds and shows "+N"; hit > 0 with stored = 0
+	-- means tough grass that only got shorter.
+	feedback:FireClient(player, stored, profile.Grass >= capacity, hit)
 end
 
 function EconomyService.SellAll(player: Player)
@@ -116,7 +114,8 @@ function EconomyService.SellAll(player: Player)
 	profile.Coins += earned
 	profile.Grass = 0
 	ProfileService.NotifyChanged(player)
-	remotes:FindFirstChild("Notify"):FireClient(player, string.format("+%s Coins", tostring(earned)))
+	(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, string.format("+%s Coins", tostring(earned)));
+	(remotes:FindFirstChild("SellFeedback") :: RemoteEvent):FireClient(player, earned)
 end
 
 function EconomyService.Init(remoteFolder: Folder)

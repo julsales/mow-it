@@ -19,7 +19,10 @@ local GameConfig = {
 	MinPlayersToStartEarly = 1, -- the pad can be started by stepping off/on in later versions
 
 	-- Core loop ------------------------------------------------------------
-	GrassRespawnSeconds = 6,
+	GrassRespawnSeconds = 6, -- average; each cell waits 0.7x..1.5x this so lawns regrow unevenly
+	GrassCellSize = 3, -- studs; every lawn is a grid of cells this wide (GrassService)
+	GrassTallHeight = 1.3, -- height of uncut grass (studs, +/- 15% per cell)
+	GrassStubbleHeight = 0.2, -- what is left after a cut
 	SellValuePerGrass = 1, -- multiplied by the zone's GrassValue
 	StartingCoins = 0,
 	StartingToolId = "nail_clipper",

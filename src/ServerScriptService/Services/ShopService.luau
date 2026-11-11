@@ -21,6 +21,15 @@ local function notify(player: Player, message: string)
 	end
 end
 
+-- Plays the purchase sound on the buyer's client.
+local function bought(player: Player, message: string)
+	notify(player, message)
+	local remote = remotes:FindFirstChild("BuyFeedback") :: RemoteEvent?
+	if remote then
+		remote:FireClient(player)
+	end
+end
+
 local function highestUnlockedZoneIndex(profile): number
 	local highest = 1
 	for zoneId in profile.UnlockedZoneIds do
@@ -59,7 +68,7 @@ local function buyTool(player: Player, toolId: string)
 		profile.Coins -= def.Price
 		profile.OwnedToolIds[toolId] = true
 		profile.EquippedToolId = toolId
-		notify(player, "Bought " .. def.DisplayName .. "!")
+		bought(player, "Bought " .. def.DisplayName .. "!")
 	end
 	ProfileService.NotifyChanged(player)
 end
@@ -79,7 +88,7 @@ local function buyBackpack(player: Player, backpackId: string)
 		profile.Coins -= def.Price
 		profile.OwnedBackpackIds[backpackId] = true
 		profile.EquippedBackpackId = backpackId
-		notify(player, "Bought " .. def.DisplayName .. "!")
+		bought(player, "Bought " .. def.DisplayName .. "!")
 	end
 	ProfileService.NotifyChanged(player)
 end
@@ -100,7 +109,7 @@ local function buyBuff(player: Player, buffId: string)
 	end
 	profile.Coins -= def.Price
 	profile.BuffStacks[buffId] = stacks + 1
-	notify(player, "Bought " .. def.DisplayName .. "!")
+	bought(player, "Bought " .. def.DisplayName .. "!")
 	ProfileService.NotifyChanged(player)
 end
 
@@ -123,7 +132,7 @@ local function unlockZone(player: Player, zoneId: string)
 	end
 	profile.Coins -= def.UnlockPrice
 	profile.UnlockedZoneIds[zoneId] = true
-	notify(player, "Unlocked " .. def.DisplayName .. "!")
+	bought(player, "Unlocked " .. def.DisplayName .. "!")
 	ProfileService.NotifyChanged(player)
 end
 

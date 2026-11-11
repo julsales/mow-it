@@ -20,6 +20,7 @@ local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
+local ToolVisualService = require(Services.ToolVisualService)
 
 -- Remotes -------------------------------------------------------------------
 -- Created by the server in ReplicatedStorage/Remotes so client and server
@@ -34,6 +35,9 @@ local REMOTE_NAMES = {
 	"Notify",
 	"ProfileUpdated",
 	"QueueUpdated",
+	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit) after each swing
+	"SellFeedback", -- server -> client: (coinsEarned)
+	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
 }
 
 local remotes = Instance.new("Folder")
@@ -86,6 +90,7 @@ if isGamePlace then
 	GrayboxService.BuildZonesIfMissing()
 	GrassService.Init()
 	EconomyService.Init(remotes)
+	ToolVisualService.Init()
 	ShopService.Init(remotes);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
 		EconomyService.SellAll(player)
