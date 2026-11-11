@@ -66,9 +66,10 @@ local function buildGrid(zoneDef, area: BasePart): number
 	local countX = math.max(1, math.floor((area.Position.X + area.Size.X / 2 - minX) / CELL))
 	local countZ = math.max(1, math.floor((area.Position.Z + area.Size.Z / 2 - minZ) / CELL))
 
-	-- One 2-stud slab of Grass whose top is the lawn top.
+	-- One 4-stud slab of Grass whose top is the lawn top (thin terrain shows
+	-- LOD gaps at a distance, roblox-world-building).
 	local width, depth = countX * CELL, countZ * CELL
-	terrain:FillBlock(CFrame.new(minX + width / 2, top - 1, minZ + depth / 2), Vector3.new(width, 2, depth), TALL)
+	terrain:FillBlock(CFrame.new(minX + width / 2, top - 2, minZ + depth / 2), Vector3.new(width, 4, depth), TALL)
 
 	local origin = Vector3.new(minX + CELL / 2, top, minZ + CELL / 2)
 	local grid: Grid = { ZoneId = zoneDef.Id, Origin = origin, CountX = countX, CountZ = countZ, Cells = {} }

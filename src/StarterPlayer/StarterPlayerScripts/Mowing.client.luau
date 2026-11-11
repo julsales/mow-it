@@ -27,10 +27,27 @@ local ClientState = require(script.Parent:WaitForChild("ClientState"))
 
 -- 2D one-shots -------------------------------------------------------------------
 
+-- SoundGroups so effects and engines can be mixed / muted as a whole later
+-- (roblox-audio: route classic Sounds through groups).
+local function group(name: string, volume: number): SoundGroup
+	local existing = SoundService:FindFirstChild(name)
+	if existing and existing:IsA("SoundGroup") then
+		return existing
+	end
+	local g = Instance.new("SoundGroup")
+	g.Name = name
+	g.Volume = volume
+	g.Parent = SoundService
+	return g
+end
+local sfxGroup = group("SFX", 1)
+local engineGroup = group("Engines", 0.8)
+
 local function newSound(name: string): Sound
 	local def = Sounds[name]
 	local sound = Instance.new("Sound")
 	sound.Name = name
+	sound.SoundGroup = sfxGroup
 	sound.SoundId = def.Id
 	sound.Volume = def.Volume
 	local jitter = def.PitchJitter or 0
@@ -134,6 +151,7 @@ local function addEngine(model: Model)
 	end
 	local sound = Instance.new("Sound")
 	sound.Name = "EngineLoop"
+	sound.SoundGroup = engineGroup
 	sound.SoundId = ENGINE.Id
 	sound.Looped = true
 	sound.Volume = ENGINE.Volume * 0.6

@@ -1,7 +1,8 @@
 --!strict
 -- Loja: a functional shop/inventory panel for tools and storage. Opened
 -- with the "LOJA" button. Every row shows the item, its stats and one
--- button: Comprar (price) / Equipar / Equipado / Zona N (locked).
+-- button: price (buy) / Equipar / Equipado / Zona N (locked).
+-- No emoji: the UI fonts render 🪙/🛒/🔒 as empty boxes on some clients.
 -- The server validates every purchase (ShopService); buying an owned item
 -- just equips it. Placeholder look on purpose: the final HUD art comes
 -- from the HUD design, this panel only has to be clear and work on phones.
@@ -64,6 +65,11 @@ local function button(parent: Instance, text: string, color: Color3): TextButton
 	b.AutoButtonColor = true
 	b.Parent = parent
 	corner(b, 8)
+	-- roblox-ui: TextScaled without bounds gives uneven sizes; keep 14..22 px.
+	local size = Instance.new("UITextSizeConstraint")
+	size.MinTextSize = 14
+	size.MaxTextSize = 22
+	size.Parent = b
 	local pad = Instance.new("UIPadding")
 	pad.PaddingLeft = UDim.new(0, 6)
 	pad.PaddingRight = UDim.new(0, 6)
@@ -82,7 +88,7 @@ gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.DisplayOrder = 5
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local openButton = button(gui, "🛒 LOJA", COLORS.Buy)
+local openButton = button(gui, "LOJA", COLORS.Buy)
 openButton.Name = "OpenLoja"
 openButton.AnchorPoint = Vector2.new(1, 0)
 openButton.Position = UDim2.new(1, -10, 0, 60)
@@ -107,7 +113,7 @@ do
 	stroke.Parent = panel
 end
 
-local title = label(panel, "🛒 Loja", 26, COLORS.Text, true)
+local title = label(panel, "Loja", 26, COLORS.Text, true)
 title.Position = UDim2.new(0, 16, 0, 10)
 title.Size = UDim2.new(1, -80, 0, 34)
 
@@ -220,18 +226,18 @@ local function paintRows(rows: { Row }, owned: { [string]: boolean }, equipped: 
 		row.Frame.BackgroundColor3 = if row.Id == equipped then COLORS.RowEquipped else COLORS.Row
 		action.Active = true
 		if row.Id == equipped then
-			action.Text = "✔ Equipado"
+			action.Text = "Equipado"
 			action.BackgroundColor3 = COLORS.Equipped
 			action.Active = false
 		elseif owned[row.Id] then
 			action.Text = "Equipar"
 			action.BackgroundColor3 = COLORS.Equip
 		elseif zone < row.RequiredZone then
-			action.Text = "🔒 Zona " .. row.RequiredZone
+			action.Text = "Zona " .. row.RequiredZone
 			action.BackgroundColor3 = COLORS.Locked
 			action.Active = false
 		else
-			action.Text = "🪙 " .. Format.Number(row.Price)
+			action.Text = "$ " .. Format.Number(row.Price)
 			action.BackgroundColor3 = if profile.Coins >= row.Price then COLORS.Buy else COLORS.CantAfford
 		end
 	end
@@ -284,7 +290,7 @@ if RunService:IsStudio() then
 		if not devRemote then
 			return
 		end
-		local dev = button(gui, "+1M 🪙 (Studio)", Color3.fromRGB(150, 70, 200))
+		local dev = button(gui, "+$1M (Studio)", Color3.fromRGB(150, 70, 200))
 		dev.AnchorPoint = Vector2.new(1, 0)
 		dev.Position = UDim2.new(1, -10, 0, 114)
 		dev.Size = UDim2.new(0, 160, 0, 40)

@@ -152,9 +152,9 @@ end
 
 local function handle(b: Builder, deckBackZ: number, deckTopY: number, color: Color3)
 	for _, x in { -0.8, 0.8 } do
-		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.9, -1.4), 0.18, color)
+		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.6, -1.4), 0.18, color)
 	end
-	rod(b, "HandleGrip", Vector3.new(-0.75, 2.9, -1.4), Vector3.new(0.75, 2.9, -1.4), 0.26, DARK)
+	rod(b, "HandleGrip", Vector3.new(-0.75, 2.6, -1.4), Vector3.new(0.75, 2.6, -1.4), 0.26, DARK)
 end
 
 local BUILDERS: { [string]: (Builder, Color3) -> () } = {}
@@ -269,7 +269,12 @@ local function addGrips(model: Model)
 		local a = Instance.new("Attachment")
 		a.Name = name
 		a.Parent = host
-		a.WorldPosition = host.Position + Vector3.new(side * spread, 0, 0)
+		-- Orientation the hand should take (ToolPoses uses IK Transform):
+		-- fingers forward (-Z) and palm down over the bar. R15 hands hang
+		-- with fingers -Y and palms facing the body (right palm -X, left
+		-- +X); pitch 90 deg forward, then roll the palm down.
+		local roll = if side > 0 then math.rad(90) else -math.rad(90)
+		a.WorldCFrame = CFrame.new(host.Position + Vector3.new(side * spread, 0, 0)) * CFrame.Angles(0, 0, roll) * CFrame.Angles(math.rad(90), 0, 0)
 	end
 end
 

@@ -65,7 +65,7 @@ end
 local nextToolButton = makeButton("NextTool", "Next Tool", UDim2.new(1, -170, 0, 10))
 local nextPackButton = makeButton("NextPack", "Next Storage", UDim2.new(1, -170, 0, 60))
 local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 10))
-local sellButton = makeButton("Sell", "💰 VENDER", UDim2.new(1, -190, 1, -80))
+local sellButton = makeButton("Sell", "VENDER", UDim2.new(1, -190, 1, -80))
 -- Tools and storage are bought in the Loja panel (Shop.client.luau) now.
 nextToolButton.Visible = false
 nextPackButton.Visible = false
@@ -99,7 +99,7 @@ local function refresh()
 	end
 	local pack = Backpacks.ById[profile.EquippedBackpackId]
 	local tool = Tools.ById[profile.EquippedToolId]
-	coinsLabel.Text = "🪙 " .. Format.Number(profile.Coins)
+	coinsLabel.Text = "$ " .. Format.Number(profile.Coins)
 	grassLabel.Text = ("🌿 %s / %s"):format(Format.Number(profile.Grass), Format.Number(pack and pack.Capacity or 0))
 	toolLabel.Text = tool and tool.DisplayName or "?"
 
@@ -114,7 +114,7 @@ local function refresh()
 			break
 		end
 	end
-	nextZoneButton.Text = nextZone and ("Zone: " .. nextZone.DisplayName .. " (" .. Format.Number(nextZone.UnlockPrice) .. ")") or "All Zones Open"
+	nextZoneButton.Text = nextZone and ("Liberar " .. nextZone.DisplayName .. " ($" .. Format.Number(nextZone.UnlockPrice) .. ")") or "Todas as zonas liberadas"
 end
 
 nextToolButton.Activated:Connect(function()

@@ -38,7 +38,7 @@ local function clearPose(character: Model)
 	end
 end
 
-local function ik(humanoid: Humanoid, character: Model, side: string, target: Attachment, pose: Pose)
+local function ik(humanoid: Humanoid, character: Model, side: string, target: Attachment, pose: Pose, matchRotation: boolean?)
 	local upper = character:FindFirstChild(side .. "UpperArm")
 	local hand = character:FindFirstChild(side .. "Hand")
 	if not upper or not hand then
@@ -46,7 +46,9 @@ local function ik(humanoid: Humanoid, character: Model, side: string, target: At
 	end
 	local control = Instance.new("IKControl")
 	control.Name = "ToolPose" .. side
-	control.Type = Enum.IKControlType.Position
+	-- Transform also turns the hand to the grip's orientation (palm on the
+	-- bar); Position only moves it.
+	control.Type = if matchRotation then Enum.IKControlType.Transform else Enum.IKControlType.Position
 	control.ChainRoot = upper
 	control.EndEffector = hand
 	control.Target = target
@@ -83,8 +85,8 @@ local function applyPose(character: Model)
 	if gripL and gripR then
 		-- Two-handed: mower handle or steering wheel.
 		if r15 then
-			ik(humanoid, character, "Left", gripL, pose)
-			ik(humanoid, character, "Right", gripR, pose)
+			ik(humanoid, character, "Left", gripL, pose, true)
+			ik(humanoid, character, "Right", gripR, pose, true)
 		else
 			r6Shoulder(character, "Left Shoulder", -math.rad(70), pose)
 			r6Shoulder(character, "Right Shoulder", math.rad(70), pose)

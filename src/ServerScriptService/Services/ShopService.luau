@@ -30,6 +30,24 @@ local function bought(player: Player, message: string)
 	end
 end
 
+-- roblox-security: remote args are untrusted (type + length checked) and
+-- every purchase remote is rate limited per player.
+local lastRequestAt: { [Player]: number } = {}
+local function allowed(player: Player, id: any): boolean
+	if typeof(id) ~= "string" or #id > 64 then
+		return false
+	end
+	local now = os.clock()
+	if now - (lastRequestAt[player] or 0) < 0.15 then
+		return false
+	end
+	lastRequestAt[player] = now
+	return true
+end
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+	lastRequestAt[player] = nil
+end)
+
 local function highestUnlockedZoneIndex(profile): number
 	local highest = 1
 	for zoneId in profile.UnlockedZoneIds do
@@ -54,6 +72,9 @@ local function canAffordAndUnlocked(player, profile, price: number, requiredZone
 end
 
 local function buyTool(player: Player, toolId: string)
+	if not allowed(player, toolId) then
+		return
+	end
 	local profile = ProfileService.Get(player)
 	local def = Tools.ById[toolId]
 	if not profile or not def then
@@ -74,6 +95,9 @@ local function buyTool(player: Player, toolId: string)
 end
 
 local function buyBackpack(player: Player, backpackId: string)
+	if not allowed(player, backpackId) then
+		return
+	end
 	local profile = ProfileService.Get(player)
 	local def = Backpacks.ById[backpackId]
 	if not profile or not def then
@@ -94,6 +118,9 @@ local function buyBackpack(player: Player, backpackId: string)
 end
 
 local function buyBuff(player: Player, buffId: string)
+	if not allowed(player, buffId) then
+		return
+	end
 	local profile = ProfileService.Get(player)
 	local def = Buffs.ById[buffId]
 	if not profile or not def then
@@ -114,6 +141,9 @@ local function buyBuff(player: Player, buffId: string)
 end
 
 local function unlockZone(player: Player, zoneId: string)
+	if not allowed(player, zoneId) then
+		return
+	end
 	local profile = ProfileService.Get(player)
 	local def = Zones.ById[zoneId]
 	if not profile or not def or profile.UnlockedZoneIds[zoneId] then

@@ -29,7 +29,8 @@ local HAND_TILT: { [string]: number } = {
 }
 
 local shownToolId: { [Player]: string } = {}
-local baseHipHeight: { [Humanoid]: number } = {}
+-- Weak keys: a destroyed character never leaves its Humanoid behind here.
+local baseHipHeight: { [Humanoid]: number } = setmetatable({}, { __mode = "k" }) :: any
 
 local function clearTool(character: Model)
 	local old = character:FindFirstChild("ToolModel")
