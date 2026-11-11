@@ -310,7 +310,7 @@ local function buyerNpc(parent: Instance, at: CFrame)
 		text.TextScaled = true
 		text.TextColor3 = Color3.new(1, 1, 1)
 		text.TextStrokeTransparency = 0.3
-		text.Text = "Seu Zé · compra grama"
+		text.Text = "Farmer Joe · Grass Buyer"
 		text.Parent = tag
 		tag.Parent = head
 		npc.Parent = parent
@@ -318,7 +318,7 @@ local function buyerNpc(parent: Instance, at: CFrame)
 end
 
 -- Market stall behind the sell pad: counter with grass bales, striped
--- awning, a "COMPRO GRAMA" board and the buyer NPC. Local -Z is away from
+-- awning, a "WE BUY GRASS" board and the buyer NPC. Local -Z is away from
 -- the lawn, so the stall sits behind the pad facing the player.
 local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 	local m = model("SellStall", parent)
@@ -337,7 +337,7 @@ local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 		box("Awning", m, cf, Vector3.new(1.55, 0.35, 4.2), x - 3.9 + i * 1.55, back + 0.6, color, Enum.Material.Fabric, 7.5)
 	end
 	local board = box("Board", m, cf, Vector3.new(7, 1.6, 0.3), x, back + 2.75, COLORS.White, nil, 7.9)
-	label(board, Enum.NormalId.Back, "COMPRO GRAMA", Color3.fromRGB(90, 60, 0))
+	label(board, Enum.NormalId.Back, "WE BUY GRASS", Color3.fromRGB(90, 60, 0))
 	buyerNpc(m, at(cf, x, 0, back - 1) * CFrame.Angles(0, math.pi, 0))
 end
 

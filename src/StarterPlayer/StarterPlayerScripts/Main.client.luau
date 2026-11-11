@@ -65,24 +65,12 @@ end
 local nextToolButton = makeButton("NextTool", "Next Tool", UDim2.new(1, -170, 0, 10))
 local nextPackButton = makeButton("NextPack", "Next Storage", UDim2.new(1, -170, 0, 60))
 local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 10))
-local sellButton = makeButton("Sell", "VENDER", UDim2.new(1, -190, 1, -80))
--- Tools and storage are bought in the Loja panel (Shop.client.luau) now.
+-- Tools and storage are bought in the Shop panel (Shop.client.luau) now.
 nextToolButton.Visible = false
 nextPackButton.Visible = false
--- Selling must be obvious: big gold button, always visible.
-sellButton.Size = UDim2.new(0, 180, 0, 64)
-sellButton.BackgroundColor3 = Color3.fromRGB(240, 180, 40)
-sellButton.TextColor3 = Color3.fromRGB(60, 40, 0)
-do
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
-	corner.Parent = sellButton
-	local stroke = Instance.new("UIStroke")
-	stroke.Thickness = 3
-	stroke.Color = Color3.fromRGB(120, 80, 0)
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = sellButton
-end
+-- No on-screen SELL button: selling happens by walking onto a sell stall's
+-- pad (SellGuide.client.luau points the way when storage is full). The
+-- SellRequest remote stays for a future "Sell Anywhere" pass / Auto-Sell.
 
 local function nextUnowned(list, owned: { [string]: boolean })
 	for _, def in list do
@@ -114,7 +102,7 @@ local function refresh()
 			break
 		end
 	end
-	nextZoneButton.Text = nextZone and ("Liberar " .. nextZone.DisplayName .. " ($" .. Format.Number(nextZone.UnlockPrice) .. ")") or "Todas as zonas liberadas"
+	nextZoneButton.Text = nextZone and ("Unlock " .. nextZone.DisplayName .. " ($" .. Format.Number(nextZone.UnlockPrice) .. ")") or "All zones unlocked"
 end
 
 nextToolButton.Activated:Connect(function()
@@ -139,9 +127,6 @@ nextZoneButton.Activated:Connect(function()
 			break
 		end
 	end
-end)
-sellButton.Activated:Connect(function()
-	(remotes:WaitForChild("SellRequest") :: RemoteEvent):FireServer()
 end)
 
 -- Cutting input: click / tap / controller trigger. Auto-Swing buff turns

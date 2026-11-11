@@ -93,6 +93,11 @@ if isGamePlace then
 	ToolVisualService.Init()
 	ShopService.Init(remotes);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
+		-- Selling is physical (sell pads). Remote selling is only for players
+		-- with Auto-Sell (later also a "Sell Anywhere" pass).
+		if not EconomyService.CanSellAnywhere(player) then
+			return
+		end
 		EconomyService.SellAll(player)
 	end)
 end

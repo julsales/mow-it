@@ -1,7 +1,7 @@
 --!strict
--- Loja: a functional shop/inventory panel for tools and storage. Opened
--- with the "LOJA" button. Every row shows the item, its stats and one
--- button: price (buy) / Equipar / Equipado / Zona N (locked).
+-- Shop: a functional shop/inventory panel for tools and storage. Opened
+-- with the "SHOP" button. Every row shows the item, its stats and one
+-- button: price (buy) / Equip / Equipped / Zone N (locked).
 -- No emoji: the UI fonts render 🪙/🛒/🔒 as empty boxes on some clients.
 -- The server validates every purchase (ShopService); buying an owned item
 -- just equips it. Placeholder look on purpose: the final HUD art comes
@@ -82,20 +82,20 @@ end
 -- Layout ------------------------------------------------------------------------
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "LojaGui"
+gui.Name = "ShopGui"
 gui.ResetOnSpawn = false
 gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.DisplayOrder = 5
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local openButton = button(gui, "LOJA", COLORS.Buy)
-openButton.Name = "OpenLoja"
+local openButton = button(gui, "SHOP", COLORS.Buy)
+openButton.Name = "OpenShop"
 openButton.AnchorPoint = Vector2.new(1, 0)
 openButton.Position = UDim2.new(1, -10, 0, 60)
 openButton.Size = UDim2.new(0, 160, 0, 48)
 
 local panel = Instance.new("Frame")
-panel.Name = "Loja"
+panel.Name = "Shop"
 panel.AnchorPoint = Vector2.new(0.5, 0.5)
 panel.Position = UDim2.fromScale(0.5, 0.5)
 panel.Size = UDim2.fromScale(0.9, 0.8)
@@ -113,7 +113,7 @@ do
 	stroke.Parent = panel
 end
 
-local title = label(panel, "Loja", 26, COLORS.Text, true)
+local title = label(panel, "Shop", 26, COLORS.Text, true)
 title.Position = UDim2.new(0, 16, 0, 10)
 title.Size = UDim2.new(1, -80, 0, 34)
 
@@ -133,9 +133,9 @@ do
 	layout.Padding = UDim.new(0, 8)
 	layout.Parent = tabs
 end
-local toolsTab = button(tabs, "Ferramentas", COLORS.TabActive)
+local toolsTab = button(tabs, "Tools", COLORS.TabActive)
 toolsTab.Size = UDim2.new(0.5, -4, 1, 0)
-local packsTab = button(tabs, "Armazenamento", COLORS.Tab)
+local packsTab = button(tabs, "Storage", COLORS.Tab)
 packsTab.Size = UDim2.new(0.5, -4, 1, 0)
 
 local list = Instance.new("ScrollingFrame")
@@ -199,12 +199,12 @@ end
 
 local toolRows: { Row } = {}
 for i, def in Tools.List do
-	local stats = ("Força %s · Alcance %s"):format(Format.Number(def.Power), tostring(def.Radius))
+	local stats = ("Power %s · Range %s"):format(Format.Number(def.Power), tostring(def.Radius))
 	table.insert(toolRows, makeRow(i, def.Id, def.DisplayName, stats, def.Price, def.RequiredZone, "BuyTool"))
 end
 local packRows: { Row } = {}
 for i, def in Backpacks.List do
-	local stats = ("Capacidade %s"):format(Format.Number(def.Capacity))
+	local stats = ("Capacity %s"):format(Format.Number(def.Capacity))
 	table.insert(packRows, makeRow(100 + i, def.Id, def.DisplayName, stats, def.Price, def.RequiredZone, "BuyBackpack"))
 end
 
@@ -226,14 +226,14 @@ local function paintRows(rows: { Row }, owned: { [string]: boolean }, equipped: 
 		row.Frame.BackgroundColor3 = if row.Id == equipped then COLORS.RowEquipped else COLORS.Row
 		action.Active = true
 		if row.Id == equipped then
-			action.Text = "Equipado"
+			action.Text = "Equipped"
 			action.BackgroundColor3 = COLORS.Equipped
 			action.Active = false
 		elseif owned[row.Id] then
-			action.Text = "Equipar"
+			action.Text = "Equip"
 			action.BackgroundColor3 = COLORS.Equip
 		elseif zone < row.RequiredZone then
-			action.Text = "Zona " .. row.RequiredZone
+			action.Text = "Zone " .. row.RequiredZone
 			action.BackgroundColor3 = COLORS.Locked
 			action.Active = false
 		else

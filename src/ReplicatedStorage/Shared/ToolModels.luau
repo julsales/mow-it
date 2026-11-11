@@ -347,6 +347,14 @@ local function newRoot(model: Model): BasePart
 end
 
 -- A model from ReplicatedStorage/Assets/Tools, fitted to the kind's spot.
+-- Longest side, in studs, of hand tools (override models and built ones).
+local HOLD_LENGTH: { [string]: number } = {
+	clipper = 1.0,
+	scissors = 1.8,
+	sickle = 2.2,
+	trimmer = 4.6,
+}
+
 local function fromOverride(template: Model, kind: string): (Model, BasePart)
 	local model = Instance.new("Model")
 	local root = newRoot(model)
@@ -357,6 +365,13 @@ local function fromOverride(template: Model, kind: string): (Model, BasePart)
 		end
 	end
 	local info = KINDS[kind]
+	-- Hand tools are resized to a believable length in the hand, whatever
+	-- size the asset was published at.
+	local holdLength = HOLD_LENGTH[kind]
+	if holdLength then
+		local _, size = copy:GetBoundingBox()
+		copy:ScaleTo(copy:GetScale() * holdLength / math.max(size.X, size.Y, size.Z))
+	end
 	local boxCFrame, boxSize = copy:GetBoundingBox()
 	local target: CFrame
 	if info.Ground then
@@ -392,7 +407,8 @@ function ToolModels.Build(toolId: string, fit: Fit?): Model
 	else
 		model = Instance.new("Model")
 		root = newRoot(model)
-		local builder: Builder = { Model = model, Root = root, Scale = if KINDS[kind].Ground then scaleOf(toolId) else 1, Fit = fit }
+		local handScale = if kind == "clipper" then 0.42 else 1 -- built clipper is ~2.4 studs long
+		local builder: Builder = { Model = model, Root = root, Scale = if KINDS[kind].Ground then scaleOf(toolId) else handScale, Fit = fit }
 		BUILDERS[kind](builder, colorOf(toolId))
 	end
 	model.Name = "ToolModel"

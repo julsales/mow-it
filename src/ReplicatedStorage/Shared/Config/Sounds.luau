@@ -19,9 +19,9 @@ local Sounds: { [string]: SoundDef } = {
 	-- Hand tools (clippers, scissors, sickle...) on every swing that cuts.
 	Snip = { Id = "rbxasset://sounds/swordslash.wav", Volume = 0.35, Pitch = 1.9, PitchJitter = 0.15 },
 	-- Hand tools swinging at nothing.
-	Swish = { Id = "rbxasset://sounds/swoosh.wav", Volume = 0.2, Pitch = 1.4, PitchJitter = 0.1 },
+	Swish = { Id = "rbxasset://sounds/swordslash.wav", Volume = 0.15, Pitch = 1.3, PitchJitter = 0.1 },
 	-- Mowers chewing through grass (plays on top of the engine).
-	MowCut = { Id = "rbxasset://sounds/swoosh.wav", Volume = 0.3, Pitch = 0.8, PitchJitter = 0.1 },
+	MowCut = { Id = "rbxasset://sounds/swordslash.wav", Volume = 0.25, Pitch = 0.7, PitchJitter = 0.1 },
 	-- Grass going into storage; pitch rises as storage fills.
 	Collect = { Id = "rbxasset://sounds/electronicpingshort.wav", Volume = 0.12, Pitch = 1.6 },
 	-- Storage full.

@@ -28,6 +28,8 @@ local HAND_TILT: { [string]: number } = {
 	trimmer = -35,
 }
 
+local GROUND_LIFT = 0.35
+
 local shownToolId: { [Player]: string } = {}
 -- Weak keys: a destroyed character never leaves its Humanoid behind here.
 local baseHipHeight: { [Humanoid]: number } = setmetatable({}, { __mode = "k" }) :: any
@@ -64,8 +66,10 @@ local function fitFor(character: Model, humanoid: Humanoid, hrp: BasePart): Tool
 		armLength = arm.Size.Y * 0.9
 		ground -= 2 -- R6: legs hold the HRP up, HipHeight is 0
 	end
-	-- Arm ~25 deg forward of straight down from the shoulder.
-	local angle = math.rad(25)
+	-- Arm ~35 deg forward of straight down, slightly bent (90% reach), so
+	-- the grip sits around hip height.
+	local angle = math.rad(35)
+	armLength *= 0.9
 	return {
 		GripY = shoulderY - ground - armLength * math.cos(angle),
 		GripZ = -(armLength * math.sin(angle) + hrp.Size.Z * 0.5),
@@ -99,7 +103,9 @@ local function attach(character: Model, toolId: string)
 		local legs = if isR6 then 2 else 0
 		local down = humanoid.HipHeight + hrp.Size.Y / 2 + legs
 		weld.Part0 = hrp
-		weld.C0 = CFrame.new(0, -down, 0)
+		-- Lift a little so wheels sit on top of the Terrain grass blades
+		-- instead of sinking into them.
+		weld.C0 = CFrame.new(0, -down + GROUND_LIFT, 0)
 	else
 		local hand = (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")) :: BasePart?
 		if not hand then

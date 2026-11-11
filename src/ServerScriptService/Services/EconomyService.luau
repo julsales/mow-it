@@ -57,7 +57,7 @@ local function tryCut(player: Player)
 	local feedback = remotes:FindFirstChild("CutFeedback") :: RemoteEvent
 	local capacity = capacityOf(profile)
 	if profile.Grass >= capacity then
-		(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, "Storage full! Sell your grass.")
+		(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, "Storage full! Sell at a stall.")
 		feedback:FireClient(player, 0, true)
 		-- Auto-Sell Conveyor (final-zone automation) empties it for you.
 		if buffStacks(profile, "auto_sell") > 0 then
@@ -98,6 +98,11 @@ local function tryCut(player: Player)
 	-- Client plays snip/mow sounds and shows "+N"; hit > 0 with stored = 0
 	-- means tough grass that only got shorter.
 	feedback:FireClient(player, stored, profile.Grass >= capacity, hit, cutAt)
+end
+
+function EconomyService.CanSellAnywhere(player: Player): boolean
+	local profile = ProfileService.Get(player)
+	return profile ~= nil and buffStacks(profile, "auto_sell") > 0
 end
 
 function EconomyService.SellAll(player: Player)

@@ -84,7 +84,7 @@ that feeds real data to whatever kit wins. Replace widgets, keep bindings.
 | Need | Where to get it | Status |
 |---|---|---|
 | Cut/snip, mower loop per tool tier, sell "cha-ching", buy, unlock fanfare, UI click, ambient birds/wind per zone | **Creator Store → Audio** (Studio: Toolbox → Audio). Search the exact phrases; filter by length. Roblox audio has per-asset privacy/permissions — use assets listed as distributable, or upload our own from a royalty-free library and log the source here. | 🔎 mapped as a category; individual ids chosen in Studio, logged here before use |
-| Snip, Swish, MowCut, Collect, Full, Sell, Buy, Engine loop (mowing cycle) | **Placeholders built into every Roblox client** (`rbxasset://sounds/...`: swordslash, swoosh, electronicpingshort, snap, victory, clickfast). All ids in `Shared/Config/Sounds.luau`, played by `Mowing.client.luau` | ✅ placeholders playing; 🔎 swap Engine for a real lawn mower loop (Toolbox → Audio → "lawn mower", or upload the CC0 BigSoundBank #1071 recording) and log the id here |
+| Snip, Swish, MowCut, Collect, Full, Sell, Buy, Engine loop (mowing cycle) | **Placeholders built into every Roblox client** (`rbxasset://sounds/...`: swordslash, electronicpingshort, snap, victory, clickfast). All ids in `Shared/Config/Sounds.luau`, played by `Mowing.client.luau` | ✅ placeholders playing; 🔎 swap Engine for a real lawn mower loop (Toolbox → Audio → "lawn mower", or upload the CC0 BigSoundBank #1071 recording) and log the id here |
 
 ## 5. VFX / animation
 

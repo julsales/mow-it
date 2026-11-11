@@ -29,6 +29,22 @@ offline — and a lawn-care franchise that keeps getting stronger.
   land** — helpers earn full personal rewards; only the host's land
   progresses.
 
+### Map feel (v2 direction)
+
+- **Open and organic, with an "endless" feeling.** The home base (house,
+  first stall, shop) sits at the center; areas keep opening outward,
+  each one bigger and richer, so there is always more land past the next
+  fence. Nothing is laid out on a grid: lawns have irregular shapes,
+  paths wind, trees and props are clustered and scattered.
+- **Fences + invisible walls** separate areas, with a gate per area.
+  Locked land stays visible, so the next goal is always in sight.
+- **Grass types per area:** every area grows its own, better grass
+  (more health, more value, its own color/look). **Lucky patches:** rarer
+  grass from later areas spawns sparsely in earlier ones.
+- **Selling at stalls:** each area has a sell stall (pad + buyer NPC).
+  When storage is full, the game points the way to the nearest stall.
+- First-person play is supported (zoom in), third person by default.
+
 ## Core loop
 
 Cut grass (tagged by variant) → fill limited storage → sell at a pad →

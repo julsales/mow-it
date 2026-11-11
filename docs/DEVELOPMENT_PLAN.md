@@ -10,6 +10,7 @@ code**, every slice playable end-to-end (Play Solo) before the next starts.
 
 | Slice | Content | Specs |
 |---|---|---|
+| **v0.9 — Map v2** | Rebuild the land as an open, organic map (home base at the center, areas expanding outward, irregular lawns and winding paths, fences + invisible walls + gates), reusable `Area`/`GrassType` modules, grass type per area with lucky rare patches, sell stall per area. See AGENTS.md "Map rules" | private-land-progression, weather-and-grass-variants |
 | **v1 — Your Land** | Game place becomes the Land place; land loads the host's expansions; per-variant inventory (Normal first); Company Level gating; lobby showcase lots + PLAY/PARTY pads | private-land-progression, lobby-showcase-and-party, core-mowing-loop |
 | **v1.1 — Crew & Restock** | 60-Crew roster, equip (follow/station), global 5-min restock in Clovers, shining-tuft discovery, merge evolution | crew-system, crew-restock-market |
 | **v1.2 — Sky & Jobs** | Timed co-op contracts, server weather + variants end-to-end, seed plots growing offline | contracts, weather-and-grass-variants, seed-plots |

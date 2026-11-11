@@ -1,6 +1,6 @@
 --!strict
 -- Makes sell pads easy to spot without cluttering the screen: a small
--- "VENDER" sign above each pad (visible within ~60 studs, not through
+-- "SELL" sign above each pad (visible within ~60 studs, not through
 -- walls) and a faint gold light column. Only pads in zones the local player
 -- has unlocked get them. Pads are found by their contract name "SellPad"
 -- (streaming-safe); local only.
@@ -51,7 +51,7 @@ local function decorate(pad: BasePart)
 	text.TextColor3 = Color3.fromRGB(60, 40, 0)
 	text.Font = Enum.Font.GothamBlack
 	text.TextScaled = true
-	text.Text = "VENDER"
+	text.Text = "SELL"
 	text.Parent = sign
 	local c = Instance.new("UICorner")
 	c.CornerRadius = UDim.new(0, 10)
