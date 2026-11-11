@@ -178,13 +178,29 @@ local function refreshGates()
 				end
 			end
 		end
+		-- Invisible walls above the fences of this zone (MapService): they
+		-- stop jumping in until the zone is unlocked.
+		if folder then
+			local open = profile.UnlockedZoneIds[zone.Id] == true
+			for _, child in folder:GetChildren() do
+				if child.Name == "ZoneWall" and child:IsA("BasePart") then
+					child.CanCollide = not open
+				end
+			end
+		end
 	end
 end
 
--- With streaming, a gate can arrive (or come back) after the profile did.
+-- With streaming, gates/walls can arrive (or come back) after the profile
+-- did. Many arrive at once, so refresh once per frame at most.
+local refreshQueued = false
 workspace.DescendantAdded:Connect(function(instance)
-	if instance.Name == "ZoneGate" then
-		task.defer(refreshGates)
+	if (instance.Name == "ZoneGate" or instance.Name == "ZoneWall") and not refreshQueued then
+		refreshQueued = true
+		task.defer(function()
+			refreshQueued = false
+			refreshGates()
+		end)
 	end
 end);
 

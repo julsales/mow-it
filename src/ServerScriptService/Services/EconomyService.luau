@@ -80,9 +80,9 @@ local function tryCut(player: Player)
 			if #cutAt < 40 then
 				table.insert(cutAt, cell.Center)
 			end
-			local gain = 1
+			local gain = cell.Yield -- rare grass types yield more (GrassTypes.luau)
 			if math.random() < critChance then
-				gain = 3 -- Golden Blades critical cut
+				gain *= 3 -- Golden Blades critical cut
 			end
 			harvested += gain
 		end

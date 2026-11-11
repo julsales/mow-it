@@ -20,6 +20,7 @@ local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
+local MapService = require(Services.MapService)
 local ToolVisualService = require(Services.ToolVisualService)
 
 -- Remotes -------------------------------------------------------------------
@@ -87,8 +88,8 @@ ProfileService.OnChanged(syncProfile)
 
 -- Boot ------------------------------------------------------------------------
 if isGamePlace then
-	GrayboxService.BuildZonesIfMissing()
-	GrassService.Init()
+	MapService.BuildIfMissing()
+	GrassService.Init(MapService.GetLawnCells())
 	EconomyService.Init(remotes)
 	ToolVisualService.Init()
 	ShopService.Init(remotes);
