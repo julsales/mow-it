@@ -19,6 +19,7 @@
 --     (studs the player is raised to stand on it).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Tools = require(script.Parent.Config.Tools)
 
@@ -378,6 +379,12 @@ function ToolModels.Build(toolId: string, fit: Fit?): Model
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local overrides = assets and assets:FindFirstChild("Tools")
 	local template = overrides and overrides:FindFirstChild(toolId)
+	if not template and RunService:IsServer() then
+		-- Models Rojo can't carry (Unions, MeshParts) live in the place file:
+		-- ServerStorage/ToolOverrides/<ToolId> (see assets/README.md).
+		local placeOverrides = game:GetService("ServerStorage"):FindFirstChild("ToolOverrides")
+		template = placeOverrides and placeOverrides:FindFirstChild(toolId)
+	end
 
 	local model: Model, root: BasePart
 	if template and template:IsA("Model") then

@@ -7,6 +7,7 @@ the game always runs.
 
 | File | What it replaces | Used by |
 |---|---|---|
+| `ServerStorage/ToolOverrides/<ToolId>` (in the place file, not in git) | Same as below, for models Rojo can't sync (Unions, MeshParts). Current: `nail_clipper` = Creator Store 10276788826. Save the place after changing it | `ToolModels` (server) |
 | `Tools/<ToolId>.rbxm` | The model of one tool/mower, e.g. `Tools/push_mower.rbxm` (fallback: built from Parts in `Shared/ToolModels.luau`) | `ToolVisualService` |
 
 ## Adding a mesh asset (how the Low Poly Grass was added, Creator Store 14566481901)
