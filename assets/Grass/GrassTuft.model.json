@@ -1,0 +1,31 @@
+{
+  "className": "Model",
+  "children": [
+    {
+      "name": "Tuft",
+      "className": "Part",
+      "properties": {
+        "Size": [1.913262128829956, 4.098984241485596, 2.418095111846924],
+        "Color": [0.38, 0.72, 0.29],
+        "Material": "SmoothPlastic",
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false
+      },
+      "attributes": { "Source": "Low Poly Grass, Creator Store 14566481901 (mesh 14566481874)" },
+      "children": [
+        {
+          "name": "Mesh",
+          "className": "SpecialMesh",
+          "properties": {
+            "MeshType": "FileMesh",
+            "MeshId": "rbxassetid://14566481874",
+            "Scale": [1, 1, 1]
+          }
+        }
+      ]
+    }
+  ]
+}

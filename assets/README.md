@@ -7,10 +7,15 @@ the game always runs.
 
 | File | What it replaces | Used by |
 |---|---|---|
-| `Grass/GrassTuft.rbxm` | The grass blades drawn on every lawn cell (fallback: green wedges) | `GrassVisuals.client.luau` |
+| `Grass/GrassTuft.model.json` | The grass blades drawn on every lawn cell: Low Poly Grass mesh 14566481874 on a Part + SpecialMesh (fallback if removed: green wedges) | `GrassVisuals.client.luau` |
 | `Tools/<ToolId>.rbxm` | The model of one tool/mower, e.g. `Tools/push_mower.rbxm` (fallback: built from Parts in `Shared/ToolModels.luau`) | `ToolVisualService` |
 
-## Adding the Low Poly Grass (Asset Picker choice, Creator Store 14566481901)
+## Adding a mesh asset (how the Low Poly Grass was added, Creator Store 14566481901)
+
+Rojo cannot sync a `MeshPart`'s mesh (it arrives empty). For a single-mesh
+asset, read its MeshId and size in Studio and write a `.model.json` with a
+`Part` + `SpecialMesh` (FileMesh) instead, like `Grass/GrassTuft.model.json`.
+For multi-part models, saving to `.rbxm` below works.
 
 1. In Studio, open the Toolbox (View → Toolbox), search **Low Poly Grass**
    or open https://create.roblox.com/store/asset/14566481901 and click

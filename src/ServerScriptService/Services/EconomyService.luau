@@ -113,7 +113,7 @@ function EconomyService.SellAll(player: Player)
 	local earned = profile.Grass * GameConfig.SellValuePerGrass * bestValue
 	profile.Coins += earned
 	profile.Grass = 0
-	ProfileService.NotifyChanged(player)
+	ProfileService.NotifyChanged(player);
 	(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, string.format("+%s Coins", tostring(earned)));
 	(remotes:FindFirstChild("SellFeedback") :: RemoteEvent):FireClient(player, earned)
 end

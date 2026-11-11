@@ -400,7 +400,7 @@ local RANCH_HOUSE = item(34, function(p, cf, x, z)
 	gable(model("RanchHouse", p), cf, x, z, 32, 9, 14, COLORS.Wood, COLORS.DarkWood, nil, Enum.Material.WoodPlanks)
 end)
 local HANGAR = item(40, function(p, cf, x, z)
-	gable(model("Hangar", p), cf, x, z, 40, 12, 24, COLORS.Metal, COLORS.DarkRoof, Vector2.new(14, 10), Enum.Material.CorrugatedSteel)
+	gable(model("Hangar", p), cf, x, z, 40, 12, 24, COLORS.Metal, COLORS.DarkRoof, Vector2.new(14, 10), Enum.Material.CorrodedMetal)
 end)
 
 -- "SHOP" and "SIGN" are filled in per zone (they need the zone's accent/name).

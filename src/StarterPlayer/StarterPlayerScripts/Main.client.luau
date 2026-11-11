@@ -135,7 +135,7 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		return
 	end
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		autoSwingHeld = true
+		autoSwingHeld = true;
 		(remotes:WaitForChild("CutRequest") :: RemoteEvent):FireServer()
 	end
 end)
@@ -192,7 +192,7 @@ end);
 	refreshGates()
 end)
 
-local notifyToken = 0
+local notifyToken = 0;
 (remotes:WaitForChild("Notify") :: RemoteEvent).OnClientEvent:Connect(function(message: string)
 	notifyToken += 1
 	local token = notifyToken

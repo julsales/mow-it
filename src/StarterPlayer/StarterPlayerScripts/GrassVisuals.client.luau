@@ -65,10 +65,24 @@ local function buildPrototype(): Model
 				makeLocal(d)
 			end
 		end
+		-- Squash it into a clump: about 80% of a cell wide, a bit taller than
+		-- the turf. Scaled by hand (not Model:ScaleTo) so SpecialMesh scales
+		-- too and the axes can differ.
 		local boxCFrame, boxSize = model:GetBoundingBox()
-		local fit = math.min(CELL * 0.95 / math.max(boxSize.X, boxSize.Z, 0.01), TALL * 0.9 / math.max(boxSize.Y, 0.01))
-		model.WorldPivot = boxCFrame * CFrame.new(0, -boxSize.Y / 2, 0)
-		model:ScaleTo(model:GetScale() * fit)
+		local base = boxCFrame * CFrame.new(0, -boxSize.Y / 2, 0)
+		local sxz = CELL * 0.8 / math.max(boxSize.X, boxSize.Z, 0.01)
+		local sy = TALL * 1.1 / math.max(boxSize.Y, 0.01)
+		local scale = Vector3.new(sxz, sy, sxz)
+		for _, d in model:GetDescendants() do
+			if d:IsA("BasePart") then
+				local rel = base:ToObjectSpace(d.CFrame)
+				d.Size *= scale
+				d.CFrame = base * (CFrame.new(rel.Position * scale) * rel.Rotation)
+			elseif d:IsA("SpecialMesh") then
+				d.Scale *= scale
+			end
+		end
+		model.WorldPivot = base
 		model.Name = "Blades"
 		return model
 	end
@@ -235,12 +249,11 @@ local function addCell(instance: Instance)
 
 	local blades = prototype:Clone()
 	blades:SetAttribute("Yaw", math.random() * math.pi * 2)
-	if not usesTuftAsset then
-		local shade = math.random() * 0.15
-		for _, d in blades:GetChildren() do
-			if d:IsA("BasePart") then
-				d.Color = d.Color:Lerp(part.Color, 0.4 + shade)
-			end
+	-- Tint toward this cell's turf so blades and zone colors match.
+	local shade = math.random() * 0.15
+	for _, d in blades:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.Color = d.Color:Lerp(part.Color, (if usesTuftAsset then 0.25 else 0.4) + shade)
 		end
 	end
 
