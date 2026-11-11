@@ -154,9 +154,42 @@ task.spawn(function()
 end);
 
 -- Server pushes ----------------------------------------------------------------
+-- Zone gates (Workspace/Zones/<id>/ZoneGate) are solid on the server.
+-- Each client opens the gates of the zones its own player unlocked, so
+-- locked land stays fenced off without one player's unlock opening it for
+-- everyone. The server still refuses cutting in locked zones.
+local function refreshGates()
+	local zonesFolder = workspace:FindFirstChild("Zones")
+	if not zonesFolder or not profile then
+		return
+	end
+	for _, zone in Zones.List do
+		local folder = zonesFolder:FindFirstChild(zone.Id)
+		local gate = folder and folder:FindFirstChild("ZoneGate")
+		if gate and gate:IsA("BasePart") then
+			local open = profile.UnlockedZoneIds[zone.Id] == true
+			gate.CanCollide = not open
+			gate.Transparency = if open then 1 else 0.3
+			for _, child in gate:GetChildren() do
+				if child:IsA("SurfaceGui") then
+					child.Enabled = not open
+				end
+			end
+		end
+	end
+end
+
+-- With streaming, a gate can arrive (or come back) after the profile did.
+workspace.DescendantAdded:Connect(function(instance)
+	if instance.Name == "ZoneGate" then
+		task.defer(refreshGates)
+	end
+end);
+
 (remotes:WaitForChild("ProfileUpdated") :: RemoteEvent).OnClientEvent:Connect(function(newProfile)
 	profile = newProfile
 	refresh()
+	refreshGates()
 end)
 
 local notifyToken = 0

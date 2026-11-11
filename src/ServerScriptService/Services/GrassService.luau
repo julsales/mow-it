@@ -20,18 +20,48 @@ local GrassService = {}
 
 local tuftsByZone: { [string]: { BasePart } } = {}
 
+local TUFT_SPACING = 1.7 -- studs between tuft centers, so tufts don't pile into each other
+local PLACE_ATTEMPTS = 8
+
+local function pickSpot(zoneId: string, area: BasePart): Vector3
+	local half = area.Size / 2
+	local best = area.Position
+	for _ = 1, PLACE_ATTEMPTS do
+		local candidate = area.Position
+			+ Vector3.new((math.random() * 2 - 1) * (half.X - 1.2), half.Y, (math.random() * 2 - 1) * (half.Z - 1.2))
+		best = candidate
+		local crowded = false
+		for _, other in tuftsByZone[zoneId] or {} do
+			local delta = other.Position - candidate
+			if delta.X * delta.X + delta.Z * delta.Z < TUFT_SPACING * TUFT_SPACING then
+				crowded = true
+				break
+			end
+		end
+		if not crowded then
+			break
+		end
+	end
+	return best -- top-center of the spot, on the area's top surface
+end
+
 local function makeTuft(zoneDef, area: BasePart): BasePart
 	local tuft = Instance.new("Part")
 	tuft.Name = "GrassTuft"
 	tuft.Anchored = true
 	tuft.CanCollide = false
 	tuft.CanQuery = false -- cutting is math on the server, not raycasts
-	tuft.Size = Vector3.new(1.6, 1.2, 1.6)
-	tuft.Color = zoneDef.ThemeColor
+	tuft.CanTouch = false
+	tuft.CastShadow = false -- hundreds alive at once; shadows cost more than they add
+	tuft.TopSurface = Enum.SurfaceType.Smooth
+	tuft.BottomSurface = Enum.SurfaceType.Smooth
+	local height = 1 + math.random() * 0.6
+	tuft.Size = Vector3.new(1.2 + math.random() * 0.5, height, 1.2 + math.random() * 0.5)
+	-- Slight shade variation so a field doesn't look like one flat color.
+	tuft.Color = zoneDef.GrassColor:Lerp(Color3.new(0, 0, 0), math.random() * 0.15)
 	tuft.Material = Enum.Material.Grass
-	local half = area.Size / 2
-	tuft.Position = area.Position
-		+ Vector3.new((math.random() * 2 - 1) * (half.X - 1), half.Y + 0.6, (math.random() * 2 - 1) * (half.Z - 1))
+	local spot = pickSpot(zoneDef.Id, area)
+	tuft.CFrame = CFrame.new(spot + Vector3.new(0, height / 2, 0)) * CFrame.Angles(0, math.random() * math.pi, 0)
 	tuft:SetAttribute("ZoneId", zoneDef.Id)
 	tuft:SetAttribute("Health", zoneDef.GrassHealth)
 	tuft.Parent = Workspace:FindFirstChild("GrassTufts") or Workspace
