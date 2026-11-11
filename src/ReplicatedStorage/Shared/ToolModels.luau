@@ -13,7 +13,7 @@
 --   * PrimaryPart "Root": for hand kinds = the grip; for ground kinds = a
 --     point on the ground right under the player's HumanoidRootPart.
 --   * Front of the model is -Z. All parts are unanchored, massless,
---     non-colliding and welded to Root.
+--     non-colliding and welded to Root (Weld with explicit C0).
 --   * Attributes: Kind (string), Ground (bool: sits on the ground instead
 --     of in the hand), Engine (bool: plays the engine loop), RideLift
 --     (studs the player is raised to stand on it).
@@ -260,9 +260,14 @@ local function finish(model: Model, root: BasePart, kind: string)
 			descendant.Massless = true
 			descendant.CastShadow = descendant.Size.Magnitude > 2
 			if descendant ~= root then
-				local weld = Instance.new("WeldConstraint")
+				-- A Weld with an explicit offset, not a WeldConstraint: a
+				-- WeldConstraint records the offset when it activates, which
+				-- can be after the root was already moved onto the player,
+				-- leaving the parts stranded far away.
+				local weld = Instance.new("Weld")
 				weld.Part0 = root
 				weld.Part1 = descendant
+				weld.C0 = root.CFrame:ToObjectSpace(descendant.CFrame)
 				weld.Parent = descendant
 			end
 		end

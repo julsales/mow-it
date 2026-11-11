@@ -7,7 +7,6 @@ the game always runs.
 
 | File | What it replaces | Used by |
 |---|---|---|
-| `Grass/GrassTuft.model.json` | The grass blades drawn on every lawn cell: Low Poly Grass mesh 14566481874 on a Part + SpecialMesh (fallback if removed: green wedges) | `GrassVisuals.client.luau` |
 | `Tools/<ToolId>.rbxm` | The model of one tool/mower, e.g. `Tools/push_mower.rbxm` (fallback: built from Parts in `Shared/ToolModels.luau`) | `ToolVisualService` |
 
 ## Adding a mesh asset (how the Low Poly Grass was added, Creator Store 14566481901)

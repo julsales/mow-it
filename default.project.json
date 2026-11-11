@@ -4,8 +4,12 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
-      "Shared": { "$path": "src/ReplicatedStorage/Shared" },
-      "Assets": { "$path": "assets" }
+      "Shared": {
+        "$path": "src/ReplicatedStorage/Shared"
+      },
+      "Assets": {
+        "$path": "assets"
+      }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
@@ -21,15 +25,27 @@
     "Workspace": {
       "$className": "Workspace",
       "$ignoreUnknownInstances": true,
-      "$properties": { "Gravity": 196.2 }
+      "$properties": {
+        "Gravity": 196.2
+      },
+      "Terrain": {
+        "$properties": {
+          "Decoration": true
+        }
+      }
     },
     "Lighting": {
       "$className": "Lighting",
-      "$properties": { "Technology": "Future", "GlobalShadows": true }
+      "$properties": {
+        "Technology": "Future",
+        "GlobalShadows": true
+      }
     },
     "SoundService": {
       "$className": "SoundService",
-      "$properties": { "RespectFilteringEnabled": true }
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
     }
   }
 }

@@ -35,7 +35,7 @@ local REMOTE_NAMES = {
 	"Notify",
 	"ProfileUpdated",
 	"QueueUpdated",
-	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit) after each swing
+	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit, cutPositions) after each swing
 	"SellFeedback", -- server -> client: (coinsEarned)
 	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
 }
@@ -103,6 +103,23 @@ if isLobbyPlace then
 end
 
 ProfileService.Init()
+
+-- Studio-only test hook: ServerStorage.DevGiveCoins:Invoke(player, amount)
+-- lets playtests (and the Studio MCP) buy tools without grinding. Never
+-- exists in a live server.
+if RunService:IsStudio() then
+	local give = Instance.new("BindableFunction")
+	give.Name = "DevGiveCoins"
+	give.OnInvoke = function(player: Player, amount: number)
+		local profile = ProfileService.Get(player)
+		if profile then
+			profile.Coins += amount
+			ProfileService.NotifyChanged(player)
+		end
+		return profile and profile.Coins
+	end
+	give.Parent = game:GetService("ServerStorage")
+end
 
 -- Players who joined before ProfileService.Init connected get loaded here.
 for _, player in Players:GetPlayers() do

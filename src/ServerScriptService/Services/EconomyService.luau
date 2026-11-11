@@ -73,9 +73,13 @@ local function tryCut(player: Player)
 
 	local harvested = 0
 	local hit = 0
+	local cutAt: { Vector3 } = {} -- where to burst clippings on the client (capped)
 	for _, cell in cells do
 		hit += 1
 		if GrassService.Damage(cell, tool.Power) then
+			if #cutAt < 40 then
+				table.insert(cutAt, cell.Center)
+			end
 			local gain = 1
 			if math.random() < critChance then
 				gain = 3 -- Golden Blades critical cut
@@ -93,7 +97,7 @@ local function tryCut(player: Player)
 	end
 	-- Client plays snip/mow sounds and shows "+N"; hit > 0 with stored = 0
 	-- means tough grass that only got shorter.
-	feedback:FireClient(player, stored, profile.Grass >= capacity, hit)
+	feedback:FireClient(player, stored, profile.Grass >= capacity, hit, cutAt)
 end
 
 function EconomyService.SellAll(player: Player)
