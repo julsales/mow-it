@@ -171,8 +171,25 @@ local BUILDERS: { [string]: (Builder, Color3) -> () } = {}
 
 -- Hand kinds: grip at origin, item pointing down -Z.
 BUILDERS.clipper = function(b, color)
-	part(b, "Body", Vector3.new(0.35, 0.12, 1.1), CFrame.new(0, 0, -0.55), METAL, Enum.Material.Metal)
-	part(b, "Lever", Vector3.new(0.3, 0.08, 0.9), CFrame.new(0, 0.14, -0.5) * CFrame.Angles(math.rad(8), 0, 0), color)
+	-- Lever-type nail clipper: two jaws joined at the back, a pin near the
+	-- front, a lever on top with a colored thumb pad, and a key ring.
+	-- Cartoon-sized (~2 studs) so it reads in the hand.
+	local SILVER = Color3.fromRGB(205, 210, 218)
+	part(b, "LowerJaw", Vector3.new(0.55, 0.1, 2.0), CFrame.new(0, -0.16, -0.95), SILVER, Enum.Material.Metal)
+	part(b, "UpperJaw", Vector3.new(0.55, 0.1, 2.0), CFrame.new(0, -0.02, -0.95) * CFrame.Angles(math.rad(-4), 0, 0), SILVER, Enum.Material.Metal)
+	part(b, "Hinge", Vector3.new(0.55, 0.24, 0.18), CFrame.new(0, -0.09, 0.0), SILVER, Enum.Material.Metal)
+	-- Rounded cutting tips.
+	part(b, "Tip", Vector3.new(0.24, 0.55, 0.55), CFrame.new(0, -0.09, -1.92) * CFrame.Angles(0, 0, math.rad(90)), METAL, Enum.Material.Metal, Enum.PartType.Cylinder)
+	-- Pin through the jaws, under the lever.
+	part(b, "Pin", Vector3.new(0.5, 0.14, 0.14), CFrame.new(0, 0.15, -1.45) * CFrame.Angles(0, 0, math.rad(90)), DARK, Enum.Material.Metal, Enum.PartType.Cylinder)
+	-- Lever: rises from the pin to above the grip.
+	local from, to = Vector3.new(0, 0.38, -1.5), Vector3.new(0, 0.62, 0.15)
+	part(b, "Lever", Vector3.new(0.5, 0.07, (to - from).Magnitude), CFrame.lookAt((from + to) / 2, to), SILVER, Enum.Material.Metal)
+	part(b, "LeverEnd", Vector3.new(0.07, 0.5, 0.5), CFrame.new(to) * CFrame.Angles(0, 0, math.rad(90)), SILVER, Enum.Material.Metal, Enum.PartType.Cylinder)
+	part(b, "ThumbPad", Vector3.new(0.36, 0.04, 0.5), CFrame.lookAt((from + to) / 2, to) * CFrame.new(0, 0.05, 0.45), color, Enum.Material.SmoothPlastic)
+	-- Key ring at the back.
+	part(b, "Ring", Vector3.new(0.06, 0.42, 0.42), CFrame.new(0, -0.16, 0.3) * CFrame.Angles(0, 0, math.rad(90)), color, Enum.Material.Metal, Enum.PartType.Cylinder)
+	part(b, "RingHole", Vector3.new(0.08, 0.22, 0.22), CFrame.new(0, -0.16, 0.3) * CFrame.Angles(0, 0, math.rad(90)), DARK, Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
 end
 
 BUILDERS.scissors = function(b, color)
