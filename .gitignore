@@ -7,7 +7,9 @@
 
 # Rokit / Wally local installs
 /rokit.lock
-~/.rokit
+
+# Rojo sourcemap (generated for Luau LSP)
+sourcemap.json
 
 # OS / editor
 .DS_Store

@@ -18,6 +18,7 @@ Lobby parties of up to **4 players** teleport together into a private match.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Roblox games are normally structured (researched), our Rojo layout, and the Studio map contract |
 | [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) | Phased plan: **assets → maps → code** |
 | [docs/PHASES.md](docs/PHASES.md) | Every system separated by phase/update (v1 → v1.4 → later) |
+| [docs/ROJO.md](docs/ROJO.md) | Como conectar o repo ao Roblox Studio com Rojo (pt-BR) |
 
 ## Quick start (Studio)
 
@@ -27,6 +28,8 @@ Lobby parties of up to **4 players** teleport together into a private match.
    rojo serve           # Game place  (or: rojo serve lobby.project.json)
    ```
 2. Open an empty baseplate in Roblox Studio, connect the Rojo plugin.
+   Step-by-step guide (pt-BR), incl. plugin install and troubleshooting:
+   [docs/ROJO.md](docs/ROJO.md).
 3. Press **Play**. The server builds a graybox world (labeled zone
    fields, Sell pads, Join Pad), so the full loop works before any
    real map exists: click to cut, fill up, stand on SELL, buy the next
