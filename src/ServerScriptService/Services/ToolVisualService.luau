@@ -18,12 +18,14 @@ local ProfileService = require(script.Parent.ProfileService)
 
 local ToolVisualService = {}
 
--- Forward tilt of hand tools so they point at the grass, not the sky.
+-- Tilt of hand tools relative to the forearm. The arm is held forward and
+-- down by ToolPoses.client.luau (IK), so a negative tilt aims the tool
+-- further down at the grass; the trimmer is steepest so its head reaches.
 local HAND_TILT: { [string]: number } = {
-	clipper = 70,
-	scissors = 70,
-	sickle = 60,
-	trimmer = 55,
+	clipper = -10,
+	scissors = -10,
+	sickle = -20,
+	trimmer = -35,
 }
 
 local shownToolId: { [Player]: string } = {}
@@ -79,8 +81,8 @@ local function attach(character: Model, toolId: string)
 		-- Position only: the attachment's own rotation differs between rigs.
 		local gripCFrame = if grip then CFrame.new(grip.Position) else CFrame.new(0, -hand.Size.Y / 2, 0)
 		-- The hand hangs along -Y; the model points along -Z. Rotate -90 deg
-		-- about X so the model points down the arm, then tilt it forward.
-		local tilt = math.rad(HAND_TILT[kind] or 60)
+		-- about X so the model points down the arm, then tilt it.
+		local tilt = math.rad(HAND_TILT[kind] or -15)
 		weld.Part0 = hand
 		weld.C0 = gripCFrame * CFrame.Angles(-math.rad(90) + tilt, 0, 0)
 	end

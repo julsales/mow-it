@@ -152,9 +152,9 @@ end
 
 local function handle(b: Builder, deckBackZ: number, deckTopY: number, color: Color3)
 	for _, x in { -0.8, 0.8 } do
-		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.9, -0.7), 0.18, color)
+		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.9, -1.4), 0.18, color)
 	end
-	rod(b, "HandleGrip", Vector3.new(-0.75, 2.9, -0.7), Vector3.new(0.75, 2.9, -0.7), 0.26, DARK)
+	rod(b, "HandleGrip", Vector3.new(-0.75, 2.9, -1.4), Vector3.new(0.75, 2.9, -1.4), 0.26, DARK)
 end
 
 local BUILDERS: { [string]: (Builder, Color3) -> () } = {}
@@ -250,6 +250,29 @@ BUILDERS.tractor = function(b, color)
 	part(b, "DeckTrim", Vector3.new(6.1, 0.2, 2.1), CFrame.new(0, 0.75, -5.6), color)
 end
 
+-- Where the hands go (ToolPoses.client.luau): Attachments "GripL"/"GripR"
+-- on the push handle or the steering wheel. Override models can carry
+-- their own GripL/GripR attachments.
+local function addGrips(model: Model)
+	if model:FindFirstChild("GripL", true) then
+		return
+	end
+	local handle = model:FindFirstChild("HandleGrip") :: BasePart?
+	local wheel = model:FindFirstChild("SteeringWheel") :: BasePart?
+	local host = handle or wheel
+	if not host then
+		return
+	end
+	-- The model is still at the origin facing -Z, so its left is world -X.
+	local spread = if handle then handle.Size.Z * 0.32 else host.Size.Y * 0.4
+	for name, side in { GripL = -1, GripR = 1 } do
+		local a = Instance.new("Attachment")
+		a.Name = name
+		a.Parent = host
+		a.WorldPosition = host.Position + Vector3.new(side * spread, 0, 0)
+	end
+end
+
 local function finish(model: Model, root: BasePart, kind: string)
 	for _, descendant in model:GetDescendants() do
 		if descendant:IsA("BasePart") then
@@ -335,6 +358,7 @@ function ToolModels.Build(toolId: string): Model
 	end
 	model.Name = "ToolModel"
 	model:SetAttribute("ToolId", toolId)
+	addGrips(model)
 	finish(model, root, kind)
 	return model
 end
