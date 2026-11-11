@@ -166,6 +166,12 @@ local function unlockZone(player: Player, zoneId: string)
 	ProfileService.NotifyChanged(player)
 end
 
+-- Same validated path as the BuyTool remote, for physical shops
+-- (ShopDisplay prompts on the tool wall).
+function ShopService.BuyTool(player: Player, toolId: string)
+	buyTool(player, toolId)
+end
+
 function ShopService.Init(remoteFolder: Folder)
 	remotes = remoteFolder;
 	(remoteFolder:WaitForChild("BuyTool") :: RemoteEvent).OnServerEvent:Connect(buyTool);

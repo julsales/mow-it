@@ -21,6 +21,7 @@ local Zones = require(Shared.Config.Zones)
 local Format = require(Shared.Format)
 
 local Props = require(script.Parent.Map.Props)
+local ShopDisplay = require(script.Parent.Map.ShopDisplay)
 local Geo = require(script.Parent.Map.MapGeometry)
 
 local MapService = {}
@@ -33,12 +34,14 @@ local terrain = Workspace.Terrain
 MapService.Materials = {
 	Wild = Enum.Material.LeafyGrass,
 	Lawn = Enum.Material.Grass,
-	Path = Enum.Material.Sand,
 }
 
 export type LawnCells = { [string]: { Vector3 } } -- zoneId -> cell centers (at lawn top)
 
 local lawnCells: LawnCells = {}
+local buildPaths: (Instance, { { Vector3 } }, Random) -> ()
+local addCounterPrompt: (BasePart?) -> ()
+local buildHouseShop: (Instance, CFrame, { string }) -> ()
 
 -- Grid helpers ----------------------------------------------------------------
 
@@ -81,6 +84,92 @@ local function curve(a: Vector3, b: Vector3, rng: Random): { Vector3 }
 		table.insert(points, a:Lerp(control, t):Lerp(control:Lerp(b, t), t))
 	end
 	return points
+end
+
+-- Dirt paths as thin parts (crisp edges; terrain materials blur at this
+-- scale). Segments alternate a hair in height so overlaps never z-fight,
+-- with round caps at the joints and a few edging stones.
+local PATH_COLOR = Color3.fromRGB(196, 168, 120)
+local STONE_COLOR = Color3.fromRGB(150, 144, 132)
+
+buildPaths = function(parent: Instance, segments: { { Vector3 } }, rng: Random)
+	local folder = Props.model("Paths", parent)
+	local width = MapLayout.PathWidth
+	local index = 0
+	for _, points in segments do
+		for i = 1, #points - 2, 2 do
+			local a, b = points[i], points[i + 2]
+			local length = (b - a).Magnitude
+			if length < 0.5 then
+				continue
+			end
+			index += 1
+			local lift = GROUND_TOP + 0.04 + (index % 2) * 0.02
+			local mid = (a + b) / 2
+			local frame = CFrame.lookAt(Vector3.new(mid.X, lift, mid.Z), Vector3.new(b.X, lift, b.Z))
+			Props.make("Path", folder, {
+				Size = Vector3.new(width, 0.2, length + 0.4),
+				CFrame = frame,
+				Color = PATH_COLOR,
+				Material = Enum.Material.Ground,
+			}).CanQuery = false
+			Props.make("PathJoint", folder, {
+				Shape = Enum.PartType.Cylinder,
+				Size = Vector3.new(0.2, width, width),
+				CFrame = CFrame.new(a.X, GROUND_TOP + 0.05, a.Z) * CFrame.Angles(0, 0, math.rad(90)),
+				Color = PATH_COLOR,
+				Material = Enum.Material.Ground,
+			}).CanQuery = false
+			if rng:NextNumber() < 0.35 then
+				local side = if rng:NextNumber() < 0.5 then -1 else 1
+				local stone = Props.make("EdgeStone", folder, {
+					Size = Vector3.new(0.9 + rng:NextNumber() * 0.6, 0.5, 0.8 + rng:NextNumber() * 0.6),
+					CFrame = frame * CFrame.new(side * (width / 2 + 0.3), 0.15, 0) * CFrame.Angles(0, rng:NextNumber() * 3, 0),
+					Color = STONE_COLOR,
+					Material = Enum.Material.Slate,
+					Solid = false,
+				})
+				stone.CastShadow = true
+			end
+		end
+	end
+end
+
+-- Shops -------------------------------------------------------------------------
+
+-- "Browse all" prompt on a shop counter: opens the Shop panel client-side.
+addCounterPrompt = function(counter: BasePart?)
+	if not counter then
+		return
+	end
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "OpenShopPrompt"
+	prompt.ObjectText = "Shop"
+	prompt.ActionText = "Browse all"
+	prompt.KeyboardKeyCode = Enum.KeyCode.F
+	prompt.MaxActivationDistance = 10
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = counter
+end
+
+-- The starter shop is the house itself: a pegboard of tools on the front
+-- wall (left of the door), mowers parked on the lawn to the right, and a
+-- small counter by the door that opens the full Shop panel.
+-- House frame (Props.Kinds.House): 30 wide, 20 deep, front wall at +Z 10.
+buildHouseShop = function(parent: Instance, cf: CFrame, toolIds: { string })
+	local wall = cf * CFrame.new(0, 0, 10.2)
+	ShopDisplay.Build(parent, wall, toolIds, {
+		BoardWidth = 10,
+		BoardHeight = 6,
+		BoardLift = 1.4,
+		BoardOffsetX = -8.5,
+		ParkOffsetX = 9,
+		ParkDistance = 9,
+	})
+	local counter = Props.box("Counter", parent, wall, Vector3.new(4.5, 3, 1.6), 5.5, 1.6, COLORS.Wood, Enum.Material.WoodPlanks)
+	local board = Props.box("ShopSign", parent, wall, Vector3.new(8, 1.6, 0.3), -8.5, 0.2, COLORS.White, nil, 7.8)
+	Props.label(board, Enum.NormalId.Back, "TOOL SHOP", Color3.fromRGB(90, 60, 0))
+	addCounterPrompt(counter)
 end
 
 -- Props placement ----------------------------------------------------------------
@@ -295,6 +384,7 @@ function MapService.BuildIfMissing()
 
 	-- 2. Paths: from the area behind each gate, through the gate, to the hub.
 	local pathMarks: { Vector3 } = {}
+	local pathSegments: { { Vector3 } } = {}
 	for _, gate in gates do
 		-- The area on the other side of the gate: probe across the border
 		-- both radially and sideways (ring borders vs sector borders).
@@ -311,6 +401,7 @@ function MapService.BuildIfMissing()
 		end
 		local fromHub = fromId and hubs[fromId] or Vector3.zero
 		for _, segment in { curve(fromHub, gate.Point, rng), curve(gate.Point, hubs[toId], rng) } do
+			table.insert(pathSegments, segment)
 			for _, point in segment do
 				markDisc(pathCells, point, MapLayout.PathWidth / 2)
 				table.insert(pathMarks, point)
@@ -340,12 +431,32 @@ function MapService.BuildIfMissing()
 				build(facing(spot, hub))
 			end
 		end
+		local zoneTools = ShopDisplay.ToolsForZone(Geo.Order[zone.Id] or 1)
+		if def.ShopAt == "House" then
+			-- The starter shop is the house: place it first, near the hub,
+			-- facing it, so it always fits.
+			local house = Props.Kinds.House
+			place(house.Radius + 6, function(cf)
+				house.Build(dressing, cf)
+				buildHouseShop(dressing, cf, zoneTools)
+			end, hub + Vector3.new(0, 0, 30), 10) -- south of the hub; the first path leaves north
+		else
+			place(11, function(cf)
+				local stall = Props.shop(dressing, cf, 0, 0, zone.ThemeColor)
+				addCounterPrompt(stall:FindFirstChild("Counter") :: BasePart?)
+				-- Tools hang behind the counter; mowers park in front.
+				ShopDisplay.Build(stall, cf * CFrame.new(0, 0, -1.9), zoneTools, {
+					BoardWidth = 11,
+					BoardHeight = 3.6,
+					BoardLift = 3.6,
+					ParkOffsetX = -9,
+					ParkDistance = 9,
+				})
+			end, hub, 26)
+		end
 		place(9, function(cf)
 			Props.sellPad(zoneFolders[zone.Id], cf, 0, 0)
 		end, hub, 22)
-		place(9, function(cf)
-			Props.shop(dressing, cf, 0, 0, zone.ThemeColor)
-		end, hub, 26)
 		for _, gate in gates do
 			if gate.ZoneId == zone.Id then
 				place(9, function(cf)
@@ -424,11 +535,7 @@ function MapService.BuildIfMissing()
 			end
 		end
 	end
-	for k in pathCells do
-		local ix, iz = string.match(k, "(-?%d+),(-?%d+)")
-		local center = cellCenter(tonumber(ix) :: number, tonumber(iz) :: number)
-		terrain:ReplaceMaterial(columnRegion(center), CELL, MapService.Materials.Wild, MapService.Materials.Path)
-	end
+	buildPaths(land, pathSegments, rng)
 
 	-- 6. Fences, invisible walls and gates.
 	buildBorders(land, zoneFolders, gates)

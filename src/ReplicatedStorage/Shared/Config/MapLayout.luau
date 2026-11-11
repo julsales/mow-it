@@ -19,6 +19,7 @@ export type AreaDef = {
 	Gate: GateDef?, -- where its gate sits (on the border with an earlier area)
 	Lawns: { Count: number, MinRadius: number, MaxRadius: number },
 	Props: { string }, -- Props.Kinds names, placed irregularly
+	ShopAt: string?, -- "House": the area's tool shop is the house's front wall (else a stall)
 	Trees: number,
 	LuckyChance: number, -- chance a regrown cell is Lucky grass
 	GoldenChance: number, -- chance it is Golden grass (rarer, worth more)
@@ -27,14 +28,14 @@ export type AreaDef = {
 local MapLayout = {
 	Seed = 20261111, -- same seed = same map every server
 	-- Outer radius of each ring (index = ring number).
-	RingRadius = { [0] = 64, [1] = 150, [2] = 246 },
+	RingRadius = { [0] = 84, [1] = 176, [2] = 276 },
 	-- Border wobble: radius and angle noise amplitudes.
 	RingWobble = 6, -- studs
 	SectorWobble = 5, -- degrees
 	GateWidth = 14,
 	FencePostSpacing = 8,
 	WallHeight = 16, -- invisible wall above the fence (no jumping over)
-	ForestOuterRadius = 420,
+	ForestOuterRadius = 450,
 	ForestTrees = 170,
 	Hills = 12,
 	PathWidth = 6,
@@ -44,7 +45,8 @@ local MapLayout = {
 		front_yard = {
 			Ring = 0,
 			Lawns = { Count = 6, MinRadius = 10, MaxRadius = 17 },
-			Props = { "House", "Shed", "Planters" },
+			Props = { "Shed", "Planters" }, -- the House is placed first (ShopAt)
+			ShopAt = "House",
 			Trees = 6,
 			LuckyChance = 0.02,
 			GoldenChance = 0.003,
@@ -53,7 +55,7 @@ local MapLayout = {
 			Ring = 1,
 			From = -60,
 			To = 60,
-			Gate = { Angle = 8, Radius = 64 },
+			Gate = { Angle = 8, Radius = 84 },
 			Lawns = { Count = 7, MinRadius = 12, MaxRadius = 20 },
 			Props = { "Pond", "Planters", "Shed" },
 			Trees = 12,
@@ -64,7 +66,7 @@ local MapLayout = {
 			Ring = 1,
 			From = 60,
 			To = 180,
-			Gate = { Angle = 60, Radius = 108 },
+			Gate = { Angle = 60, Radius = 130 },
 			Lawns = { Count = 7, MinRadius = 13, MaxRadius = 22 },
 			Props = { "Barn", "Silo", "Hay" },
 			Trees = 10,
@@ -75,7 +77,7 @@ local MapLayout = {
 			Ring = 1,
 			From = 180,
 			To = 300,
-			Gate = { Angle = 180, Radius = 104 },
+			Gate = { Angle = 180, Radius = 126 },
 			Lawns = { Count = 7, MinRadius = 14, MaxRadius = 24 },
 			Props = { "RanchHouse", "WaterTower", "Hay" },
 			Trees = 12,
@@ -86,7 +88,7 @@ local MapLayout = {
 			Ring = 2,
 			From = -90,
 			To = 90,
-			Gate = { Angle = 24, Radius = 150 },
+			Gate = { Angle = 24, Radius = 176 },
 			Lawns = { Count = 9, MinRadius = 15, MaxRadius = 26 },
 			Props = { "Mansion", "PuttingGreen", "Bunker", "Bunker" },
 			Trees = 16,
@@ -97,7 +99,7 @@ local MapLayout = {
 			Ring = 2,
 			From = 90,
 			To = 270,
-			Gate = { Angle = 90, Radius = 200 },
+			Gate = { Angle = 90, Radius = 226 },
 			Lawns = { Count = 9, MinRadius = 16, MaxRadius = 28 },
 			Props = { "Hangar", "TallSilo", "TallSilo", "Turbine", "Turbine" },
 			Trees = 14,

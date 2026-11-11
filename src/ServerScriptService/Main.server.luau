@@ -92,7 +92,8 @@ if isGamePlace then
 	GrassService.Init(MapService.GetLawnCells())
 	EconomyService.Init(remotes)
 	ToolVisualService.Init()
-	ShopService.Init(remotes);
+	ShopService.Init(remotes)
+	require(Services.Map.ShopDisplay).SetBuyHandler(ShopService.BuyTool);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
 		-- Selling is physical (sell pads). Remote selling is only for players
 		-- with Auto-Sell (later also a "Sell Anywhere" pass).

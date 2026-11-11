@@ -212,7 +212,7 @@ local function sign(parent: Instance, cf: CFrame, x: number, z: number, text: st
 end
 
 -- Physical shop stall (spec: each expansion has its own physical shop).
-local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: Color3)
+local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: Color3): Model
 	local m = model("ShopStall", parent)
 	box("Counter", m, cf, Vector3.new(12, 3.2, 2.5), x, z + 2, COLORS.Wood, Enum.Material.WoodPlanks)
 	box("Awning", m, cf, Vector3.new(14, 0.4, 7), x, z + 1, accent, nil, 8)
@@ -221,6 +221,7 @@ local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: 
 	end
 	local board = box("Sign", m, cf, Vector3.new(10, 2.4, 0.4), x, z + 1, COLORS.White, nil, 8.4)
 	label(board, Enum.NormalId.Back, "SHOP")
+	return m
 end
 
 -- The grass buyer: a farmer NPC (default R15 body, colored clothes, a
@@ -489,24 +490,56 @@ Props.sign = sign
 Props.shop = shop
 Props.sellPad = sellPad
 
-function Props.BuildAmbience()
-	if Lighting:FindFirstChildOfClass("Atmosphere") then
-		return
+-- Late summer afternoon: low warm sun, long soft shadows, warm haze, a
+-- little bloom and sun rays (roblox-world-building: Lighting children).
+-- Idempotent: reuses effects that already exist in the place.
+local function effect(className: string, name: string): Instance
+	local existing = Lighting:FindFirstChild(name)
+	if existing and existing.ClassName == className then
+		return existing
 	end
-	Lighting.ClockTime = 14.5
-	Lighting.Brightness = 2.5
-	Lighting.OutdoorAmbient = Color3.fromRGB(150, 150, 160)
+	local created = Instance.new(className)
+	created.Name = name
+	created.Parent = Lighting
+	return created
+end
+
+function Props.BuildAmbience()
+	Lighting.ClockTime = 17.3
+	Lighting.GeographicLatitude = 38
+	Lighting.Brightness = 2.4
+	Lighting.ExposureCompensation = 0.15
+	Lighting.Ambient = Color3.fromRGB(96, 84, 72)
+	Lighting.OutdoorAmbient = Color3.fromRGB(150, 132, 112)
+	Lighting.EnvironmentDiffuseScale = 0.6
+	Lighting.EnvironmentSpecularScale = 0.4
+	Lighting.GlobalShadows = true
 	pcall(function()
 		(Lighting :: any).LightingStyle = Enum.LightingStyle.Soft
 	end)
-	local atmosphere = Instance.new("Atmosphere")
-	atmosphere.Density = 0.28
-	atmosphere.Offset = 0.15
-	atmosphere.Color = Color3.fromRGB(200, 220, 236)
-	atmosphere.Decay = Color3.fromRGB(110, 150, 180)
-	atmosphere.Glare = 0
-	atmosphere.Haze = 1
-	atmosphere.Parent = Lighting
+
+	local atmosphere = effect("Atmosphere", "Atmosphere") :: Atmosphere
+	atmosphere.Density = 0.32
+	atmosphere.Offset = 0.2
+	atmosphere.Color = Color3.fromRGB(255, 214, 172)
+	atmosphere.Decay = Color3.fromRGB(176, 120, 96)
+	atmosphere.Glare = 0.35
+	atmosphere.Haze = 1.4
+
+	local grading = effect("ColorCorrectionEffect", "WarmGrade") :: ColorCorrectionEffect
+	grading.Saturation = 0.15
+	grading.Contrast = 0.08
+	grading.Brightness = 0.02
+	grading.TintColor = Color3.fromRGB(255, 242, 226)
+
+	local bloom = effect("BloomEffect", "SoftBloom") :: BloomEffect
+	bloom.Intensity = 0.35
+	bloom.Size = 28
+	bloom.Threshold = 1.6
+
+	local rays = effect("SunRaysEffect", "SunRays") :: SunRaysEffect
+	rays.Intensity = 0.05
+	rays.Spread = 0.6
 end
 
 return Props
