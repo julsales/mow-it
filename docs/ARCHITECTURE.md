@@ -77,9 +77,14 @@ Workspace/
     front_yard/  backyard/  sunny_farm/  big_ranch/  golf_estate/  mega_fields/
       GrassArea        (Part) footprint where grass tufts spawn for this zone
       SellPad          (Part) standing on/near it sells carried grass
-      ZoneGate         (Part, zones 2-6) visual gate; gameplay lock is in profile data
+      ZoneGate         (Part, zones 2-6) solid gate; each client opens the gates its
+                       player unlocked. The real lock is still in profile data
   GrassTufts/          (Folder, created by the server — don't build here)
 ```
+
+The graybox (`GrayboxService`) lays the land out with the house in the
+middle and the expansions wrapped around it in unlock order (diagram at
+the top of that file). Real builds don't have to follow it.
 
 Folder names must match `Zones.luau` `Id`s exactly. Everything else
 (terrain, houses, decorations) is free building inside the zone folders.
