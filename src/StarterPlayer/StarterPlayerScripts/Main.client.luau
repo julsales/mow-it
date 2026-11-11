@@ -64,8 +64,13 @@ end
 -- is a scrolling list built from the same configs (Phase 3 in the plan).
 local nextToolButton = makeButton("NextTool", "Next Tool", UDim2.new(1, -170, 0, 10))
 local nextPackButton = makeButton("NextPack", "Next Storage", UDim2.new(1, -170, 0, 60))
-local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 110))
-local sellButton = makeButton("Sell", "SELL", UDim2.new(1, -170, 1, -60))
+local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 10))
+-- Tools and storage are bought in the Shop panel (Shop.client.luau) now.
+nextToolButton.Visible = false
+nextPackButton.Visible = false
+-- No on-screen SELL button: selling happens by walking onto a sell stall's
+-- pad (SellGuide.client.luau points the way when storage is full). The
+-- SellRequest remote stays for a future "Sell Anywhere" pass / Auto-Sell.
 
 local function nextUnowned(list, owned: { [string]: boolean })
 	for _, def in list do
@@ -82,7 +87,7 @@ local function refresh()
 	end
 	local pack = Backpacks.ById[profile.EquippedBackpackId]
 	local tool = Tools.ById[profile.EquippedToolId]
-	coinsLabel.Text = "🪙 " .. Format.Number(profile.Coins)
+	coinsLabel.Text = "$ " .. Format.Number(profile.Coins)
 	grassLabel.Text = ("🌿 %s / %s"):format(Format.Number(profile.Grass), Format.Number(pack and pack.Capacity or 0))
 	toolLabel.Text = tool and tool.DisplayName or "?"
 
@@ -97,7 +102,7 @@ local function refresh()
 			break
 		end
 	end
-	nextZoneButton.Text = nextZone and ("Zone: " .. nextZone.DisplayName .. " (" .. Format.Number(nextZone.UnlockPrice) .. ")") or "All Zones Open"
+	nextZoneButton.Text = nextZone and ("Unlock " .. nextZone.DisplayName .. " ($" .. Format.Number(nextZone.UnlockPrice) .. ")") or "All zones unlocked"
 end
 
 nextToolButton.Activated:Connect(function()
@@ -123,9 +128,6 @@ nextZoneButton.Activated:Connect(function()
 		end
 	end
 end)
-sellButton.Activated:Connect(function()
-	(remotes:WaitForChild("SellRequest") :: RemoteEvent):FireServer()
-end)
 
 -- Cutting input: click / tap / controller trigger. Auto-Swing buff turns
 -- this into hold-to-mow on the client; the server still rate-limits.
@@ -135,7 +137,7 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		return
 	end
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		autoSwingHeld = true
+		autoSwingHeld = true;
 		(remotes:WaitForChild("CutRequest") :: RemoteEvent):FireServer()
 	end
 end)
@@ -186,13 +188,18 @@ workspace.DescendantAdded:Connect(function(instance)
 	end
 end);
 
-(remotes:WaitForChild("ProfileUpdated") :: RemoteEvent).OnClientEvent:Connect(function(newProfile)
+local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local function onProfile(newProfile)
 	profile = newProfile
 	refresh()
 	refreshGates()
-end)
+end
+ClientState.Changed:Connect(onProfile)
+if ClientState.Get() then
+	onProfile(ClientState.Get())
+end
 
-local notifyToken = 0
+local notifyToken = 0;
 (remotes:WaitForChild("Notify") :: RemoteEvent).OnClientEvent:Connect(function(message: string)
 	notifyToken += 1
 	local token = notifyToken

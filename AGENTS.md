@@ -25,3 +25,43 @@ Read before working in this repo:
 5. **Keep it playable:** every change must leave the loop working —
    cut → sell → buy → unlock — in Play Solo.
 6. All player-facing text is **English**. Game name: **Mow It!**
+
+## Code rules (DRY — reusable building blocks)
+
+7. **Don't repeat yourself.** Every concept lives in exactly one place.
+   Before writing a new builder/loop/UI widget, look for the existing one
+   and extend it. Copy-pasted builders or near-duplicate functions are a
+   review blocker.
+8. **Reusable classes/modules over one-off code.** Model the game as
+   small typed modules with a clear API, e.g.:
+   - `Area` (a zone of the map: shape, grass type, gate, stall, props),
+   - `GrassType` (look, health, value, rarity; drives Terrain material/color),
+   - `ToolModels` (one builder per tool *kind*, parameterized by config),
+   - `Stall` / `SellPad` builders, `ClientState`, UI widget helpers.
+   New content = new **config rows** in `src/ReplicatedStorage/Shared/Config/`,
+   not new code paths.
+9. **Data-driven.** Numbers, names, colors, layouts and spawn weights live
+   in `Shared/Config/*`. Systems read config; they never hard-code it.
+10. **One owner per state.** Server owns game state; clients own visuals.
+    Shared helpers go in `ReplicatedStorage/Shared`, server-only ones in
+    `ServerScriptService/Services`, client-only ones as ModuleScripts in
+    `StarterPlayerScripts`.
+
+## Map rules (direction from the project owner)
+
+11. The map is **open and organic, never grid-like or maze-like**: a home
+    base the player always returns to, and areas that keep expanding
+    outward so the world feels endless. Shapes, paths, terrain, trees and
+    props are placed irregularly (curves, clusters, varied spacing).
+12. Areas are separated by **fences with invisible walls** and a gate;
+    locked areas stay visible beyond the fence (the next goal is always in
+    sight).
+13. **Each area has its own, better grass types** (higher value/health,
+    different look). Rare better grass also appears **sparsely, by luck,
+    in earlier areas**.
+14. Selling is **physical**: walk onto a sell stall's pad (stall + buyer
+    NPC). No free on-screen sell button; remote selling is only for
+    Auto-Sell / a future "Sell Anywhere" pass.
+15. First-person play must work (camera can be zoomed into first person);
+    tools must look right from the player's own view.
+

@@ -20,6 +20,7 @@ local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
+local ToolVisualService = require(Services.ToolVisualService)
 
 -- Remotes -------------------------------------------------------------------
 -- Created by the server in ReplicatedStorage/Remotes so client and server
@@ -34,6 +35,9 @@ local REMOTE_NAMES = {
 	"Notify",
 	"ProfileUpdated",
 	"QueueUpdated",
+	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit, cutPositions) after each swing
+	"SellFeedback", -- server -> client: (coinsEarned)
+	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
 }
 
 local remotes = Instance.new("Folder")
@@ -86,8 +90,14 @@ if isGamePlace then
 	GrayboxService.BuildZonesIfMissing()
 	GrassService.Init()
 	EconomyService.Init(remotes)
+	ToolVisualService.Init()
 	ShopService.Init(remotes);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
+		-- Selling is physical (sell pads). Remote selling is only for players
+		-- with Auto-Sell (later also a "Sell Anywhere" pass).
+		if not EconomyService.CanSellAnywhere(player) then
+			return
+		end
 		EconomyService.SellAll(player)
 	end)
 end
@@ -98,6 +108,32 @@ if isLobbyPlace then
 end
 
 ProfileService.Init()
+
+-- Studio-only test hooks (RunService:IsStudio() is false on live servers):
+-- ServerStorage.DevGiveCoins:Invoke(player, amount)
+-- lets playtests (and the Studio MCP) buy tools without grinding. Never
+-- exists in a live server.
+if RunService:IsStudio() then
+	local give = Instance.new("BindableFunction")
+	give.Name = "DevGiveCoins"
+	give.OnInvoke = function(player: Player, amount: number)
+		local profile = ProfileService.Get(player)
+		if profile then
+			profile.Coins += amount
+			ProfileService.NotifyChanged(player)
+		end
+		return profile and profile.Coins
+	end
+	give.Parent = game:GetService("ServerStorage")
+
+	-- Same, from the HUD's "+1M (Studio)" button (Shop.client.luau).
+	local devRemote = Instance.new("RemoteEvent")
+	devRemote.Name = "DevGiveCoins"
+	devRemote.OnServerEvent:Connect(function(player)
+		give:Invoke(player, 1_000_000)
+	end)
+	devRemote.Parent = remotes
+end
 
 -- Players who joined before ProfileService.Init connected get loaded here.
 for _, player in Players:GetPlayers() do

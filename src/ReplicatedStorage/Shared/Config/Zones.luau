@@ -11,8 +11,8 @@ export type ZoneDef = {
 	UnlockPrice: number, -- Coins, 0 = open from the start
 	RequiredLevel: number, -- Company Level (spec: private-land-progression)
 	GrassValue: number, -- Coins per unit of grass sold from this zone
-	GrassHealth: number, -- tool Power needed to clear one tuft
-	TuftCount: number, -- how many grass tufts the server keeps alive here
+	GrassHealth: number, -- tool Power needed to clear one grass cell
+	TuftCount: number, -- unused since grass became a full grid (GrassService); kept for old data
 	ThemeColor: Color3, -- UI / sign accent for this zone
 	GrassColor: Color3, -- color of the grass tufts (and graybox lawn) here
 }

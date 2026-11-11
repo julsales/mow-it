@@ -31,6 +31,7 @@
 --   * Fence posts are de-duplicated where fences meet.
 
 local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -250,10 +251,101 @@ local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: 
 	label(board, Enum.NormalId.Back, "SHOP")
 end
 
+-- The grass buyer: a farmer NPC (default R15 body, colored clothes, a
+-- straw hat built from parts) standing still behind the stall counter.
+-- No dialog: stepping on the pad sells instantly, he is the face of it.
+local function buyerNpc(parent: Instance, at: CFrame)
+	task.spawn(function()
+		local description = Instance.new("HumanoidDescription")
+		local skin = Color3.fromRGB(234, 184, 146)
+		description.HeadColor = skin
+		description.LeftArmColor = skin
+		description.RightArmColor = skin
+		description.TorsoColor = Color3.fromRGB(196, 64, 52) -- red plaid shirt
+		description.LeftLegColor = Color3.fromRGB(60, 90, 150) -- jeans
+		description.RightLegColor = Color3.fromRGB(60, 90, 150)
+		local ok, npc = pcall(function()
+			return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
+		end)
+		if not ok or not npc then
+			warn("[MowIt][Graybox] Could not build the grass buyer NPC:", npc)
+			return
+		end
+		npc.Name = "GrassBuyer"
+		local humanoid = npc:FindFirstChildOfClass("Humanoid") :: Humanoid
+		humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		local root = npc:FindFirstChild("HumanoidRootPart") :: BasePart
+		root.Anchored = true
+		npc:PivotTo(at * CFrame.new(0, humanoid.HipHeight + root.Size.Y / 2, 0))
+
+		local head = npc:FindFirstChild("Head") :: BasePart
+		local straw = Color3.fromRGB(226, 196, 120)
+		for i, spec in { { size = Vector3.new(0.12, 2.4, 2.4), y = 0.55 }, { size = Vector3.new(0.9, 1.25, 1.25), y = 0.95 } } do
+			local piece = Instance.new("Part")
+			piece.Name = if i == 1 then "HatBrim" else "HatTop"
+			piece.Shape = Enum.PartType.Cylinder
+			piece.Size = spec.size
+			piece.Color = straw
+			piece.Material = Enum.Material.Fabric
+			piece.CanCollide = false
+			piece.Massless = true
+			piece.CFrame = head.CFrame * CFrame.new(0, spec.y, 0) * CFrame.Angles(0, 0, RAD90)
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = head
+			weld.Part1 = piece
+			weld.Parent = piece
+			piece.Parent = npc
+		end
+
+		local tag = Instance.new("BillboardGui")
+		tag.Name = "NameTag"
+		tag.Size = UDim2.fromOffset(160, 36)
+		tag.StudsOffsetWorldSpace = Vector3.new(0, 2.6, 0)
+		tag.MaxDistance = 45
+		tag.LightInfluence = 0
+		local text = Instance.new("TextLabel")
+		text.Size = UDim2.fromScale(1, 1)
+		text.BackgroundTransparency = 1
+		text.Font = Enum.Font.FredokaOne
+		text.TextScaled = true
+		text.TextColor3 = Color3.new(1, 1, 1)
+		text.TextStrokeTransparency = 0.3
+		text.Text = "Farmer Joe · Grass Buyer"
+		text.Parent = tag
+		tag.Parent = head
+		npc.Parent = parent
+	end)
+end
+
+-- Market stall behind the sell pad: counter with grass bales, striped
+-- awning, a "WE BUY GRASS" board and the buyer NPC. Local -Z is away from
+-- the lawn, so the stall sits behind the pad facing the player.
+local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
+	local m = model("SellStall", parent)
+	local back = z - 7.5
+	box("Counter", m, cf, Vector3.new(9, 3.2, 2), x, back + 1.2, COLORS.Wood, Enum.Material.WoodPlanks)
+	for _, dx in { -2.6, 0, 2.6 } do
+		box("GrassBale", m, cf, Vector3.new(1.8, 1.1, 1.3), x + dx, back + 1.2, Color3.fromRGB(110, 170, 70), Enum.Material.Grass, 3.2)
+	end
+	for _, dx in { -4.2, 4.2 } do
+		for _, dz in { -1, 2.2 } do
+			box("Post", m, cf, Vector3.new(0.4, 7.5, 0.4), x + dx, back + dz, COLORS.DarkWood, Enum.Material.Wood)
+		end
+	end
+	for i = 0, 5 do
+		local color = if i % 2 == 0 then COLORS.Sell else COLORS.White
+		box("Awning", m, cf, Vector3.new(1.55, 0.35, 4.2), x - 3.9 + i * 1.55, back + 0.6, color, Enum.Material.Fabric, 7.5)
+	end
+	local board = box("Board", m, cf, Vector3.new(7, 1.6, 0.3), x, back + 2.75, COLORS.White, nil, 7.9)
+	label(board, Enum.NormalId.Back, "WE BUY GRASS", Color3.fromRGB(90, 60, 0))
+	buyerNpc(m, at(cf, x, 0, back - 1) * CFrame.Angles(0, math.pi, 0))
+end
+
 local function sellPad(parent: Instance, cf: CFrame, x: number, z: number)
 	-- Contract part: must be called "SellPad" (EconomyService finds it by name).
 	local pad = box("SellPad", parent, cf, Vector3.new(10, 0.4, 10), x, z, COLORS.Sell, Enum.Material.Neon)
 	label(pad, Enum.NormalId.Top, "SELL", Color3.fromRGB(90, 60, 0))
+	sellStall(parent, cf, x, z)
 end
 
 local function pond(parent: Instance, cf: CFrame, x: number, z: number)
@@ -400,7 +492,7 @@ local RANCH_HOUSE = item(34, function(p, cf, x, z)
 	gable(model("RanchHouse", p), cf, x, z, 32, 9, 14, COLORS.Wood, COLORS.DarkWood, nil, Enum.Material.WoodPlanks)
 end)
 local HANGAR = item(40, function(p, cf, x, z)
-	gable(model("Hangar", p), cf, x, z, 40, 12, 24, COLORS.Metal, COLORS.DarkRoof, Vector2.new(14, 10), Enum.Material.CorrugatedSteel)
+	gable(model("Hangar", p), cf, x, z, 40, 12, 24, COLORS.Metal, COLORS.DarkRoof, Vector2.new(14, 10), Enum.Material.CorrodedMetal)
 end)
 
 -- "SHOP" and "SIGN" are filled in per zone (they need the zone's accent/name).

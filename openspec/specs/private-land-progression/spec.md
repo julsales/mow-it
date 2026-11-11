@@ -14,6 +14,27 @@ Each player SHALL own a persistent land that is loaded as their own property in 
 - **WHEN** a player enters their land after having unlocked three expansions
 - **THEN** their land presents those three expansions joined together, with later expansions still closed off
 
+### Requirement: Open, organic land layout
+The land SHALL be laid out as an open, organic map: a home base at its center and expansions opening outward from it, with irregular lawn shapes, winding paths and irregularly placed props, never a grid or maze. Areas SHALL be separated by fences backed by invisible walls with one gate each, and locked areas SHALL remain visible beyond their fence.
+
+#### Scenario: Next goal in sight
+- **WHEN** a player stands at the edge of their last unlocked area
+- **THEN** they can see the next locked area past its fence but cannot walk into it
+
+### Requirement: Grass type per area with lucky patches
+Each area SHALL grow its own grass type with higher health and value than the previous area and a distinct look, and rarer grass types from later areas SHALL spawn sparsely, by chance, in earlier areas.
+
+#### Scenario: Lucky patch
+- **WHEN** grass regrows in an early area
+- **THEN** a small fraction of cells may regrow as a rarer, more valuable grass type
+
+### Requirement: Physical selling at stalls
+Players SHALL sell carried grass by stepping onto a sell stall's pad in an unlocked area; remote selling SHALL only be available through Auto-Sell or a dedicated pass.
+
+#### Scenario: Storage full
+- **WHEN** a player's storage is full
+- **THEN** they are told so and shown the way to the nearest unlocked sell stall
+
 ### Requirement: Land expansions unlock in order
 A player SHALL only be able to unlock an expansion when every previous expansion is unlocked, they meet the required Company Level, and they pay the expansion's Coin price.
 

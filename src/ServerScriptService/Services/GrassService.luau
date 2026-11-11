@@ -1,15 +1,17 @@
 --!strict
--- Grass tufts: the server owns every tuft. A tuft is a small anchored Part
--- tagged "GrassTuft" with attributes ZoneId + Health. Builders may replace
--- the look later (mesh/ decal from docs/ASSETS.md) — gameplay only cares
--- about position, zone and health, so art swaps never touch this code.
+-- Grass: every lawn (Workspace/Zones/<ZoneId>/GrassArea) is covered with
+-- Terrain Grass. With Terrain.Decoration on, Roblox draws dense 3D grass
+-- blades that sway in the wind, for free, on every client.
 --
--- Map contract (built in Studio, see docs/ARCHITECTURE.md):
---   Workspace/Zones/<ZoneId>/GrassArea  (a Part marking where tufts grow)
--- If a zone has no GrassArea yet, GrayboxService creates one, so a fresh
--- place is playable before any map building happens.
+-- Mowing = changing the Terrain material of one 4x4 voxel column ("cell"):
+--   Grass (tall blades) -> LeafyGrass / Ground recolored as short lawn,
+-- alternating every GrassStripeCells cells, so mowed lawns show the classic
+-- light/dark stripes. Regrowth swaps the material back to Grass.
+--
+-- The server owns the state (health per cell, in Lua tables) and edits the
+-- Terrain; Terrain edits replicate to every player on their own. Cutting is
+-- grid math, not raycasts, so even huge tool radii stay cheap.
 
-local CollectionService = game:GetService("CollectionService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -18,110 +20,153 @@ local GameConfig = require(Shared.Config.GameConfig)
 
 local GrassService = {}
 
-local tuftsByZone: { [string]: { BasePart } } = {}
+export type Cell = {
+	ZoneId: string,
+	MaxHealth: number,
+	Health: number,
+	Cut: boolean,
+	Center: Vector3, -- top of the lawn at the cell's center
+	Region: Region3,
+	MowedMaterial: Enum.Material,
+}
 
-local TUFT_SPACING = 1.7 -- studs between tuft centers, so tufts don't pile into each other
-local PLACE_ATTEMPTS = 8
+type Grid = {
+	ZoneId: string,
+	Origin: Vector3, -- center of cell (0, 0), at lawn top
+	CountX: number,
+	CountZ: number,
+	Cells: { [number]: Cell }, -- index = ix * CountZ + iz (0-based ix/iz)
+}
 
-local function pickSpot(zoneId: string, area: BasePart): Vector3
-	local half = area.Size / 2
-	local best = area.Position
-	for _ = 1, PLACE_ATTEMPTS do
-		local candidate = area.Position
-			+ Vector3.new((math.random() * 2 - 1) * (half.X - 1.2), half.Y, (math.random() * 2 - 1) * (half.Z - 1.2))
-		best = candidate
-		local crowded = false
-		for _, other in tuftsByZone[zoneId] or {} do
-			local delta = other.Position - candidate
-			if delta.X * delta.X + delta.Z * delta.Z < TUFT_SPACING * TUFT_SPACING then
-				crowded = true
-				break
-			end
-		end
-		if not crowded then
-			break
+local CELL = 4 -- Terrain voxel size; GameConfig.GrassCellSize documents it
+local STRIPE = GameConfig.GrassStripeCells or 2
+local TALL = Enum.Material.Grass
+local MOWED_LIGHT = Enum.Material.LeafyGrass
+local MOWED_DARK = Enum.Material.Ground
+
+local grids: { Grid } = {}
+local terrain = Workspace.Terrain
+
+local function paintLawnColors()
+	-- Decoration (the 3D blades) can't be set from a script at runtime; it is
+	-- on in the project file (default.project.json > Workspace > Terrain).
+	if not terrain.Decoration then
+		warn("[MowIt][Grass] Workspace.Terrain.Decoration is off: lawns will look flat.")
+	end
+	terrain:SetMaterialColor(TALL, Color3.fromRGB(88, 164, 58))
+	terrain:SetMaterialColor(MOWED_LIGHT, Color3.fromRGB(146, 204, 92))
+	terrain:SetMaterialColor(MOWED_DARK, Color3.fromRGB(104, 168, 66))
+end
+
+local function buildGrid(zoneDef, area: BasePart): number
+	-- Snap the lawn to the voxel grid so every cell is exactly one column.
+	local top = area.Position.Y + area.Size.Y / 2
+	local minX = math.ceil((area.Position.X - area.Size.X / 2) / CELL) * CELL
+	local minZ = math.ceil((area.Position.Z - area.Size.Z / 2) / CELL) * CELL
+	local countX = math.max(1, math.floor((area.Position.X + area.Size.X / 2 - minX) / CELL))
+	local countZ = math.max(1, math.floor((area.Position.Z + area.Size.Z / 2 - minZ) / CELL))
+
+	-- One 4-stud slab of Grass whose top is the lawn top (thin terrain shows
+	-- LOD gaps at a distance, roblox-world-building).
+	local width, depth = countX * CELL, countZ * CELL
+	terrain:FillBlock(CFrame.new(minX + width / 2, top - 2, minZ + depth / 2), Vector3.new(width, 4, depth), TALL)
+
+	local origin = Vector3.new(minX + CELL / 2, top, minZ + CELL / 2)
+	local grid: Grid = { ZoneId = zoneDef.Id, Origin = origin, CountX = countX, CountZ = countZ, Cells = {} }
+	for ix = 0, countX - 1 do
+		for iz = 0, countZ - 1 do
+			local center = origin + Vector3.new(ix * CELL, 0, iz * CELL)
+			local half = Vector3.new(CELL / 2, 4, CELL / 2)
+			grid.Cells[ix * countZ + iz] = {
+				ZoneId = zoneDef.Id,
+				MaxHealth = zoneDef.GrassHealth,
+				Health = zoneDef.GrassHealth,
+				Cut = false,
+				Center = center,
+				Region = Region3.new(center - half, center + half):ExpandToGrid(CELL),
+				MowedMaterial = if math.floor(ix / STRIPE) % 2 == 0 then MOWED_LIGHT else MOWED_DARK,
+			}
 		end
 	end
-	return best -- top-center of the spot, on the area's top surface
+	table.insert(grids, grid)
+	return countX * countZ
 end
 
-local function makeTuft(zoneDef, area: BasePart): BasePart
-	local tuft = Instance.new("Part")
-	tuft.Name = "GrassTuft"
-	tuft.Anchored = true
-	tuft.CanCollide = false
-	tuft.CanQuery = false -- cutting is math on the server, not raycasts
-	tuft.CanTouch = false
-	tuft.CastShadow = false -- hundreds alive at once; shadows cost more than they add
-	tuft.TopSurface = Enum.SurfaceType.Smooth
-	tuft.BottomSurface = Enum.SurfaceType.Smooth
-	local height = 1 + math.random() * 0.6
-	tuft.Size = Vector3.new(1.2 + math.random() * 0.5, height, 1.2 + math.random() * 0.5)
-	-- Slight shade variation so a field doesn't look like one flat color.
-	tuft.Color = zoneDef.GrassColor:Lerp(Color3.new(0, 0, 0), math.random() * 0.15)
-	tuft.Material = Enum.Material.Grass
-	local spot = pickSpot(zoneDef.Id, area)
-	tuft.CFrame = CFrame.new(spot + Vector3.new(0, height / 2, 0)) * CFrame.Angles(0, math.random() * math.pi, 0)
-	tuft:SetAttribute("ZoneId", zoneDef.Id)
-	tuft:SetAttribute("Health", zoneDef.GrassHealth)
-	tuft.Parent = Workspace:FindFirstChild("GrassTufts") or Workspace
-	CollectionService:AddTag(tuft, "GrassTuft")
-	return tuft
+local function regrowLater(cell: Cell)
+	local delay = GameConfig.GrassRespawnSeconds * (0.7 + math.random() * 0.8)
+	task.delay(delay, function()
+		cell.Cut = false
+		cell.Health = cell.MaxHealth
+		terrain:ReplaceMaterial(cell.Region, CELL, cell.MowedMaterial, TALL)
+	end)
 end
 
-function GrassService.GetTuftsInRadius(position: Vector3, radius: number): { BasePart }
+-- Every uncut cell whose center is inside the circle (XZ only), in zones
+-- the filter allows. Only the grid squares under the circle's bounding box
+-- are visited.
+function GrassService.GetCellsInRadius(position: Vector3, radius: number, zoneAllowed: ((string) -> boolean)?): { Cell }
 	local found = {}
-	for _, list in tuftsByZone do
-		for _, tuft in list do
-			if tuft.Parent and (tuft.Position - position).Magnitude <= radius then
-				table.insert(found, tuft)
+	local r2 = radius * radius
+	for _, grid in grids do
+		if zoneAllowed and not zoneAllowed(grid.ZoneId) then
+			continue
+		end
+		local localX = (position.X - grid.Origin.X) / CELL
+		local localZ = (position.Z - grid.Origin.Z) / CELL
+		local span = radius / CELL
+		local x1 = math.max(0, math.ceil(localX - span))
+		local x2 = math.min(grid.CountX - 1, math.floor(localX + span))
+		local z1 = math.max(0, math.ceil(localZ - span))
+		local z2 = math.min(grid.CountZ - 1, math.floor(localZ + span))
+		for ix = x1, x2 do
+			for iz = z1, z2 do
+				local dx = (ix - localX) * CELL
+				local dz = (iz - localZ) * CELL
+				if dx * dx + dz * dz <= r2 then
+					local cell = grid.Cells[ix * grid.CountZ + iz]
+					if cell and not cell.Cut then
+						table.insert(found, cell)
+					end
+				end
 			end
 		end
 	end
 	return found
 end
 
--- Removes a tuft and schedules its regrowth. Returns the zone it was in.
-function GrassService.Harvest(tuft: BasePart): string?
-	local zoneId = tuft:GetAttribute("ZoneId") :: string?
-	if not zoneId then
-		return nil
+-- Applies one hit of `power` to a cell. Returns true when the cell was
+-- mowed (and starts its regrowth timer); false when it only got damaged.
+function GrassService.Damage(cell: Cell, power: number): boolean
+	if cell.Cut then
+		return false
 	end
-	local list = tuftsByZone[zoneId]
-	if list then
-		local index = table.find(list, tuft)
-		if index then
-			table.remove(list, index)
-		end
+	cell.Health -= power
+	if cell.Health > 0 then
+		return false
 	end
-	tuft:Destroy()
-	task.delay(GameConfig.GrassRespawnSeconds, function()
-		GrassService.SpawnOne(zoneId)
-	end)
-	return zoneId
-end
-
-function GrassService.SpawnOne(zoneId: string)
-	local zoneDef = Zones.ById[zoneId]
-	local zonesFolder = Workspace:FindFirstChild("Zones")
-	local zoneFolder = zonesFolder and zonesFolder:FindFirstChild(zoneId)
-	local area = zoneFolder and zoneFolder:FindFirstChild("GrassArea") :: BasePart?
-	if not zoneDef or not area then
-		return
-	end
-	tuftsByZone[zoneId] = tuftsByZone[zoneId] or {}
-	table.insert(tuftsByZone[zoneId], makeTuft(zoneDef, area))
+	cell.Cut = true
+	cell.Health = 0
+	terrain:ReplaceMaterial(cell.Region, CELL, TALL, cell.MowedMaterial)
+	regrowLater(cell)
+	return true
 end
 
 function GrassService.Init()
-	local container = Instance.new("Folder")
-	container.Name = "GrassTufts"
-	container.Parent = Workspace
+	paintLawnColors()
+	local zonesFolder = Workspace:WaitForChild("Zones")
+	local total = 0
 	for _, zoneDef in Zones.List do
-		tuftsByZone[zoneDef.Id] = {}
-		for _ = 1, zoneDef.TuftCount do
-			GrassService.SpawnOne(zoneDef.Id)
+		local zoneFolder = zonesFolder:FindFirstChild(zoneDef.Id)
+		local area = zoneFolder and zoneFolder:FindFirstChild("GrassArea")
+		if area and area:IsA("BasePart") then
+			total += buildGrid(zoneDef, area)
+			task.wait() -- spread lawn builds over frames
+		else
+			warn(("[MowIt][Grass] Zone %q has no GrassArea part; no grass there."):format(zoneDef.Id))
 		end
+	end
+	if GameConfig.Verbose then
+		print(("[MowIt][Grass] %d grass cells across %d lawns."):format(total, #grids))
 	end
 end
 
