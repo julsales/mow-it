@@ -115,10 +115,17 @@ local function scaleOf(toolId: string): number
 	return 1 + 0.6 * (index - 1) / math.max(1, #Tools.List - 1)
 end
 
+-- Where the push handle's grip should be for the player who holds it, in
+-- studs from the model origin (the ground under the player): Y up, Z
+-- forward (negative). ToolVisualService measures the avatar's arms, so
+-- small and tall avatars both push with straight-ish arms.
+export type Fit = { GripY: number, GripZ: number }
+
 type Builder = {
 	Model: Model,
 	Root: BasePart,
 	Scale: number,
+	Fit: Fit?,
 }
 
 local function part(b: Builder, name: string, size: Vector3, cf: CFrame, color: Color3, material: Enum.Material?, shape: Enum.PartType?): Part
@@ -151,10 +158,13 @@ local function rod(b: Builder, name: string, a: Vector3, c: Vector3, thickness: 
 end
 
 local function handle(b: Builder, deckBackZ: number, deckTopY: number, color: Color3)
+	-- part() multiplies positions by Scale, so undo it for the fitted grip.
+	local gripY = if b.Fit then b.Fit.GripY / b.Scale else 2.2
+	local gripZ = if b.Fit then b.Fit.GripZ / b.Scale else -1.7
 	for _, x in { -0.8, 0.8 } do
-		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.2, -1.7), 0.18, color)
+		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, gripY, gripZ), 0.18, color)
 	end
-	rod(b, "HandleGrip", Vector3.new(-0.75, 2.2, -1.7), Vector3.new(0.75, 2.2, -1.7), 0.26, DARK)
+	rod(b, "HandleGrip", Vector3.new(-0.75, gripY, gripZ), Vector3.new(0.75, gripY, gripZ), 0.26, DARK)
 end
 
 local BUILDERS: { [string]: (Builder, Color3) -> () } = {}
@@ -346,7 +356,7 @@ local function fromOverride(template: Model, kind: string): (Model, BasePart)
 end
 
 -- Builds the model for a tool at the origin (Root at CFrame.identity).
-function ToolModels.Build(toolId: string): Model
+function ToolModels.Build(toolId: string, fit: Fit?): Model
 	local kind = ToolModels.KindOf(toolId)
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local overrides = assets and assets:FindFirstChild("Tools")
@@ -358,7 +368,7 @@ function ToolModels.Build(toolId: string): Model
 	else
 		model = Instance.new("Model")
 		root = newRoot(model)
-		local builder: Builder = { Model = model, Root = root, Scale = if KINDS[kind].Ground then scaleOf(toolId) else 1 }
+		local builder: Builder = { Model = model, Root = root, Scale = if KINDS[kind].Ground then scaleOf(toolId) else 1, Fit = fit }
 		BUILDERS[kind](builder, colorOf(toolId))
 	end
 	model.Name = "ToolModel"

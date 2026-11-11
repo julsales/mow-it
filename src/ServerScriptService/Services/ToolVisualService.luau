@@ -44,6 +44,34 @@ local function clearTool(character: Model)
 	end
 end
 
+-- Push-handle position that suits this avatar: hands a little below the
+-- hip, arms angled slightly forward (ToolModels.Fit, model space).
+local function fitFor(character: Model, humanoid: Humanoid, hrp: BasePart): ToolModels.Fit?
+	local ground = hrp.Position.Y - hrp.Size.Y / 2 - humanoid.HipHeight
+	local upper = character:FindFirstChild("RightUpperArm") :: BasePart?
+	local lower = character:FindFirstChild("RightLowerArm") :: BasePart?
+	local hand = character:FindFirstChild("RightHand") :: BasePart?
+	local shoulderY: number, armLength: number
+	if upper and lower and hand then
+		shoulderY = (upper.CFrame * CFrame.new(0, upper.Size.Y / 2, 0)).Position.Y
+		armLength = upper.Size.Y + lower.Size.Y + hand.Size.Y * 0.5
+	else
+		local arm = character:FindFirstChild("Right Arm") :: BasePart?
+		if not arm then
+			return nil
+		end
+		shoulderY = arm.Position.Y + arm.Size.Y / 2
+		armLength = arm.Size.Y * 0.9
+		ground -= 2 -- R6: legs hold the HRP up, HipHeight is 0
+	end
+	-- Arm ~25 deg forward of straight down from the shoulder.
+	local angle = math.rad(25)
+	return {
+		GripY = shoulderY - ground - armLength * math.cos(angle),
+		GripZ = -(armLength * math.sin(angle) + hrp.Size.Z * 0.5),
+	}
+end
+
 local function attach(character: Model, toolId: string)
 	clearTool(character)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -52,7 +80,7 @@ local function attach(character: Model, toolId: string)
 		return
 	end
 
-	local model = ToolModels.Build(toolId)
+	local model = ToolModels.Build(toolId, fitFor(character, humanoid, hrp))
 	local root = model.PrimaryPart :: BasePart
 	local kind = model:GetAttribute("Kind") :: string
 	local isR6 = humanoid.RigType == Enum.HumanoidRigType.R6
