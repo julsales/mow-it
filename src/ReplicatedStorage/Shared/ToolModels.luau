@@ -152,9 +152,9 @@ end
 
 local function handle(b: Builder, deckBackZ: number, deckTopY: number, color: Color3)
 	for _, x in { -0.8, 0.8 } do
-		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.6, -1.4), 0.18, color)
+		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, 2.2, -1.7), 0.18, color)
 	end
-	rod(b, "HandleGrip", Vector3.new(-0.75, 2.6, -1.4), Vector3.new(0.75, 2.6, -1.4), 0.26, DARK)
+	rod(b, "HandleGrip", Vector3.new(-0.75, 2.2, -1.7), Vector3.new(0.75, 2.2, -1.7), 0.26, DARK)
 end
 
 local BUILDERS: { [string]: (Builder, Color3) -> () } = {}
