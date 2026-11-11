@@ -15,6 +15,10 @@ Read before working in this repo:
 3. **Roblox work:** follow `.agents/skills/roblox/SKILL.md` (server
    authority, `pcall` cloud calls, modern APIs — e.g. ReservedServerId
    GUID teleport, not deprecated `ReserveServer()`).
+   For deeper topics, the `roblox-*` skills in `.agents/skills/` (from
+   EL4CTEO/roblox-skills, see `ROBLOX-SKILLS-NOTICE.md` there) cover
+   data stores, networking, security, UI, monetization, testing, etc.
+   Where they disagree with this file or OpenSpec, this repo wins.
 4. **Maps** are built in Studio under the contract in
    `docs/ARCHITECTURE.md`; code must keep working on the graybox when
    map pieces are missing.
