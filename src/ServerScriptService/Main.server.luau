@@ -104,7 +104,8 @@ end
 
 ProfileService.Init()
 
--- Studio-only test hook: ServerStorage.DevGiveCoins:Invoke(player, amount)
+-- Studio-only test hooks (RunService:IsStudio() is false on live servers):
+-- ServerStorage.DevGiveCoins:Invoke(player, amount)
 -- lets playtests (and the Studio MCP) buy tools without grinding. Never
 -- exists in a live server.
 if RunService:IsStudio() then
@@ -119,6 +120,14 @@ if RunService:IsStudio() then
 		return profile and profile.Coins
 	end
 	give.Parent = game:GetService("ServerStorage")
+
+	-- Same, from the HUD's "+1M (Studio)" button (Shop.client.luau).
+	local devRemote = Instance.new("RemoteEvent")
+	devRemote.Name = "DevGiveCoins"
+	devRemote.OnServerEvent:Connect(function(player)
+		give:Invoke(player, 1_000_000)
+	end)
+	devRemote.Parent = remotes
 end
 
 -- Players who joined before ProfileService.Init connected get loaded here.

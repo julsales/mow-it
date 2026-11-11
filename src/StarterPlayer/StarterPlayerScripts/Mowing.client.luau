@@ -23,10 +23,7 @@ local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local cutRequest = remotes:WaitForChild("CutRequest") :: RemoteEvent
 
-local profile: any = nil;
-(remotes:WaitForChild("ProfileUpdated") :: RemoteEvent).OnClientEvent:Connect(function(newProfile)
-	profile = newProfile
-end)
+local ClientState = require(script.Parent:WaitForChild("ClientState"))
 
 -- 2D one-shots -------------------------------------------------------------------
 
@@ -65,6 +62,7 @@ local function localTool(): (Model?, boolean)
 end
 
 local function fillRatio(): number
+	local profile = ClientState.Get()
 	if not profile then
 		return 0
 	end

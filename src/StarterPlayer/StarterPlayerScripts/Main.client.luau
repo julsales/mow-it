@@ -64,8 +64,25 @@ end
 -- is a scrolling list built from the same configs (Phase 3 in the plan).
 local nextToolButton = makeButton("NextTool", "Next Tool", UDim2.new(1, -170, 0, 10))
 local nextPackButton = makeButton("NextPack", "Next Storage", UDim2.new(1, -170, 0, 60))
-local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 110))
-local sellButton = makeButton("Sell", "SELL", UDim2.new(1, -170, 1, -60))
+local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 10))
+local sellButton = makeButton("Sell", "💰 VENDER", UDim2.new(1, -190, 1, -80))
+-- Tools and storage are bought in the Loja panel (Shop.client.luau) now.
+nextToolButton.Visible = false
+nextPackButton.Visible = false
+-- Selling must be obvious: big gold button, always visible.
+sellButton.Size = UDim2.new(0, 180, 0, 64)
+sellButton.BackgroundColor3 = Color3.fromRGB(240, 180, 40)
+sellButton.TextColor3 = Color3.fromRGB(60, 40, 0)
+do
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 12)
+	corner.Parent = sellButton
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 3
+	stroke.Color = Color3.fromRGB(120, 80, 0)
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = sellButton
+end
 
 local function nextUnowned(list, owned: { [string]: boolean })
 	for _, def in list do
@@ -186,11 +203,16 @@ workspace.DescendantAdded:Connect(function(instance)
 	end
 end);
 
-(remotes:WaitForChild("ProfileUpdated") :: RemoteEvent).OnClientEvent:Connect(function(newProfile)
+local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local function onProfile(newProfile)
 	profile = newProfile
 	refresh()
 	refreshGates()
-end)
+end
+ClientState.Changed:Connect(onProfile)
+if ClientState.Get() then
+	onProfile(ClientState.Get())
+end
 
 local notifyToken = 0;
 (remotes:WaitForChild("Notify") :: RemoteEvent).OnClientEvent:Connect(function(message: string)
