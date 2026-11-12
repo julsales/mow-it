@@ -337,10 +337,17 @@ local function planters(parent: Instance, cf: CFrame, x: number, z: number)
 	}
 	for i, dx in { -3.5, 3.5 } do
 		box("Planter", m, cf, Vector3.new(6, 1.2, 3), x + dx, z, COLORS.DarkWood, Enum.Material.WoodPlanks)
+		-- Leafy bushes with small flowers on top (big round "flowers" read
+		-- as balls/eggs).
 		for j = 1, 4 do
-			local color = flowerColors[(i + j) % #flowerColors + 1]
-			local flower = ball("Flower", m, cf, 1.2, x + dx - 2.25 + (j - 1) * 1.5, 1.8, z, color)
-			flower.CanCollide = false
+			local fx = x + dx - 2.25 + (j - 1) * 1.5
+			local leaves = ball("Leaves", m, cf, 1.3, fx, 1.5, z, COLORS.Leaves, Enum.Material.Grass)
+			leaves.CanCollide = false
+			for k = 0, 2 do
+				local a = (j * 2 + k) * 2.1
+				local flower = ball("Flower", m, cf, 0.38, fx + math.cos(a) * 0.4, 2.1 + (k % 2) * 0.12, z + math.sin(a) * 0.4, flowerColors[(i + j + k) % #flowerColors + 1])
+				flower.CanCollide = false
+			end
 		end
 	end
 end
