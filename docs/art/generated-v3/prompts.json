@@ -1,0 +1,162 @@
+{
+  "tool": "native image_gen",
+  "assets": [
+    {
+      "name": "coin",
+      "path": "assets/UI/generated-v3/coin.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: A beautiful stack of golden mowing Coins: one upright tilted gold coin with an embossed two-leaf sprout emblem, and two low coin stacks behind. Warm gold metal with bright rim highlights and orange-gold shaded edges. No floating sparkles, no rays.",
+      "transparent": true,
+      "generation_file": "exec-7f0ebc18-81bd-4de7-a236-ea429f98994d.png"
+    },
+    {
+      "name": "clover",
+      "path": "assets/UI/generated-v3/clover.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: A single lush emerald four-leaf clover with four distinct heart-shaped leaves, curved short stem, rounded dimensional leaf lobes, bright lime edge highlights and deeper emerald folds. Very clean silhouette. No coins, no pot, no other objects.",
+      "transparent": true,
+      "generation_file": "exec-90ca637f-a9e3-476d-b9ae-0ec34c7cb185.png"
+    },
+    {
+      "name": "crew",
+      "path": "assets/UI/generated-v3/crew.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: One friendly lime-green paw badge for the player's Crew: four separate plump oval toe pads and one broad sculpted main pad, glossy emerald/lime surfaces, a narrow silver-blue rim with shaded depth. The silhouette should be a paw, not a human hand or a creature portrait. No grass or extra props.",
+      "transparent": true,
+      "generation_file": "exec-025e4c5b-e5ab-489a-b428-b17499e079a3.png"
+    },
+    {
+      "name": "passes",
+      "path": "assets/UI/generated-v3/passes.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: A premium golden farm supply chest for the PASSES shop: a warm orange-gold chest at a slight three-quarter angle, rounded arched lid, polished gold metal bands, a clear square latch, and a small emerald sprout seal on the front. Distinctive premium collectible, bright reflections and clean sculpted surfaces. Chest closed. No stall, no text or labels.",
+      "transparent": true,
+      "generation_file": "exec-68bc9d94-e3a0-4f55-92af-84ce01111327.png"
+    },
+    {
+      "name": "quests",
+      "path": "assets/UI/generated-v3/quests.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: One compact quest scroll, softly rolled ivory parchment with golden curled ends, a pale blue task face, two short embossed task lines and one clearly readable red-orange checkmark. A small green sprout seal on the lower corner links it to the mowing world. Dimensional and glossy, no writing or actual letters. No exclamation badge floating outside the silhouette.",
+      "transparent": true,
+      "generation_file": "exec-9eef993b-ae39-40b2-b125-19f97ca934d1.png"
+    },
+    {
+      "name": "rewards",
+      "path": "assets/UI/generated-v3/rewards.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: One beautiful purple-and-coral daily reward gift box with a generous sculpted metallic gold ribbon and a large glossy bow on top. Slight three-quarter view, jewel-like purple box faces, warm coral side accents, golden band catching light. Premium friendly game reward. No other objects.",
+      "transparent": true,
+      "generation_file": "exec-59a8230e-de6f-4e20-aa9a-e14fe2d91003.png"
+    },
+    {
+      "name": "fuel",
+      "path": "assets/UI/generated-v3/fuel.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: One compact glossy red-coral gasoline can for motorized mowers, slight three-quarter view, sturdy top handle, small black spout with gold rim, a single clear golden flame or fuel-drop emblem on the front. Sculpted toy-like panels and bright controlled highlights. No text, no gauge, no scene.",
+      "transparent": true,
+      "generation_file": "exec-7503a6a0-c68f-4bb9-a6fb-1552d9130dc6.png"
+    },
+    {
+      "name": "quest-available",
+      "path": "assets/UI/generated-v3/quest-available.png",
+      "prompt": "Edit the supplied exclamation mark icon. Change ONLY its GOLD/YELLOW material to a vivid RED material: bright scarlet-red front face, deep cherry-red side shading, soft cream/white specular highlights. Keep the exact same exclamation-mark silhouette, separate round dot, framing, bevel, slim dark navy edge and transparent exterior. Do NOT leave gold or orange faces. This is the red available-quest indicator for a Roblox simulator UI. No additional symbols, text, badge, panel, background or objects. Preserve transparency.",
+      "transparent": true,
+      "generation_file": "exec-d147e41c-e834-4392-bb44-50e2f70c168e.png",
+      "superseded_generation": "exec-17a1d269-2587-40fa-8b38-4d42768107d7.png"
+    },
+    {
+      "name": "grass",
+      "path": "assets/UI/generated-v3/grass.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: One small bundle of freshly cut grass for inventory and Auto-Sell: 7\u20139 broad green blades gathered with a simple golden-brown rope tie near the bottom. Lime highlights, emerald shaded folds, clear upward leafy silhouette. Detailed painted volume without tiny clutter. No soil, pot, mower, coins or scene.",
+      "transparent": true,
+      "generation_file": "exec-bddb7e65-7821-4c95-9e47-4727f70313fb.png"
+    },
+    {
+      "name": "weather-clear",
+      "path": "assets/UI/generated-v3/weather-clear.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: CLEAR WEATHER icon: a bright golden-yellow sun with one smooth round sculpted disk and 8 distinct short dimensional rays spaced evenly around it. Friendly polished game object, yellow center, amber side shading, small clean specular highlights. Pure sun only, no face, no clouds, no stars, no big glow, no scene.",
+      "transparent": true,
+      "selection": "Owner selected the original rounded-ray design; restored exact original.",
+      "generation_file": "exec-3da59c61-4ef7-4646-bc79-10ee46409cea.png",
+      "superseded_generation": "exec-3da59c61-4ef7-4646-bc79-10ee46409cea.png"
+    },
+    {
+      "name": "weather-rain",
+      "path": "assets/UI/generated-v3/weather-rain.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: RAIN WEATHER icon: one compact puffy blue-gray cloud with softly sculpted rounded lobes and exactly three distinct glossy cyan raindrops underneath. Bright cool highlights on the cloud's upper left and deep soft blue shading below. The rain drops must be large enough to read at 38px. No sun, lightning, face, scene or text.",
+      "transparent": true,
+      "generation_file": "exec-5206f1d3-fb33-49a6-adf5-4ee0b03c4e9a.png"
+    },
+    {
+      "name": "weather-golden",
+      "path": "assets/UI/generated-v3/weather-golden.png",
+      "prompt": "Edit this exact sun icon into its GOLDEN reflective variant. PRESERVE the exact original geometry and style: same circular disk, same eight separated rounded triangular rays, same positions, scale, slim dark navy outline and transparent background. Change ONLY the surface finish: richer polished gold, a clear broad diagonal cream-white reflection streak across the disk, sharper gold rim glints and stronger specular reflections on the existing rounded rays, like shiny gold reflecting light. This should immediately read as the SAME sun but more reflective/premium. NO added floating star or sparkle object, NO extra rays, NO pointed connected rays, NO facial features, NO text, NO broad exterior glow. Keep transparent gaps between rays and disk and a clean transparent exterior.",
+      "transparent": true,
+      "generation_file": "exec-86d367fb-d6df-4778-bdc9-9b6df12e0167.png",
+      "superseded_generation": "exec-8f250e90-dbca-47a4-998b-77221765c804.png"
+    },
+    {
+      "name": "coin-single",
+      "path": "assets/UI/generated-v3/coin-single.png",
+      "prompt": "Use the supplied golden coin-stack image as the exact material and design reference. Create ONLY ONE isolated gold coin, based on the large upright front coin in that stack. Preserve the embossed two-leaf sprout emblem, warm polished yellow-gold metal, orange-gold shaded thickness, thin dark navy keyline, raised circular rim and crisp cream specular highlights. Remove ALL other coins and the entire stack. A single coin shown nearly front-on with a slight tilt so a little of its thickness is visible. Make it a strong circular silhouette, centered, comfortably filling 76 percent of a square image with transparent margins. It is the small currency HUD icon for Mow It!, so keep the leaf emblem clear and the highlights controlled at 32\u201348px. No numbers, letters, label, box, sparkle outside its silhouette, rays, floor, big glow or other objects. Truly transparent background.",
+      "transparent": true,
+      "generation_file": "exec-edfc02f0-7e2d-4a42-a8dc-997f06950049.png"
+    },
+    {
+      "name": "weather-night",
+      "path": "assets/UI/generated-v3/weather-night.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: NIGHT WEATHER icon: one elegant crescent moon with a clear curved crescent silhouette, softly sculpted cool lavender-blue material, pale silver highlights, deep indigo shading, and two SMALL warm-gold four-point stars tucked beside the upper-right opening. Friendly polished simulator style. No face, clouds, sun, scene, broad halo or background.",
+      "transparent": true,
+      "generation_file": "exec-576515cb-4a8e-40d3-86ef-99bcc865a04a.png"
+    },
+    {
+      "name": "weather-storm",
+      "path": "assets/UI/generated-v3/weather-storm.png",
+      "prompt": "Production UI icon for Mow It!, matching the dimensional glossy simulator art in the supplied CONCEPT REFERENCE image. Generate ONLY the requested isolated icon, not a screenshot or a panel. Richly painted toy-like shading, sculpted shapes, vibrant colors, precise specular highlights, slim dark navy keyline rather than thick brown strokes. Carefully simplify tiny details so it reads at 48\u201364px. Center the full object with at least 10 percent transparent padding on every side. Transparent background, clean anti-aliased edges, no labels, numbers, watermark, panel, baked checkerboard, ground plane, broad glow halo or surrounding scenery. Light from upper left. Subject: STORM WEATHER icon: one compact puffy deep slate-blue storm cloud, same softly sculpted glossy style as the supplied rain-cloud reference, with one large bold golden lightning bolt emerging below its center. Dark blue shaded lower lobes, cool silver-blue upper-left highlights. Strong clear thunderstorm silhouette readable at 38px. No raindrops, sun, face, scene, text or broad glow.",
+      "transparent": true,
+      "generation_file": "exec-43087729-9f25-4b95-9e6b-22da097476e4.png"
+    },
+    {
+      "name": "window-frame",
+      "path": "assets/UI/generated-v3/window-frame.png",
+      "prompt": "Generate ONE text-free production UI WINDOW FRAME skin for the Mow It! simulator, matching the supplied concept's central passes window. A front-facing square panel on truly transparent exterior. The panel occupies 92 percent of the image with equal transparent padding. Slim dark navy outer keyline, finely layered cyan and blue bevel with precise white rim highlights, subtly recessed dark teal inner surface. Sophisticated polished toy-like game UI, subtle embossed square surface pattern at very low contrast. No title bar subdivisions, no text, buttons, close X, icons, objects, radial burst, inset cards, screenshots or scenery. Straight uniform edges with gently rounded corners and a spacious continuous center suitable for nine-slice scaling. Borders should look refined and slim, not thick brown outlines or chunky heavy frames. Uniform illumination from upper left, one soft offset shadow contained within transparent padding. Only the empty window surface and frame.",
+      "transparent": true,
+      "generation_file": "exec-1fe38be8-1a5d-4900-b97b-52d707750d84.png"
+    },
+    {
+      "name": "offer-banner",
+      "path": "assets/UI/generated-v3/offer-banner.png",
+      "prompt": "ONE production UI OFFER BANNER background for the Mow It! passes shop, matching the supplied polished simulator concept. IMPORTANT: a genuinely WIDE HORIZONTAL rectangle, approximately 3.2:1 aspect ratio, not a square card, so it fits a vertical scrolling shop list. Face-on, slim rounded corners, refined narrow layered gold-orange bevel, bright edge highlights, rich yellow-to-amber painted surface, subtle embossed square texture. Broad calm blank center for live text and an illustration placed later. The edges must be straight and uniform for nine-slice resizing. Keep decorations restrained; NO baked rays, icon, object, words, title, price, button, badge, watermark, controls or screenshot. Truly transparent exterior around this single long banner, small equal padding, full object visible. Never add black rectangular margins or a colored background behind the isolated banner. Match the quality and material depth of the reference while keeping thin borders.",
+      "transparent": true,
+      "generation_file": "exec-beedcee6-743f-484d-8a3f-ecb8431a3b66.png"
+    },
+    {
+      "name": "button-base",
+      "path": "assets/UI/generated-v3/button-base.png",
+      "prompt": "Generate ONE isolated square NAVIGATION BUTTON BASE skin for a polished Roblox simulator. The supplied image is a style reference only. IMPORTANT: entirely neutral white/silver/gray material, no blue or other colored tint; the game will tint this reusable base green, gold, blue or coral dynamically. Face-on square with modest rounded corners, slim dark charcoal keyline, narrow sculpted bevel, subtle low-contrast embossed square texture, soft diagonal sheen, sharp controlled white top-edge highlight and a small shaded lower edge. Dimensional premium game control, NOT a flat outline. Large calm empty center for a separately composited icon and live label. The base fills 90 percent of a square canvas with equal transparent margins. NO text, symbol, icon, object, window, stars, separate panels, scenery or broad halo. Transparent exterior. Fine borders, not a thick chunky dark frame.",
+      "transparent": true,
+      "generation_file": "exec-e5b2a43f-2162-4ae5-95e8-49481d81e81d.png"
+    },
+    {
+      "name": "rays",
+      "path": "assets/UI/generated-v3/rays.png",
+      "prompt": "Generate ONE isolated game UI light-effect texture: a soft warm-white radial SUNBURST of about 14 tapered light beams centered in the image, for compositing BEHIND a separate offer illustration in the Mow It! simulator shop. The effect should be delicate, airy and translucent, with a small bright center and beams fading smoothly to fully transparent edges well before the image border. Slight warm cream tint, no saturated yellow/orange/red colors. No black disk, no hard opaque star silhouette, no outlined objects, no sun icon, no panel, no text, no coin, no scene, no border, no checkerboard. This is a reusable overlay effect only, not an illustration. Square canvas, transparent background with authentic graded alpha. Keep all corners completely transparent and avoid strong broad bloom.",
+      "transparent": true,
+      "generation_file": "exec-f047fd9e-66ac-41e5-94d2-d3fa1678e10c.png"
+    },
+    {
+      "name": "background",
+      "path": "docs/art/generated-v3/background.png",
+      "prompt": "Edit this Mow It! simulator concept into a CLEAN PRESENTATION BACKGROUND ONLY. Remove absolutely ALL interface elements, menus, windows, buttons, icons, labels, text, currency counters, quest panels and bars from the entire image. Reconstruct the sunny stylized mowing-field world behind them: fresh green lawn, small distant barn, white fence, gentle trees and windmill, warm blue sky. Preserve the reference's soft depth-of-field and cheerful illustrated game-world look, but keep the central foreground especially calm and unobstructed so separate editable UI layers can be placed over it. Landscape 16:9. No interface, no text, no logos, no watermark, no main character or new central prop. This is a background for a design mockup, not a screenshot of the actual game.",
+      "transparent": false,
+      "purpose": "design presentation only",
+      "generation_file": "exec-5038cd16-04f1-48f6-800f-a035b87b9b0d.png"
+    },
+    {
+      "name": "banner-base",
+      "path": "assets/UI/generated-v3/banner-base.png",
+      "prompt": "Edit this exact wide horizontal banner into a REUSABLE NEUTRAL tintable UI skin. Preserve its exact wide rectangular silhouette, slim bevel, rounded corners, surface embossing, diagonal sheen, transparent padding and layered edge detail. Change ONLY the gold/orange colors to neutral WHITE / SILVER / GRAY, with no remaining yellow, orange, blue or colored tint. Keep the light/shadow contrast and material depth. The game will color this base cyan, emerald or coral through tinting. No text, icon, price, button, badge, decoration, colored background or new object. Preserve true transparent exterior and the original long horizontal aspect ratio.",
+      "transparent": true,
+      "generation_file": "exec-e963e4cb-2cbd-41fb-a767-7096826d4c7f.png"
+    }
+  ],
+  "concept": {
+    "path": "docs/art/generated-v3/concept.png",
+    "prompt": "Create a NEW high-fidelity Mow It! Roblox simulator UI concept, using the supplied screenshot as the PRIMARY visual composition and quality reference. Do not reproduce the reference's characters, prices, brand names or offers. Keep its highly polished, dense simulator-game language: glossy beveled controls, richly shaded toy-like collectible icons, subtle embossed surface patterns, saturated gradients, fine edge highlights, radial rays behind featured items, small tasteful sparkles. Main correction: use substantially slimmer edges than the previous thick brown outlined flat UI; dark navy thin keylines with layered colored bevels, not heavy brown contours or flat placeholder SVG-style symbols. Landscape 16:9 composition, crisp polished game interface over a softly blurred sunny mowing field. Left side a compact 2x2 navigation cluster with dimensional icons and readable English labels CREW, SHOP, QUESTS, REWARDS; immediately BELOW that cluster prominent gold Coin and emerald Clover balances with their own large illustrated icons. Top right WEATHER and FUEL independent small illustrated icon indicators stacked vertically. Right side below them a compact contextual quest tracker: 'Meet Farmer Joe', 'Follow the trail to your neighbor', 'SHOW ROUTE'. Center a scrollable PASSES store modal with a vibrant cyan beveled header, red X close button, recessed dark teal frame with thinner outer edge, large gold featured banner for '2x COINS' with glossy sculpted gold leaf-emblem coin stack illustration, blue '+2 CREW SLOTS' banner with dimensional green paw illustration, green 'AUTO-SELL' banner with a dimensional grass bundle and tasteful rays. Each offer button MUST read 'COMING SOON', no Robux prices, no fake urgency or discounts. The farm theme is conveyed through beautiful illustrated coin/clover/grass/chest/gift/quest-scroll objects; retain the screenshot's premium vibrant simulator feel rather than a minimalist rustic board. Carefully balanced spacing, clear type hierarchy, no overlaps or clipping, no giant empty areas. All labels exactly in English. This is a polished art-direction concept to later decompose into separate production UI assets, not code.",
+    "generation_file": "exec-624658b9-3d01-4fba-a4ce-ff013a4c67af.png"
+  }
+}

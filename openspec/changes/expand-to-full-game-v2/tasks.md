@@ -85,4 +85,6 @@ Checked implementation tasks are not a blanket acceptance of every v2 scenario.
 
 - [x] 10.6 Author editable OpenPencil boards and separate reusable chrome components; export and audit transparent assets
 - [x] 10.7 Route HUD Shop to passes, keep unpublished checkout disabled, coordinate menus and reflow daily rewards
-- [ ] 10.8 Upload OpenPencil chrome, populate verified IDs and inspect desktop/phone Play screenshots
+- [ ] 10.8 Upload the selected generated simulator assets, bind verified IDs and inspect desktop/phone Play and scrolling
+- [x] 10.9 Generate and audit the native-imagegen simulator art family, including red quest marker and individual currency icon
+- [x] 10.10 Assemble five editable OpenPencil boards with separate images/text/effects and full shop scroll content

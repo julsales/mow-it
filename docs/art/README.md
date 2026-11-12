@@ -1,5 +1,51 @@
 # Interface artwork
 
+## Current generated-art revision
+
+The current visual direction is the owner's simulator reference,
+`references/simulator-ui-owner.png`. The flat brown-outline OpenPencil board
+below was rejected as too simple and is retained only as history.
+
+The **native image_gen** tool generated 20 separate runtime-art candidates in
+`assets/UI/generated-v3/`, plus a concept and presentation-only background.
+The source PNGs preserve the generator's alpha. `generated-v3/prompts.json`
+records the exact prompts and generation filenames. No separate API key or
+CLI fallback was used.
+
+The owner selected the rounded-ray sun, with a reflective gold variant, a red
+quest exclamation and a single-coin currency icon. The coin stack remains an
+offer illustration. Long banners are separate from icons, labels and effects.
+
+OpenPencil assembly: [mow-it-ui-v3.fig](generated-v3/mow-it-ui-v3.fig).
+The page **Mow It - Generated UI v3** contains five active boards:
+
+1. [HUD and passes](generated-v3/board-1.png)
+2. [Full shop scroll content](generated-v3/board-2.png)
+3. [Daily rewards](generated-v3/board-3.png)
+4. [Quest discovery / offer / progress](generated-v3/board-4.png)
+5. [Generated asset library](generated-v3/board-5.png)
+
+Illustrations and skin images are independent image-filled layers; text and
+basic UI geometry remain editable native nodes. Replaced assembly drafts are
+hidden rather than overwriting the owner's original page/file. Previews are
+design mockups with sample progress/balances, not Studio captures or a working
+OpenPencil scroll prototype. The long board specifies the scroll contents;
+Roblox must use a clipped viewport and dynamic ScrollingFrame canvas.
+
+`tools/assemble-generated-ui.py` builds the layered boards in bounded batches
+against an already-open authenticated local OpenPencil server. It reads the
+local token internally without logging or committing it. `assembly.json` and
+`openpencil-nodes.json` record layout and node mapping; temporary progress lives
+in `/tmp/mowit-pencil-assembly-v3.json`. Commands: `prepare`, `import --board N`,
+`fill --board N --limit 8`, `export --board N`, `save`; `rebuild` preserves the
+previous owned board hidden. All five exported boards were visually inspected.
+
+Roblox upload, runtime skin binding, responsive input/scroll behavior and Play
+verification remain pending. Current runtime image IDs still reference the
+previous icon family; the new generated assets have not been uploaded.
+
+## Previous vector revision (superseded visual direction)
+
 The current editable document is [mow-it-ui.fig](openpencil/mow-it-ui.fig).
 It contains two design boards plus five reusable components, created in the
 owner's open OpenPencil document through its authenticated local RPC server.

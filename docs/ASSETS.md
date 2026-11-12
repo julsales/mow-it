@@ -44,6 +44,33 @@ Status key: 🗺️ mapped (researched, not yet inserted) · 🔎 verify in Stud
 
 ## 1. Icons (HUD, shop, gamepasses)
 
+### Generated simulator art v3 — mapped and audited, upload pending
+
+The owner requested a richer simulator family and rejected the flat heavy
+brown-outline board. Native image_gen produced the following project-bound
+art in `assets/UI/generated-v3/`; prompts and generation IDs are recorded in
+`docs/art/generated-v3/prompts.json`. Reference: the owner's supplied simulator
+screenshot, used for style/composition rather than copied logos/characters.
+Audit: 20 PNG files, RGBA with transparent exteriors; no scripts or linked
+content. Original generated pixel/alpha data is preserved. The presentation
+background in `docs/art/generated-v3/` is design-only, not a new map asset.
+
+| Family | Files | Status |
+| --- | --- | --- |
+| Currency | `coin-single`, `coin`, `clover` | Audited; single coin for HUD, stack for offers |
+| Navigation/resources | `crew`, `passes`, `quests`, `rewards`, `fuel`, `grass` | Audited; separate icon layers |
+| Quest availability | `quest-available` | Audited; red exclamation selected by owner |
+| Weather | `weather-clear`, `weather-golden`, `weather-rain`, `weather-night`, `weather-storm` | Audited; rounded sun and reflective golden variant selected |
+| Skins | `window-frame`, `button-base`, `offer-banner`, `banner-base` | Audited; square and long neutral tintable bases |
+| Effects | `rays` | Audited; separate translucent layer |
+
+Assembled and visually inspected in OpenPencil, with editable text, separate
+images and a long shop-content board. **Not yet uploaded or bound in Roblox.**
+Do not replace Interface IDs with filenames or fabricated IDs. UI viewport,
+scroll canvas, aspect ratio/slicing and touch behavior require Studio QA.
+
+### Previous runtime vector icons
+
 HUD revision: project-authored vector sources in `assets/UI/source/`, rendered
 to transparent 1024px PNG by `tools/build-ui-icons.py`. Mapped before import:
 Crew, Shop, Quests, Rewards, Pack, Coin, Clover, Grass, Fuel and five weather
