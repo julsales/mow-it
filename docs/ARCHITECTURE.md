@@ -24,7 +24,9 @@ Research summary (sources below):
    joins the same one. The old `ReserveServer()` /
    `TeleportToPrivateServer()` pattern is **deprecated** — don't copy it
    from old tutorials.
-   → Applied: `GameConfig.LobbyPlaceId/GamePlaceId`, `LobbyService`
+   → Applied: `GameConfig.LobbyPlaceId/LandPlaceId`, `LobbyService`
+   (sends `HostUserId` with the party), `LandService` (the session is the
+   host's land: gates, mowing and sell pads follow the host's expansions)
    (queue of up to 4 on a physical pad, countdown, one teleport for the party).
 
 2. **Filesystem projects with Rojo** are the professional default for
@@ -38,7 +40,7 @@ Research summary (sources below):
      ReplicatedFirst) instead of relying on StarterGui copies, which cost
      server memory.
    → Applied: two project files sharing one `src/` tree
-   (`default.project.json` = Game place, `lobby.project.json` = Lobby),
+   (`default.project.json` = Land place, `lobby.project.json` = Lobby),
    `Workspace.$ignoreUnknownInstances: true` so maps built by hand in
    Studio are never deleted by a sync.
 
@@ -57,7 +59,12 @@ Research summary (sources below):
 5. **Config-driven content.** Tools/zones/prices live in shared config
    modules that server, client UI and balance tests all read. Adding a
    tool = one row, not a code change.
-   → Applied: `Shared/Config/{Tools,Backpacks,Zones,Buffs,GameConfig}.luau`.
+   → Applied: `Shared/Config/{Tools,Backpacks,Zones,Buffs,GameConfig,CompanyLevel}.luau`.
+   Shared rules that server and client must agree on live next to them:
+   `Shared/GrassBag.luau` (carried grass per variant, capacity, sell value).
+   Company Level: `LevelService` (server) adds XP from cutting and selling;
+   `LevelHud.client.luau` shows the bar and the level-up celebration. HUD
+   pieces share one look through `StarterPlayerScripts/UiKit.luau`.
 
 6. **Maps are built in Studio, code defines a contract.** Builders make
    the world; programmers agree on names/tags. Art can be replaced without

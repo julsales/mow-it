@@ -33,8 +33,33 @@ for i, zone in Zones do
 	indexById[zone.Id] = i
 end
 
+-- Index (1..) of the furthest zone in an "unlocked" set; shops gate their
+-- stock on it (RequiredZone in Tools/Backpacks/Buffs).
+local function highestUnlockedIndex(unlocked: { [string]: boolean }): number
+	local highest = 1
+	for zoneId in unlocked do
+		local index = indexById[zoneId]
+		if index and index > highest then
+			highest = index
+		end
+	end
+	return highest
+end
+
+-- The next zone to unlock (zones open in order), or nil when all are open.
+local function nextLocked(unlocked: { [string]: boolean }): ZoneDef?
+	for _, zone in Zones do
+		if not unlocked[zone.Id] then
+			return zone
+		end
+	end
+	return nil
+end
+
 return {
 	List = Zones,
 	ById = byId,
 	IndexById = indexById,
+	HighestUnlockedIndex = highestUnlockedIndex,
+	NextLocked = nextLocked,
 }

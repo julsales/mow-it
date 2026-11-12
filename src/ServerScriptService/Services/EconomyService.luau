@@ -7,23 +7,20 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local GameConfig = require(Shared.Config.GameConfig)
 local Tools = require(Shared.Config.Tools)
-local Backpacks = require(Shared.Config.Backpacks)
 local Zones = require(Shared.Config.Zones)
+local CompanyLevel = require(Shared.Config.CompanyLevel)
+local GrassBag = require(Shared.GrassBag)
 
 local ProfileService = require(script.Parent.ProfileService)
 local GrassService = require(script.Parent.GrassService)
+local LevelService = require(script.Parent.LevelService)
+local LandService = require(script.Parent.LandService)
 
 local EconomyService = {}
 
 local lastSwingAt: { [Player]: number } = {}
 local remotes: Folder
-
-local function capacityOf(profile): number
-	local pack = Backpacks.ById[profile.EquippedBackpackId]
-	return pack and pack.Capacity or 10
-end
 
 local function buffStacks(profile, buffId: string): number
 	return profile.BuffStacks[buffId] or 0
@@ -55,8 +52,7 @@ local function tryCut(player: Player)
 	lastSwingAt[player] = now
 
 	local feedback = remotes:FindFirstChild("CutFeedback") :: RemoteEvent
-	local capacity = capacityOf(profile)
-	if profile.Grass >= capacity then
+	if GrassBag.IsFull(profile) then
 		-- No Notify here: the client's single STORAGE FULL banner
 		-- (SellGuide.client.luau) already says it; notifying on every swing
 		-- stacked messages while auto-mowing.
@@ -68,12 +64,13 @@ local function tryCut(player: Player)
 		return
 	end
 
-	-- Locked zones cannot be farmed by standing on the fence line.
-	local cells = GrassService.GetCellsInRadius(root.Position, radius, function(zoneId)
-		return profile.UnlockedZoneIds[zoneId] == true
-	end)
+	-- Locked expansions cannot be farmed by standing on the fence line.
+	-- What is open is the land's (the host's) state, so helpers mow
+	-- wherever the host has unlocked.
+	local cells = GrassService.GetCellsInRadius(root.Position, radius, LandService.IsUnlocked)
 
 	local harvested = 0
+	local xp = 0
 	local hit = 0
 	local cutAt: { Vector3 } = {} -- where to burst clippings on the client (capped)
 	for _, cell in cells do
@@ -87,19 +84,22 @@ local function tryCut(player: Player)
 				gain *= 3 -- Golden Blades critical cut
 			end
 			harvested += gain
+			xp += Zones.ById[cell.ZoneId].GrassValue * CompanyLevel.XpPerCutValue
 		end
 	end
 
 	local stored = 0
 	if harvested > 0 then
-		stored = math.min(harvested, capacity - profile.Grass)
-		profile.Grass += stored
+		-- Every cell yields the normal variant for now; weather variants
+		-- (Phase 3) will tag cells and add their own variant here.
+		stored = GrassBag.Add(profile, GrassBag.DefaultVariant, harvested)
 		profile.LifetimeGrass += harvested
+		LevelService.AddXp(player, xp)
 		ProfileService.NotifyChanged(player)
 	end
 	-- Client plays snip/mow sounds and shows "+N"; hit > 0 with stored = 0
 	-- means tough grass that only got shorter.
-	feedback:FireClient(player, stored, profile.Grass >= capacity, hit, cutAt)
+	feedback:FireClient(player, stored, GrassBag.IsFull(profile), hit, cutAt)
 end
 
 function EconomyService.CanSellAnywhere(player: Player): boolean
@@ -109,11 +109,12 @@ end
 
 function EconomyService.SellAll(player: Player)
 	local profile = ProfileService.Get(player)
-	if not profile or profile.Grass <= 0 then
+	if not profile or GrassBag.Total(profile) <= 0 then
 		return
 	end
-	-- Value uses the best unlocked zone the grass *could* be from; per-tuft
-	-- origin tracking is a Phase-4 refinement (docs/DEVELOPMENT_PLAN.md).
+	-- Value uses the best zone THIS player has unlocked (helpers on a richer
+	-- land still sell at their own progression); per-tuft origin tracking
+	-- is a Phase-4 refinement (docs/DEVELOPMENT_PLAN.md).
 	local bestValue = 1
 	for zoneId in profile.UnlockedZoneIds do
 		local zone = Zones.ById[zoneId]
@@ -121,9 +122,10 @@ function EconomyService.SellAll(player: Player)
 			bestValue = zone.GrassValue
 		end
 	end
-	local earned = profile.Grass * GameConfig.SellValuePerGrass * bestValue
+	local earned = GrassBag.SellValue(profile, bestValue)
 	profile.Coins += earned
-	profile.Grass = 0
+	GrassBag.Clear(profile)
+	LevelService.AddXp(player, earned * CompanyLevel.XpPerCoinSold)
 	ProfileService.NotifyChanged(player);
 	(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, string.format("+%s Coins", tostring(earned)));
 	(remotes:FindFirstChild("SellFeedback") :: RemoteEvent):FireClient(player, earned)

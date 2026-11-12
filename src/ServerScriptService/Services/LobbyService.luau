@@ -1,7 +1,8 @@
 --!strict
 -- Lobby place only: step on the Join Pad -> join the queue (up to
 -- GameConfig.MaxPartySize) -> countdown -> everybody teleports together
--- into a RESERVED server of the Game place (nobody else can join it).
+-- into a RESERVED server of the Land place (nobody else can join it), onto
+-- the land of the party's host: the first player who stepped on the pad.
 --
 -- Modern API note: TeleportService:ReserveServer() is deprecated. The
 -- current pattern is HttpService:GenerateGUID + TeleportOptions.ReservedServerId
@@ -51,8 +52,8 @@ local function startMatch()
 	table.clear(queue)
 	broadcastQueue()
 
-	if RunService:IsStudio() or GameConfig.GamePlaceId == 0 then
-		print(("[MowIt][Lobby] Would teleport %d player(s) to the Game place: %s"):format(
+	if RunService:IsStudio() or GameConfig.LandPlaceId == 0 then
+		print(("[MowIt][Lobby] Would teleport %d player(s) to the land of the first: %s"):format(
 			#party,
 			table.concat(
 				(function()
@@ -70,10 +71,10 @@ local function startMatch()
 
 	local options = Instance.new("TeleportOptions")
 	options.ReservedServerId = HttpService:GenerateGUID(false)
-	options:SetTeleportData({ PartySize = #party, FromLobby = true })
+	options:SetTeleportData({ PartySize = #party, HostUserId = party[1].UserId })
 
 	local ok, err = pcall(function()
-		TeleportService:TeleportAsync(GameConfig.GamePlaceId, party, options)
+		TeleportService:TeleportAsync(GameConfig.LandPlaceId, party, options)
 	end)
 	if not ok then
 		warn("[MowIt][Lobby] Teleport failed:", err)

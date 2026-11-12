@@ -23,7 +23,7 @@ Lobby parties of up to **4 players** teleport together into a private match.
 1. Install [Rokit](https://github.com/rojo-rbx/rokit), then in this repo:
    ```sh
    rokit install        # installs the pinned Rojo
-   rojo serve           # Game place  (or: rojo serve lobby.project.json)
+   rojo serve           # Land place  (or: rojo serve lobby.project.json)
    ```
 2. Open an empty baseplate in Roblox Studio, connect the Rojo plugin.
    Step-by-step guide (pt-BR), incl. plugin install and troubleshooting:
