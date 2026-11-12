@@ -13,3 +13,7 @@
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# Local toolchain installs and Rojo build outputs
+.tools/
+/build/
