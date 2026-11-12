@@ -15,12 +15,23 @@ local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local player = Players.LocalPlayer
 
 -- Banner ------------------------------------------------------------------------
+-- One banner and one beam, ever: drop leftovers if this script restarts.
+local playerGui = player:WaitForChild("PlayerGui")
+local old = playerGui:FindFirstChild("SellGuide")
+if old then
+	old:Destroy()
+end
+local oldAnchor = Workspace:FindFirstChild("SellGuideTarget")
+if oldAnchor then
+	oldAnchor:Destroy()
+end
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "SellGuide"
 gui.ResetOnSpawn = false
 gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.Enabled = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = playerGui
 
 local banner = Instance.new("TextLabel")
 banner.AnchorPoint = Vector2.new(0.5, 0)

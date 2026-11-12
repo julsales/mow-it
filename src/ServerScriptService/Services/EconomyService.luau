@@ -57,7 +57,9 @@ local function tryCut(player: Player)
 	local feedback = remotes:FindFirstChild("CutFeedback") :: RemoteEvent
 	local capacity = capacityOf(profile)
 	if profile.Grass >= capacity then
-		(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, "Storage full! Sell at a stall.")
+		-- No Notify here: the client's single STORAGE FULL banner
+		-- (SellGuide.client.luau) already says it; notifying on every swing
+		-- stacked messages while auto-mowing.
 		feedback:FireClient(player, 0, true)
 		-- Auto-Sell Conveyor (final-zone automation) empties it for you.
 		if buffStacks(profile, "auto_sell") > 0 then
@@ -80,9 +82,9 @@ local function tryCut(player: Player)
 			if #cutAt < 40 then
 				table.insert(cutAt, cell.Center)
 			end
-			local gain = 1
+			local gain = cell.Yield -- rare grass types yield more (GrassTypes.luau)
 			if math.random() < critChance then
-				gain = 3 -- Golden Blades critical cut
+				gain *= 3 -- Golden Blades critical cut
 			end
 			harvested += gain
 		end

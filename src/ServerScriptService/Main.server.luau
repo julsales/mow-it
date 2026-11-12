@@ -20,6 +20,7 @@ local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
+local MapService = require(Services.MapService)
 local ToolVisualService = require(Services.ToolVisualService)
 
 -- Remotes -------------------------------------------------------------------
@@ -87,11 +88,12 @@ ProfileService.OnChanged(syncProfile)
 
 -- Boot ------------------------------------------------------------------------
 if isGamePlace then
-	GrayboxService.BuildZonesIfMissing()
+	MapService.BuildIfMissing()
 	GrassService.Init()
 	EconomyService.Init(remotes)
 	ToolVisualService.Init()
-	ShopService.Init(remotes);
+	ShopService.Init(remotes)
+	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
 		-- Selling is physical (sell pads). Remote selling is only for players
 		-- with Auto-Sell (later also a "Sell Anywhere" pass).

@@ -276,6 +276,14 @@ openButton.Activated:Connect(function()
 	panel.Visible = not panel.Visible
 	refresh()
 end)
+-- Other scripts (shop counters, ShopDisplay.client.luau) open the panel.
+local openEvent = Instance.new("BindableEvent")
+openEvent.Name = "OpenShop"
+openEvent.Event:Connect(function()
+	panel.Visible = true
+	refresh()
+end)
+openEvent.Parent = script.Parent
 closeButton.Activated:Connect(function()
 	panel.Visible = false
 end)
