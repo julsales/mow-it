@@ -255,7 +255,7 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	anchorAll(model)
 	-- Display size: fill the plaque whatever size the tool is in the hand.
 	local _, rawSize = model:GetBoundingBox()
-	model:ScaleTo(model:GetScale() * 5 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
+	model:ScaleTo(model:GetScale() * 4.3 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
 	model:PivotTo(frame * CFrame.Angles(0, 0, math.rad(-35)) * CFrame.Angles(math.rad(90), 0, 0))
 	-- Center it on the board, then push it out just enough that its back
 	-- sits in front of the board face: nothing goes into the wall.

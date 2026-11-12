@@ -57,7 +57,7 @@ local function lamp(parent: Instance, cf: CFrame, range: number)
 	local light = Instance.new("PointLight")
 	light.Color = WARM
 	light.Range = range
-	light.Brightness = 1.2
+	light.Brightness = 0.8
 	light.Parent = body
 end
 
@@ -397,7 +397,7 @@ local function furnish(m: Instance, room: Room, toolIds: { string }, title: stri
 	local glow = Instance.new("PointLight")
 	glow.Color = Color3.fromRGB(255, 150, 70)
 	glow.Range = 16
-	glow.Brightness = 1.4
+	glow.Brightness = 0.9
 	glow.Parent = hearth
 	Props.make("Mantel", m, {
 		Size = Vector3.new(7.6, 0.5, 2.6),
@@ -411,18 +411,18 @@ local function furnish(m: Instance, room: Room, toolIds: { string }, title: stri
 		lamp(m, f * CFrame.new(x, room.Height - 3, 0), 28)
 	end
 
-	-- Shelves with jars in the back-left corner.
+	-- Shelves with jars in the back-left corner (narrow: clear of the plaque).
 	for i, y in { 3, 5.5 } do
 		Props.make("Shelf", m, {
-			Size = Vector3.new(5, 0.3, 1.4),
-			CFrame = f * CFrame.new(-halfW + 3, y, back + 0.8),
+			Size = Vector3.new(4.6, 0.3, 1.4),
+			CFrame = f * CFrame.new(-halfW + 2.4, y, back + 0.8),
 			Color = LOG_DARK,
 			Material = Enum.Material.Wood,
 		})
 		for j = 0, 2 do
 			Props.make("Jar", m, {
 				Size = Vector3.new(0.8, 1 + (i + j) % 2 * 0.4, 0.8),
-				CFrame = f * CFrame.new(-halfW + 1.5 + j * 1.5, y + 0.7, back + 0.8),
+				CFrame = f * CFrame.new(-halfW + 0.9 + j * 1.4, y + 0.7, back + 0.8),
 				Color = ({ Color3.fromRGB(110, 170, 90), Color3.fromRGB(220, 180, 80), Color3.fromRGB(180, 90, 70) })[j + 1],
 				Material = Enum.Material.SmoothPlastic,
 				Solid = false,
