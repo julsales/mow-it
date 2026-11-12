@@ -18,17 +18,6 @@ local BLUE = Color3.fromRGB(40, 100, 200)
 local GRAY = Color3.fromRGB(110, 110, 110)
 local RED = Color3.fromRGB(180, 60, 50)
 
-local function highestZone(profile): number
-	local highest = 1
-	for zoneId in profile.UnlockedZoneIds do
-		local index = Zones.IndexById[zoneId]
-		if index and index > highest then
-			highest = index
-		end
-	end
-	return highest
-end
-
 local function paint(item: BasePart)
 	local profile = ClientState.Get()
 	local toolId = item:GetAttribute("ToolId") :: string?
@@ -46,7 +35,7 @@ local function paint(item: BasePart)
 	elseif profile.OwnedToolIds[toolId] then
 		status.Text, status.TextColor3 = "Owned", BLUE
 		prompt.ActionText, prompt.Enabled = "Equip", true
-	elseif highestZone(profile) < zone then
+	elseif Zones.HighestUnlockedIndex(profile.UnlockedZoneIds) < zone then
 		status.Text, status.TextColor3 = "Zone " .. zone, RED
 		prompt.Enabled = false
 	else

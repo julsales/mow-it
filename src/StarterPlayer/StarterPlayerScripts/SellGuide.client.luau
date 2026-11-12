@@ -9,7 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local Backpacks = require(ReplicatedStorage:WaitForChild("Shared").Config.Backpacks)
+local GrassBag = require(ReplicatedStorage:WaitForChild("Shared").GrassBag)
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 
 local player = Players.LocalPlayer
@@ -84,12 +84,6 @@ beam.Segments = 2
 beam.Enabled = false
 beam.Parent = targetAnchor
 
-local function isFull(profile): boolean
-	local pack = Backpacks.ById[profile.EquippedBackpackId]
-	local capacity = pack and pack.Capacity or 10
-	return profile.Grass >= capacity
-end
-
 local function nearestPad(from: Vector3, profile): BasePart?
 	local zones = Workspace:FindFirstChild("Zones")
 	if not zones then
@@ -119,7 +113,7 @@ local function setActive(on: boolean)
 end
 
 ClientState.Changed:Connect(function(profile)
-	setActive(isFull(profile))
+	setActive(GrassBag.IsFull(profile))
 end)
 
 -- Re-aim a few times a second (not every frame: pads don't move).

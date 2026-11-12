@@ -17,7 +17,7 @@ local SoundService = game:GetService("SoundService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Sounds = require(Shared.Config.Sounds)
 local Tools = require(Shared.Config.Tools)
-local Backpacks = require(Shared.Config.Backpacks)
+local GrassBag = require(Shared.GrassBag)
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -83,9 +83,7 @@ local function fillRatio(): number
 	if not profile then
 		return 0
 	end
-	local pack = Backpacks.ById[profile.EquippedBackpackId]
-	local capacity = pack and pack.Capacity or 10
-	return math.clamp(profile.Grass / math.max(capacity, 1), 0, 1)
+	return GrassBag.FillRatio(profile)
 end
 
 local lastFullAt = 0
@@ -129,6 +127,10 @@ end);
 
 (remotes:WaitForChild("BuyFeedback") :: RemoteEvent).OnClientEvent:Connect(function()
 	play2D("Buy")
+end);
+
+(remotes:WaitForChild("LevelUp") :: RemoteEvent).OnClientEvent:Connect(function()
+	play2D("LevelUp")
 end)
 
 -- Engine loops (3D) ------------------------------------------------------------------

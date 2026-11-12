@@ -57,7 +57,12 @@ Research summary (sources below):
 5. **Config-driven content.** Tools/zones/prices live in shared config
    modules that server, client UI and balance tests all read. Adding a
    tool = one row, not a code change.
-   → Applied: `Shared/Config/{Tools,Backpacks,Zones,Buffs,GameConfig}.luau`.
+   → Applied: `Shared/Config/{Tools,Backpacks,Zones,Buffs,GameConfig,CompanyLevel}.luau`.
+   Shared rules that server and client must agree on live next to them:
+   `Shared/GrassBag.luau` (carried grass per variant, capacity, sell value).
+   Company Level: `LevelService` (server) adds XP from cutting and selling;
+   `LevelHud.client.luau` shows the bar and the level-up celebration. HUD
+   pieces share one look through `StarterPlayerScripts/UiKit.luau`.
 
 6. **Maps are built in Studio, code defines a contract.** Builders make
    the world; programmers agree on names/tags. Art can be replaced without

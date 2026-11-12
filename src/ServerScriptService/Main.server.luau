@@ -18,6 +18,8 @@ local ProfileService = require(Services.ProfileService)
 local GrassService = require(Services.GrassService)
 local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
+local LevelService = require(Services.LevelService)
+local GrassBag = require(Shared.GrassBag)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
 local MapService = require(Services.MapService)
@@ -39,6 +41,7 @@ local REMOTE_NAMES = {
 	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit, cutPositions) after each swing
 	"SellFeedback", -- server -> client: (coinsEarned)
 	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
+	"LevelUp", -- server -> client: (newLevel) when the Company Level goes up
 }
 
 local remotes = Instance.new("Folder")
@@ -74,10 +77,14 @@ local function syncProfile(player: Player, profile)
 		local grass = Instance.new("IntValue")
 		grass.Name = "Grass"
 		grass.Parent = leaderstats
+		local level = Instance.new("IntValue")
+		level.Name = "Level"
+		level.Parent = leaderstats
 		leaderstats.Parent = player
 	end
 	(leaderstats:FindFirstChild("Coins") :: IntValue).Value = profile.Coins;
-	(leaderstats:FindFirstChild("Grass") :: IntValue).Value = profile.Grass
+	(leaderstats:FindFirstChild("Grass") :: IntValue).Value = GrassBag.Total(profile);
+	(leaderstats:FindFirstChild("Level") :: IntValue).Value = profile.Level
 
 	-- The client recomputes derived numbers (capacity, prices) from the
 	-- same Shared configs, so we only ship raw profile state.
@@ -90,10 +97,12 @@ ProfileService.OnChanged(syncProfile)
 if isGamePlace then
 	MapService.BuildIfMissing()
 	GrassService.Init()
+	LevelService.Init(remotes)
 	EconomyService.Init(remotes)
 	ToolVisualService.Init()
 	ShopService.Init(remotes)
-	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool);
+	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool)
+	require(Services.Map.Gates).Init(ShopService.UnlockZone);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
 		-- Selling is physical (sell pads). Remote selling is only for players
 		-- with Auto-Sell (later also a "Sell Anywhere" pass).
@@ -127,6 +136,17 @@ if RunService:IsStudio() then
 		return profile and profile.Coins
 	end
 	give.Parent = game:GetService("ServerStorage")
+
+	-- ServerStorage.DevGiveXp:Invoke(player, amount): same idea for levels.
+	local giveXp = Instance.new("BindableFunction")
+	giveXp.Name = "DevGiveXp"
+	giveXp.OnInvoke = function(player: Player, amount: number)
+		LevelService.AddXp(player, amount)
+		ProfileService.NotifyChanged(player)
+		local profile = ProfileService.Get(player)
+		return profile and profile.Level
+	end
+	giveXp.Parent = game:GetService("ServerStorage")
 
 	-- Same, from the HUD's "+1M (Studio)" button (Shop.client.luau).
 	local devRemote = Instance.new("RemoteEvent")

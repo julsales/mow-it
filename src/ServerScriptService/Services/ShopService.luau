@@ -48,19 +48,8 @@ game:GetService("Players").PlayerRemoving:Connect(function(player)
 	lastRequestAt[player] = nil
 end)
 
-local function highestUnlockedZoneIndex(profile): number
-	local highest = 1
-	for zoneId in profile.UnlockedZoneIds do
-		local index = Zones.IndexById[zoneId]
-		if index and index > highest then
-			highest = index
-		end
-	end
-	return highest
-end
-
 local function canAffordAndUnlocked(player, profile, price: number, requiredZone: number): boolean
-	if highestUnlockedZoneIndex(profile) < requiredZone then
+	if Zones.HighestUnlockedIndex(profile.UnlockedZoneIds) < requiredZone then
 		notify(player, "Unlock that zone first!")
 		return false
 	end
@@ -156,6 +145,11 @@ local function unlockZone(player: Player, zoneId: string)
 		notify(player, "Unlock " .. previous.DisplayName .. " first!")
 		return
 	end
+	-- Expansions are gated by Company Level and Coins, independently.
+	if profile.Level < def.RequiredLevel then
+		notify(player, ("Reach Company Level %d to unlock %s."):format(def.RequiredLevel, def.DisplayName))
+		return
+	end
 	if profile.Coins < def.UnlockPrice then
 		notify(player, "Not enough Coins to unlock " .. def.DisplayName .. ".")
 		return
@@ -170,6 +164,12 @@ end
 -- (ShopDisplay prompts on the tool wall).
 function ShopService.BuyTool(player: Player, toolId: string)
 	buyTool(player, toolId)
+end
+
+-- Same validated path as the UnlockZone remote, for the physical gates
+-- (Map/Gates prompts).
+function ShopService.UnlockZone(player: Player, zoneId: string)
+	unlockZone(player, zoneId)
 end
 
 function ShopService.Init(remoteFolder: Folder)
