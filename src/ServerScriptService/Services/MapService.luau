@@ -316,8 +316,10 @@ local function buildSpawn()
 	spawn.Anchored = true
 	spawn.Size = Vector3.new(6, 0.4, 6)
 	spawn.Position = Vector3.new(0, GROUND_TOP + 0.2, 6)
-	spawn.Color = COLORS.Path
-	spawn.Material = Enum.Material.Concrete
+	-- Invisible and walk-through: players just appear on the grass.
+	spawn.Transparency = 1
+	spawn.CanCollide = false
+	spawn.CastShadow = false
 	spawn.Duration = 0
 	local decal = spawn:FindFirstChildOfClass("Decal")
 	if decal then

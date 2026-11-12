@@ -201,11 +201,24 @@ BUILDERS.scissors = function(b, color)
 end
 
 BUILDERS.sickle = function(b, color)
-	part(b, "Grip", Vector3.new(0.25, 0.25, 1.1), CFrame.new(0, 0, -0.3), color, Enum.Material.Wood)
-	for i = 0, 4 do
-		local angle = math.rad(-20 + i * 32)
-		local center = Vector3.new(0, math.sin(angle) * 0.9, -0.9 - math.cos(angle) * 0.9 + 0.9)
-		part(b, "Blade", Vector3.new(0.06, 0.18, 0.6), CFrame.new(center + Vector3.new(0, 0.6, -0.9)) * CFrame.Angles(angle, 0, 0), METAL, Enum.Material.Metal)
+	-- Wooden grip along -Z, then a crescent blade: a chain of short metal
+	-- segments on a circle that starts at the grip's tip and curls forward
+	-- and up (no gaps: each segment runs exactly from one point to the next).
+	part(b, "Grip", Vector3.new(0.28, 0.28, 1.3), CFrame.new(0, 0, -0.45), color, Enum.Material.Wood)
+	part(b, "Ferrule", Vector3.new(0.34, 0.34, 0.18), CFrame.new(0, 0, -1.1), METAL, Enum.Material.Metal)
+	local radius = 0.85
+	local center = Vector3.new(0, radius, -1.15)
+	local function point(angle: number): Vector3
+		-- angle 0 = bottom of the circle (the grip's tip), turning forward.
+		return center + Vector3.new(0, -radius * math.cos(angle), -radius * math.sin(angle))
+	end
+	local steps = 8
+	for i = 0, steps - 1 do
+		local a1 = math.rad(i * 200 / steps)
+		local a2 = math.rad((i + 1) * 200 / steps)
+		local p1, p2 = point(a1), point(a2)
+		local width = 0.26 * (1 - i / steps) + 0.06 -- tapers to a point
+		part(b, "Blade", Vector3.new(0.06, width, (p2 - p1).Magnitude + 0.04), CFrame.lookAt((p1 + p2) / 2, p2), METAL, Enum.Material.Metal)
 	end
 end
 

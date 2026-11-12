@@ -219,7 +219,7 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	local plaque = Props.model("Plaque_" .. toolId, parent)
 	local woodColor = Color3.fromRGB(196, 150, 102)
 	local trimColor = if featured then Color3.fromRGB(240, 190, 60) else Color3.fromRGB(112, 78, 50)
-	local w, h = 4.4, 3.4
+	local w, h = 6.4, 5
 	Props.make("Board", plaque, {
 		Size = Vector3.new(w, h, 0.25),
 		CFrame = frame * CFrame.new(0, 0, 0.12),
@@ -243,8 +243,8 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	end
 
 	local sign = Props.make("NameSign", plaque, {
-		Size = Vector3.new(3.6, 0.9, 0.2),
-		CFrame = frame * CFrame.new(0, h / 2 + 0.75, 0.3),
+		Size = Vector3.new(5.6, 1.4, 0.2),
+		CFrame = frame * CFrame.new(0, h / 2 + 1, 0.3),
 		Color = Color3.fromRGB(240, 222, 180),
 		Material = Enum.Material.WoodPlanks,
 	})
@@ -255,7 +255,7 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	anchorAll(model)
 	-- Display size: fill the plaque whatever size the tool is in the hand.
 	local _, rawSize = model:GetBoundingBox()
-	model:ScaleTo(model:GetScale() * 3.4 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
+	model:ScaleTo(model:GetScale() * 5 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
 	model:PivotTo(frame * CFrame.Angles(0, 0, math.rad(-35)) * CFrame.Angles(math.rad(90), 0, 0))
 	local box = model:GetBoundingBox()
 	local target = frame * CFrame.new(0, 0, 0.45)
@@ -265,8 +265,8 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 
 	-- Price tag: holds the prompt and the per-player status text.
 	local tag = Props.make("ShopItem", plaque, {
-		Size = Vector3.new(2.8, 0.8, 0.2),
-		CFrame = frame * CFrame.new(0, -h / 2 - 0.65, 0.3),
+		Size = Vector3.new(4, 1.2, 0.2),
+		CFrame = frame * CFrame.new(0, -h / 2 - 0.9, 0.3),
 		Color = Color3.fromRGB(70, 50, 34),
 		Material = Enum.Material.Wood,
 	})

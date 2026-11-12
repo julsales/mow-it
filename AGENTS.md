@@ -67,3 +67,20 @@ Read before working in this repo:
 15. First-person play must work (camera can be zoomed into first person);
     tools must look right from the player's own view.
 
+## Visual verification (every visual change)
+
+16. **Look before you report.** Every change that affects how the game
+    looks is checked on screen before it is called done: Studio MCP
+    `screen_capture` in Play, from several angles, close-up and wide
+    (player height and overview). If the capture fails or comes back
+    black, bring Studio to the front and retry; if it still fails, say so
+    and ask for a screenshot. Never claim something looks right without
+    having seen it.
+17. **Visual checklist:**
+    - nothing floating, sinking into the ground or clipping through other parts;
+    - rotations right (roofs peak up, signs face the player, tools point the right way);
+    - every model fully visible and assembled (no scattered pieces, nothing tiny or huge);
+    - signs and tags readable at normal play distance;
+    - colors fit the warm late-afternoon style; no flat placeholder boxes left;
+    - first-person view checked for anything held in the hand.
+
