@@ -59,19 +59,6 @@ function ShopDisplay.Init(handler: (Player, string) -> ())
 	workspace.DescendantAdded:Connect(wire)
 end
 
-local function anchorAll(model: Model)
-	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") then
-			d.Anchored = true
-			d.CanCollide = false
-			d.CanQuery = false
-			d.CanTouch = false
-		elseif d:IsA("JointInstance") or d:IsA("WeldConstraint") then
-			d:Destroy() -- anchored display, no welds needed
-		end
-	end
-end
-
 -- The prompt + tag holder for one item.
 local function slot(parent: Instance, toolId: string, at: CFrame, tagHeight: number): Part
 	local def = Tools.ById[toolId]
@@ -175,8 +162,7 @@ function ShopDisplay.Build(parent: Instance, frame: CFrame, toolIds: { string },
 			local x = (col - (columns - 1) / 2) * (boardW / columns)
 			local y = boardH / 2 - (row + 0.35) * (boardH / rows)
 			local hook = boardCenter * CFrame.new(x, y, 0.35)
-			local model = ToolModels.Build(id)
-			anchorAll(model)
+			local model = ToolModels.BuildDisplay(id)
 			-- Hang it: grip at the hook, tool pointing down the board.
 			model:PivotTo(hook * CFrame.Angles(-math.rad(90), 0, 0))
 			model.Name = "Display_" .. id
@@ -192,8 +178,7 @@ function ShopDisplay.Build(parent: Instance, frame: CFrame, toolIds: { string },
 		if i > (o.MaxParked or 3) then
 			break
 		end
-		local model = ToolModels.Build(id)
-		anchorAll(model)
+		local model = ToolModels.BuildDisplay(id)
 		local _, footprint = model:GetBoundingBox()
 		local spot = frame * CFrame.new(cursor + footprint.X / 2, 0, parkZ) * CFrame.Angles(0, math.rad(180), 0)
 		cursor += footprint.X + 2
@@ -251,8 +236,7 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	Props.label(sign, Enum.NormalId.Back, def.DisplayName:upper(), Color3.fromRGB(90, 56, 30))
 
 	-- Mount the tool flat on the board, tilted, centered by its bounding box.
-	local model = ToolModels.Build(toolId)
-	anchorAll(model)
+	local model = ToolModels.BuildDisplay(toolId)
 	-- Display size: fill the plaque whatever size the tool is in the hand.
 	local _, rawSize = model:GetBoundingBox()
 	model:ScaleTo(model:GetScale() * 4.3 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
@@ -325,8 +309,7 @@ function ShopDisplay.Park(parent: Instance, frame: CFrame, toolIds: { string }, 
 		if i > (maxCount or 3) then
 			break
 		end
-		local model = ToolModels.Build(id)
-		anchorAll(model)
+		local model = ToolModels.BuildDisplay(id)
 		local _, footprint = model:GetBoundingBox()
 		local spot = frame * CFrame.new(cursor + footprint.X / 2, 0, 0) * CFrame.Angles(0, math.rad(180), 0)
 		cursor += footprint.X + 2

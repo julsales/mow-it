@@ -431,4 +431,21 @@ function ToolModels.Build(toolId: string, fit: Fit?): Model
 	return model
 end
 
+-- A tool model for display (shops, showcase lots): anchored, no physics,
+-- no welds. Place it with PivotTo.
+function ToolModels.BuildDisplay(toolId: string): Model
+	local model = ToolModels.Build(toolId)
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.Anchored = true
+			d.CanCollide = false
+			d.CanQuery = false
+			d.CanTouch = false
+		elseif d:IsA("JointInstance") or d:IsA("WeldConstraint") then
+			d:Destroy()
+		end
+	end
+	return model
+end
+
 return ToolModels
