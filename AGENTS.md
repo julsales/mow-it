@@ -76,6 +76,13 @@ Read before working in this repo:
     black, bring Studio to the front and retry; if it still fails, say so
     and ask for a screenshot. Never claim something looks right without
     having seen it.
+    *Why captures go black:* Studio stops drawing its viewport while its
+    window is inactive. Before each capture run `tools/focus-studio.sh`
+    (KDE Plasma/Wayland, KWin scripting; on X11 use `xdotool search --name
+    "Roblox Studio" windowactivate`). Captures also work when Studio sits
+    visible on a second monitor. Edit-mode `require` is cached per session:
+    to bake new code, clone `ServerScriptService.Services` and
+    `ReplicatedStorage.Shared` first (see docs/EDITING.md).
 17. **Visual checklist:**
     - nothing floating, sinking into the ground or clipping through other parts;
     - rotations right (roofs peak up, signs face the player, tools point the right way);

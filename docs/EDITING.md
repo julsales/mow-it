@@ -15,6 +15,10 @@ content of the place that you can move, recolor, delete and add to.
 3. `Workspace/Land`, `Workspace/Zones`, the terrain and the lighting now
    exist in Edit. **Ctrl+S right away.**
 
+Studio caches `require` in Edit mode: after the code changed, a plain
+`Bake()` may run the old version. Restart Studio first (or have an agent
+bake with freshly cloned modules).
+
 When `Workspace/Zones` exists, the game never rebuilds the land; it just
 uses what is in the place. To start over: delete `Workspace/Zones`,
 `Workspace/Land`, `Workspace/GameSpawn` and clear the terrain
