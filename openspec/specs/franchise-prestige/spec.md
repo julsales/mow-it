@@ -34,3 +34,10 @@ The economy SHALL be tuned so a casual player (roughly 30–60 minutes a day) re
 #### Scenario: Casual pacing target
 - **WHEN** progression is simulated at casual daily play including offline production
 - **THEN** the simulated first franchise lands within the one-to-two-week window
+
+### Requirement: Playable-slice confirmation and eligibility
+The playable slice SHALL follow this implementation contract: Franchise requires Mega Fields and the configured run earnings. A server-issued preview expires after 30 seconds; an unsolicited confirmation grants nothing. This slice also resets Company Level, automation and plots; Clovers and lifetime statistics are retained.
+
+#### Scenario: Playable-slice acceptance
+- **WHEN** this slice is tested
+- **THEN** its documented behavior and exclusions match `docs/PLAYABLE_LOOP.md`, and broader v2 requirements remain tracked until independently verified

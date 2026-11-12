@@ -1,0 +1,43 @@
+Contracts.Init(remotes)
+check(Contracts.Accept(guest, "small_yard") == "Only the land owner can choose a party job.", "guest cannot replace party job")
+check(workspace:GetAttribute("ContractId") == "", "rejected guest job creates no state")
+Contracts.Accept(player, "small_yard")
+check(workspace:GetAttribute("ContractTarget") == 340, "two-player target scales cooperatively")
+Contracts.OnCut(guest, "backyard", 1000)
+check(workspace:GetAttribute("ContractProgress") == 0, "wrong expansion cannot advance a job")
+Contracts.OnCut(player, "front_yard", 150)
+Contracts.OnCut(guest, "front_yard", 190)
+check(profiles[player].Coins == 800 and profiles[guest].Coins == 800, "both participating members earn full reward")
+check(workspace:GetAttribute("ContractId") == "", "completed job clears replicated state")
+Contracts.OnCut(player, "front_yard", 1000)
+check(profiles[player].Coins == 800, "completed job cannot pay twice")
+Contracts.Accept(player, "small_yard")
+clock += 301
+Contracts.OnCut(player, "front_yard", 340)
+check(profiles[player].Coins == 1120 and profiles[guest].Coins == 1120, "late job pays gentle reduced reward to both")
+profiles[guest].UnlockedZoneIds = { front_yard = true }
+profiles[player].UnlockedZoneIds.backyard = true
+Contracts.Accept(player, "family_house")
+Contracts.OnCut(guest, "backyard", 10000)
+check(workspace:GetAttribute("ContractProgress") == 0, "guest cannot farm rewards above their own progression")
+check(Contracts.Abandon(guest) == "Only the land owner can abandon a party job.", "guest cannot abandon host job")
+Contracts.Abandon(player)
+check(workspace:GetAttribute("ContractId") == "", "host abandons without payout or penalty")
+Progression.Init(remotes, {})
+profiles[player] = newProfile()
+profiles[player].LifetimeGrass = 10
+Progression.Tutorial(player)
+check(profiles[player].TutorialStep == 2 and profiles[player].SellCount == 0, "cutting objective does not falsely count its coin reward as a sale")
+Progression.Tutorial(player)
+check(profiles[player].TutorialStep == 2 and profiles[player].Coins == 20, "tutorial reward cannot be claimed twice")
+profiles[player].SellCount = 1
+Progression.Tutorial(player)
+check(profiles[player].TutorialStep == 3 and profiles[player].Coins == 40, "real physical sale advances selling objective")
+-- Unknown/malformed messages cannot mutate currency or grant Crew.
+local before = profiles[player].Coins
+remotes.GameAction.OnServerEvent:Fire(player, {}, "garden_snail")
+remotes.GameAction.OnServerEvent:Fire(player, "BuyCrew", {})
+check(profiles[player].Coins == before and next(profiles[player].Crew) == nil, "malformed remote arguments do not mutate inventory")
+remotes.GameAction.OnServerEvent:Fire(player, "FranchiseConfirm", "")
+check(profiles[player].Franchises == 0, "confirmation without a fresh offer cannot reset progression")
+print("Service assertions passed:", checks)

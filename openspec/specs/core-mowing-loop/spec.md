@@ -39,3 +39,10 @@ The player SHALL be able to sell all carried grass at a Sell Pad, receiving Coin
 #### Scenario: Selling with empty storage
 - **WHEN** a player uses a Sell Pad carrying no grass
 - **THEN** no currency changes
+
+### Requirement: Playable-slice storage and fuel recovery
+The playable slice SHALL follow this implementation contract: When a motorized tool runs out of fuel, the player can walk onto an unlocked physical SELL pad to refill for free, even with empty storage. Mature planted grass is harvested by the same manual cut request; overflow remains in the plot.
+
+#### Scenario: Playable-slice acceptance
+- **WHEN** this slice is tested
+- **THEN** its documented behavior and exclusions match `docs/PLAYABLE_LOOP.md`, and broader v2 requirements remain tracked until independently verified

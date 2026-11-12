@@ -104,3 +104,22 @@ that feeds real data to whatever kit wins. Replace widgets, keep bindings.
 | `Roblox_Game` models / item models / `tools/build/*` generators | Different game, unverified provenance, embedded-script and junk risk. Structure patterns only. |
 | Any Toolbox model containing scripts we didn't audit | #1 free-model backdoor vector. No exceptions. |
 | Any icon/UI pack without a license we can point to | If it's not a row in this file, it doesn't ship. |
+
+## 7. Owner's interface direction (2026-11-12)
+
+The owner supplied `docs/art/ui-reference.png` for the farm-stall interface.
+The palette is centralized in `Shared/Config/Interface.luau`; new operations
+panels and Shop reuse it. The image's offers/prices are illustrations only.
+
+| Need | Source | License / provenance | Audit | Destination |
+| --- | --- | --- | --- | --- |
+| Interface reference | Owner attachment, `docs/art/ui-reference.png` | Provided for this project; reference, not imported as game art | Reference only; no executable content | `docs/art/` |
+| Individual icon references | Crops in `docs/art/references/` | Derived from the owner's supplied reference | Reference only; not final art | Art generation input |
+| Farm Shop icon / Starter Pack chest | Canva generated using the owner reference | Generated study boards; reviewed as reference only | Generated outputs are not standalone icon files; see artwork README | See `docs/art/asset-brief.md` |
+| Planting-bed preview | Project-authored wood rails, soil and BillboardGui, in `PlotVisuals.client.luau` | Project code; no external assets | Source reviewed; visual QA pending | Client-only previews at shared planting contract positions |
+
+The eight reference-derived icons were inspected as a contact sheet and uploaded
+through Studio MCP on 2026-11-12. They contain image pixels only, no scripts or
+models. Their source, resolution limit and content IDs are recorded in
+`docs/art/README.md`; the source PNGs live in `assets/UI/`. These are distinct from
+the Canva-generated study sheets, which remain reference material.

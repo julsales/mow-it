@@ -21,6 +21,8 @@ local ShopService = require(Services.ShopService)
 local LevelService = require(Services.LevelService)
 local LandService = require(Services.LandService)
 local GrassBag = require(Shared.GrassBag)
+local ProgressionService = require(Services.ProgressionService)
+local WeatherService = require(Services.WeatherService)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
 local MapService = require(Services.MapService)
@@ -30,6 +32,9 @@ local ToolVisualService = require(Services.ToolVisualService)
 -- Created by the server in ReplicatedStorage/Remotes so client and server
 -- always agree on the list without hand-building instances in Studio.
 local REMOTE_NAMES = {
+	"GameAction",
+	"FranchiseOffer",
+	"RequestProfile",
 	"CutRequest",
 	"SellRequest",
 	"BuyTool",
@@ -92,6 +97,7 @@ local function syncProfile(player: Player, profile)
 	profileRemote:FireClient(player, profile)
 end
 
+ProfileService.OnChanged(ProgressionService.Tutorial)
 ProfileService.OnChanged(syncProfile)
 
 -- Boot ------------------------------------------------------------------------
@@ -101,7 +107,10 @@ if isLandPlace then
 	GrassService.Init()
 	LevelService.Init(remotes)
 	EconomyService.Init(remotes)
+	ProgressionService.Init(remotes, EconomyService)
+	WeatherService.Init(remotes)
 	ToolVisualService.Init()
+	require(Services.MovementService).Init()
 	ShopService.Init(remotes)
 	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool)
 	require(Services.Map.Gates).Init(ShopService.UnlockZone);
@@ -127,6 +136,19 @@ ProfileService.Init()
 -- lets playtests (and the Studio MCP) buy tools without grinding. Never
 -- exists in a live server.
 if RunService:IsStudio() then
+	local inspect = Instance.new("BindableFunction")
+	inspect.Name = "DevProfile"
+	inspect.OnInvoke = function(player: Player, patch)
+		local profile = ProfileService.Get(player)
+		if profile and type(patch) == "table" then
+			for key, value in patch do
+				if profile[key] ~= nil and typeof(profile[key]) == typeof(value) then profile[key] = value end
+			end
+			ProfileService.NotifyChanged(player)
+		end
+		return profile
+	end
+	inspect.Parent = game:GetService("ServerStorage")
 	local give = Instance.new("BindableFunction")
 	give.Name = "DevGiveCoins"
 	give.OnInvoke = function(player: Player, amount: number)
@@ -166,13 +188,16 @@ if RunService:IsStudio() then
 	devRemote.Parent = remotes
 end
 
--- Players who joined before ProfileService.Init connected get loaded here.
-for _, player in Players:GetPlayers() do
-	if not ProfileService.Get(player) then
-		local profile = ProfileService.Load(player)
-		syncProfile(player, profile)
-	end
-end
+-- A client can request its snapshot after binding listeners (late loading UI).
+local lastSnapshot = {}
+(remotes.RequestProfile :: RemoteEvent).OnServerEvent:Connect(function(player)
+	local now = os.clock()
+	if now - (lastSnapshot[player] or -math.huge) < 1 then return end
+	lastSnapshot[player] = now
+	local profile = ProfileService.Get(player)
+	if profile then syncProfile(player, profile) end
+end)
+Players.PlayerRemoving:Connect(function(player) lastSnapshot[player] = nil end)
 
 if GameConfig.Verbose then
 	print(("[MowIt] Server booted. PlaceId=%d Lobby=%s Land=%s Studio=%s"):format(

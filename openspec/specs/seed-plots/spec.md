@@ -27,3 +27,10 @@ Mature planted grass SHALL be cut like wild grass but SHALL yield its special va
 #### Scenario: Harvesting a plot
 - **WHEN** a player cuts fully grown planted grass
 - **THEN** they gain that seed's special grass units, respecting storage capacity
+
+### Requirement: Playable-slice plot contract
+The playable slice SHALL follow this implementation contract: Two beds per expansion use shared GrassArea-relative positions and persistent ReadyAt timestamps. Planting requires the owner nearby. Special seeds currently yield Golden grass with per-seed yield/grow-time tuning; partial harvest preserves the uncollected remainder.
+
+#### Scenario: Playable-slice acceptance
+- **WHEN** this slice is tested
+- **THEN** its documented behavior and exclusions match `docs/PLAYABLE_LOOP.md`, and broader v2 requirements remain tracked until independently verified

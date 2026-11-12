@@ -17,6 +17,13 @@ local GrassService = require(script.Parent.GrassService)
 local LevelService = require(script.Parent.LevelService)
 local LandService = require(script.Parent.LandService)
 
+local Tuning = require(Shared.Config.Progression)
+local Rules = require(Shared.ProgressionRules)
+local emptyFuel = {}
+local Weather = require(script.Parent.WeatherService)
+local Progression = require(script.Parent.ProgressionService)
+local Plots = require(script.Parent.PlotService)
+
 local EconomyService = {}
 
 local lastSwingAt: { [Player]: number } = {}
@@ -39,7 +46,8 @@ local function tryCut(player: Player)
 	local profile = ProfileService.Get(player)
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if not profile or not root then
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not profile or not root or not humanoid or humanoid.Health <= 0 then
 		return
 	end
 	local tool, radius, critChance = EconomyService.GetSwingStats(profile)
@@ -64,42 +72,53 @@ local function tryCut(player: Player)
 		return
 	end
 
-	-- Locked expansions cannot be farmed by standing on the fence line.
-	-- What is open is the land's (the host's) state, so helpers mow
-	-- wherever the host has unlocked.
-	local cells = GrassService.GetCellsInRadius(root.Position, radius, LandService.IsUnlocked)
-
-	local harvested = 0
-	local xp = 0
-	local hit = 0
-	local cutAt: { Vector3 } = {} -- where to burst clippings on the client (capped)
-	for _, cell in cells do
-		hit += 1
-		if GrassService.Damage(cell, tool.Power) then
-			if #cutAt < 40 then
-				table.insert(cutAt, cell.Center)
-			end
-			local gain = cell.Yield -- rare grass types yield more (GrassTypes.luau)
-			if math.random() < critChance then
-				gain *= 3 -- Golden Blades critical cut
-			end
-			harvested += gain
-			xp += Zones.ById[cell.ZoneId].GrassValue * CompanyLevel.XpPerCutValue
+	if tool.FuelType ~= "None" and profile.Fuel <= 0 then
+		if not emptyFuel[player] then
+			emptyFuel[player] = true
+			(remotes.Notify :: RemoteEvent):FireClient(player, "Out of fuel! Walk onto a SELL pad to refill for free.")
 		end
+		return
 	end
-
-	local stored = 0
-	if harvested > 0 then
-		-- Every cell yields the normal variant for now; weather variants
-		-- (Phase 3) will tag cells and add their own variant here.
-		stored = GrassBag.Add(profile, GrassBag.DefaultVariant, harvested)
-		profile.LifetimeGrass += harvested
-		LevelService.AddXp(player, xp)
+	local stored, hit, cutAt = EconomyService.Harvest(player, root.Position, radius, tool.Power, critChance, true)
+	if hit > 0 and tool.FuelType ~= "None" then
+		profile.Fuel = math.max(0, profile.Fuel - (Tuning.FuelPerSwing[tool.FuelType] or 0))
 		ProfileService.NotifyChanged(player)
 	end
-	-- Client plays snip/mow sounds and shows "+N"; hit > 0 with stored = 0
-	-- means tough grass that only got shorter.
 	feedback:FireClient(player, stored, GrassBag.IsFull(profile), hit, cutAt)
+end
+
+-- Shared harvest path for manual cuts and server-owned Crew/automation.
+function EconomyService.Harvest(player: Player, position: Vector3, radius: number, power: number, critChance: number, manual: boolean)
+	local profile = ProfileService.Get(player)
+	if not profile or GrassBag.IsFull(profile) then
+		if profile and EconomyService.CanSellAnywhere(player) then EconomyService.SellAll(player) end
+		return 0, 0, {}
+	end
+	local cells = GrassService.GetCellsInRadius(position, radius, LandService.IsUnlocked)
+	local stored, harvested, xp, hit = 0, 0, 0, 0
+	-- Mature planted grass takes storage priority over the surrounding wild lawn.
+	if manual then stored = Plots.CutNear(player, position, radius) end
+	local cutAt = {}
+	for _, cell in cells do
+		if GrassBag.IsFull(profile) then break end
+		hit += 1
+		if GrassService.Damage(cell, power) then
+			if #cutAt < 40 then table.insert(cutAt, cell.Center) end
+			local gain = cell.Yield
+			if math.random() < critChance then gain *= 3 end
+			harvested += gain
+			stored += GrassBag.Add(profile, Weather.Variant(profile), gain)
+			xp += Zones.ById[cell.ZoneId].GrassValue * CompanyLevel.XpPerCutValue
+			Progression.OnCut(player, cell.ZoneId, gain)
+		end
+	end
+	if harvested > 0 or stored > 0 then
+		profile.LifetimeGrass += harvested
+		LevelService.AddXp(player, xp)
+		if GrassBag.IsFull(profile) and EconomyService.CanSellAnywhere(player) then EconomyService.SellAll(player) end
+		ProfileService.NotifyChanged(player)
+	end
+	return stored, hit, cutAt
 end
 
 function EconomyService.CanSellAnywhere(player: Player): boolean
@@ -123,7 +142,8 @@ function EconomyService.SellAll(player: Player)
 		end
 	end
 	local earned = GrassBag.SellValue(profile, bestValue)
-	profile.Coins += earned
+	earned = Rules.AwardCoins(profile, earned)
+	profile.SellCount += 1
 	GrassBag.Clear(profile)
 	LevelService.AddXp(player, earned * CompanyLevel.XpPerCoinSold)
 	ProfileService.NotifyChanged(player);
@@ -133,6 +153,7 @@ end
 
 function EconomyService.Init(remoteFolder: Folder)
 	remotes = remoteFolder;
+	Players.PlayerRemoving:Connect(function(player) lastSwingAt[player] = nil; emptyFuel[player] = nil end);
 	(remoteFolder:WaitForChild("CutRequest") :: RemoteEvent).OnServerEvent:Connect(tryCut)
 
 	-- Sell pads are physical: tag any Part "SellPad" in Studio and it works.
@@ -150,7 +171,17 @@ function EconomyService.Init(remoteFolder: Folder)
 				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 				if root then
 					for _, pad in pads do
-						if (root.Position - pad.Position).Magnitude < 8 then
+						local localPosition = pad.CFrame:PointToObjectSpace(root.Position)
+						local zone = pad:FindFirstAncestorWhichIsA("Folder")
+						if (not zone or not Zones.ById[zone.Name] or LandService.IsUnlocked(zone.Name))
+							and math.abs(localPosition.X) <= pad.Size.X / 2 + 2
+							and math.abs(localPosition.Z) <= pad.Size.Z / 2 + 2
+							and math.abs(localPosition.Y) < 8 then
+							local profile = ProfileService.Get(player)
+							if profile and profile.Fuel < Tuning.FuelCapacity then
+								profile.Fuel = Tuning.FuelCapacity; emptyFuel[player] = nil
+								ProfileService.NotifyChanged(player)
+							end
 							EconomyService.SellAll(player)
 							break
 						end

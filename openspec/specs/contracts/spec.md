@@ -27,3 +27,10 @@ Missing a deadline SHALL reduce the payout rather than punish the players, and t
 #### Scenario: Late delivery
 - **WHEN** a party reaches the target after the deadline
 - **THEN** they receive a reduced payout and can immediately take another contract
+
+### Requirement: Playable-slice marked-yard jobs
+The playable slice SHALL follow this implementation contract: Jobs mark the existing named expansion instead of teleporting to a separate yard. Participants are captured at acceptance and must qualify by their own expansion progression. Only their cuts within that expansion advance the job; completion pays once and clears the active job.
+
+#### Scenario: Playable-slice acceptance
+- **WHEN** this slice is tested
+- **THEN** its documented behavior and exclusions match `docs/PLAYABLE_LOOP.md`, and broader v2 requirements remain tracked until independently verified

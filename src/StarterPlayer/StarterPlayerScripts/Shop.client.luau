@@ -15,25 +15,19 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Format = require(Shared.Format)
 local Tools = require(Shared.Config.Tools)
 local Backpacks = require(Shared.Config.Backpacks)
+local Buffs = require(Shared.Config.Buffs)
 local Zones = require(Shared.Config.Zones)
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 
+local UiKit = require(script.Parent:WaitForChild("UiKit"))
+local C = UiKit.Colors
 local COLORS = {
-	Panel = Color3.fromRGB(28, 40, 30),
-	Row = Color3.fromRGB(40, 56, 42),
-	RowEquipped = Color3.fromRGB(52, 86, 52),
-	Text = Color3.fromRGB(255, 255, 255),
-	Muted = Color3.fromRGB(180, 200, 180),
-	Buy = Color3.fromRGB(60, 170, 70),
-	CantAfford = Color3.fromRGB(90, 100, 90),
-	Equip = Color3.fromRGB(50, 120, 210),
-	Equipped = Color3.fromRGB(70, 80, 70),
-	Locked = Color3.fromRGB(110, 70, 60),
-	Tab = Color3.fromRGB(46, 66, 48),
-	TabActive = Color3.fromRGB(240, 180, 40),
+	Panel = C.Cream, Row = C.Track, RowEquipped = C.Leaf, Text = C.Ink,
+	Muted = C.Blue, Buy = C.Gold, CantAfford = C.CreamShade, Equip = C.Green,
+	Equipped = C.CreamShade, Locked = C.Coral, Tab = C.Track, TabActive = C.Gold,
 }
 
 local function corner(parent: Instance, radius: number)
@@ -48,7 +42,7 @@ local function label(parent: Instance, text: string, size: number, color: Color3
 	l.Text = text
 	l.TextColor3 = color
 	l.TextSize = size
-	l.Font = if bold then Enum.Font.GothamBold else Enum.Font.Gotham
+	l.FontFace = if bold then UiKit.Font else UiKit.FontBold
 	l.TextXAlignment = Enum.TextXAlignment.Left
 	l.TextTruncate = Enum.TextTruncate.AtEnd
 	l.Parent = parent
@@ -60,7 +54,7 @@ local function button(parent: Instance, text: string, color: Color3): TextButton
 	b.Text = text
 	b.BackgroundColor3 = color
 	b.TextColor3 = COLORS.Text
-	b.Font = Enum.Font.GothamBold
+	b.FontFace = UiKit.Font
 	b.TextScaled = true
 	b.AutoButtonColor = true
 	b.Parent = parent
@@ -90,9 +84,10 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local openButton = button(gui, "SHOP", COLORS.Buy)
 openButton.Name = "OpenShop"
-openButton.AnchorPoint = Vector2.new(1, 0)
-openButton.Position = UDim2.new(1, -10, 0, 60)
-openButton.Size = UDim2.new(0, 160, 0, 48)
+openButton.Visible = false
+openButton.AnchorPoint = Vector2.new(0, 0)
+openButton.Position = UDim2.new(0, 12, 0, 110)
+openButton.Size = UDim2.new(0, 88, 0, 44)
 
 local panel = Instance.new("Frame")
 panel.Name = "Shop"
@@ -109,14 +104,20 @@ do
 	limit.Parent = panel
 	local stroke = Instance.new("UIStroke")
 	stroke.Thickness = 3
-	stroke.Color = Color3.fromRGB(240, 180, 40)
+	stroke.Color = C.Ink
 	stroke.Parent = panel
 end
 
-local title = label(panel, "Shop", 26, COLORS.Text, true)
-title.Position = UDim2.new(0, 16, 0, 10)
+local title = label(panel, "SHOP", 26, COLORS.Text, true)
+title.Position = UDim2.new(0, 70, 0, 10)
 title.Size = UDim2.new(1, -80, 0, 34)
 
+local shopIcon = Instance.new("ImageLabel")
+shopIcon.BackgroundTransparency = 1
+shopIcon.Image = require(Shared.Config.Interface).Images.Shop
+shopIcon.Position = UDim2.fromOffset(10, 4)
+shopIcon.Size = UDim2.fromOffset(52, 52)
+shopIcon.Parent = panel
 local closeButton = button(panel, "X", Color3.fromRGB(190, 60, 50))
 closeButton.AnchorPoint = Vector2.new(1, 0)
 closeButton.Position = UDim2.new(1, -10, 0, 10)
@@ -232,7 +233,17 @@ local function paintRows(rows: { Row }, owned: { [string]: boolean }, equipped: 
 	end
 end
 
-local showingTools = true
+local showing = "Tools"
+local buffRows = {}
+for i, def in Buffs.List do
+	table.insert(buffRows, makeRow(200 + i, def.Id, def.DisplayName, def.Description, def.Price, def.RequiredZone, "BuyBuff"))
+end
+local buffsTab = button(tabs, "Automation", COLORS.Tab)
+buffsTab.Size = UDim2.new(1 / 3, -4, 1, 0)
+buffsTab.Position = UDim2.fromScale(2 / 3, 0)
+toolsTab.Size = UDim2.new(1 / 3, -4, 1, 0)
+packsTab.Size = UDim2.new(1 / 3, -4, 1, 0)
+packsTab.Position = UDim2.fromScale(1 / 3, 0)
 
 local function refresh()
 	local profile = ClientState.Get()
@@ -242,26 +253,39 @@ local function refresh()
 	paintRows(toolRows, profile.OwnedToolIds, profile.EquippedToolId, profile)
 	paintRows(packRows, profile.OwnedBackpackIds, profile.EquippedBackpackId, profile)
 	for _, row in toolRows do
-		row.Frame.Visible = showingTools
+		row.Frame.Visible = showing == "Tools"
 	end
 	for _, row in packRows do
-		row.Frame.Visible = not showingTools
+		row.Frame.Visible = showing == "Storage"
 	end
-	toolsTab.BackgroundColor3 = if showingTools then COLORS.TabActive else COLORS.Tab
-	packsTab.BackgroundColor3 = if showingTools then COLORS.Tab else COLORS.TabActive
+	for _, row in buffRows do
+		local def = Buffs.ById[row.Id]
+		local count = profile.BuffStacks[row.Id] or 0
+		row.Frame.Visible = showing == "Automation"
+		row.Action.Text = if count >= def.MaxStacks then "Maxed" else "$ " .. Format.Number(row.Price) .. " (" .. count .. "/" .. def.MaxStacks .. ")"
+		row.Action.Active = count < def.MaxStacks and Zones.HighestUnlockedIndex(profile.UnlockedZoneIds) >= row.RequiredZone and profile.Coins >= row.Price
+		row.Action.BackgroundColor3 = if row.Action.Active then COLORS.Buy else COLORS.CantAfford
+	end
+	buffsTab.BackgroundColor3 = if showing == "Automation" then COLORS.TabActive else COLORS.Tab
+	toolsTab.BackgroundColor3 = if showing == "Tools" then COLORS.TabActive else COLORS.Tab
+	packsTab.BackgroundColor3 = if showing == "Storage" then COLORS.TabActive else COLORS.Tab
 end
 
 toolsTab.Activated:Connect(function()
-	showingTools = true
+	showing = "Tools"
 	list.CanvasPosition = Vector2.zero
 	refresh()
 end)
 packsTab.Activated:Connect(function()
-	showingTools = false
+	showing = "Storage"
 	list.CanvasPosition = Vector2.zero
 	refresh()
 end)
+buffsTab.Activated:Connect(function() showing = "Automation"; list.CanvasPosition = Vector2.zero; refresh() end)
 openButton.Activated:Connect(function()
+	local operations = player.PlayerGui:FindFirstChild("Operations")
+	local other = operations and operations:FindFirstChild("Panel")
+	if other and other:IsA("GuiObject") then other.Visible = false end
 	panel.Visible = not panel.Visible
 	refresh()
 end)
@@ -289,7 +313,7 @@ if RunService:IsStudio() then
 		end
 		local dev = button(gui, "+$1M (Studio)", Color3.fromRGB(150, 70, 200))
 		dev.AnchorPoint = Vector2.new(1, 0)
-		dev.Position = UDim2.new(1, -10, 0, 114)
+		dev.Position = UDim2.new(1, -10, 0, 245)
 		dev.Size = UDim2.new(0, 160, 0, 40)
 		dev.Activated:Connect(function()
 			devRemote:FireServer()

@@ -48,3 +48,10 @@ Crew ownership and evolution SHALL be stored as collection data that prestige ne
 #### Scenario: Franchising keeps Crew
 - **WHEN** a player franchises (prestiges)
 - **THEN** all their Crew members and their evolution state remain owned
+
+### Requirement: Playable-slice collection and work
+The playable slice SHALL follow this implementation contract: Copies have profile-local stable IDs and merge in sets of three at equal evolution, capped at two evolutions. Follow and Station use the shared server harvest path. This slice uses project-authored companion previews; globally tradable identity and species asset imports remain future work.
+
+#### Scenario: Playable-slice acceptance
+- **WHEN** this slice is tested
+- **THEN** its documented behavior and exclusions match `docs/PLAYABLE_LOOP.md`, and broader v2 requirements remain tracked until independently verified

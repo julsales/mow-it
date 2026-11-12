@@ -27,6 +27,7 @@ local profile: any = nil
 local gui = Instance.new("ScreenGui")
 gui.Name = "MowItHUD"
 gui.ResetOnSpawn = false
+gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local function makeLabel(name: string, position: UDim2, size: UDim2): TextLabel
@@ -34,7 +35,7 @@ local function makeLabel(name: string, position: UDim2, size: UDim2): TextLabel
 	label.Name = name
 	label.Position = position
 	label.Size = size
-	label.BackgroundColor3 = Color3.fromRGB(20, 30, 20)
+	label.BackgroundColor3 = require(Shared.Config.Interface).Colors.Ink
 	label.BackgroundTransparency = 0.3
 	label.TextColor3 = Color3.fromRGB(255, 255, 255)
 	label.TextScaled = true
@@ -47,8 +48,20 @@ end
 local coinsLabel = makeLabel("Coins", UDim2.new(0, 10, 0, 10), UDim2.new(0, 220, 0, 40))
 local grassLabel = makeLabel("Grass", UDim2.new(0, 10, 0, 56), UDim2.new(0, 220, 0, 40))
 local toolLabel = makeLabel("Tool", UDim2.new(0, 10, 0, 102), UDim2.new(0, 220, 0, 40))
+coinsLabel.AnchorPoint = Vector2.new(1, 1)
+coinsLabel.Position = UDim2.new(1, -12, 1, -12)
+grassLabel.AnchorPoint = Vector2.new(0, 1)
+grassLabel.Position = UDim2.new(0, 12, 1, -72)
+toolLabel.AnchorPoint = Vector2.new(1, 1)
+toolLabel.Position = UDim2.new(1, -12, 1, -58)
 local notifyLabel = makeLabel("", UDim2.new(0.5, -250, 0, 10), UDim2.new(0, 500, 0, 40))
 notifyLabel.BackgroundTransparency = 1
+notifyLabel.AnchorPoint = Vector2.new(0.5, 0)
+notifyLabel.Position = UDim2.new(0.5, 0, 0, 10)
+notifyLabel.Size = UDim2.new(0.7, 0, 0, 44)
+local notificationLimit = Instance.new("UISizeConstraint")
+notificationLimit.MaxSize = Vector2.new(500, 60)
+notificationLimit.Parent = notifyLabel
 
 local function makeButton(name: string, text: string, position: UDim2): TextButton
 	local button = Instance.new("TextButton")
@@ -90,6 +103,20 @@ local function refresh()
 		return
 	end
 	local tool = Tools.ById[profile.EquippedToolId]
+	local compact = gui.AbsoluteSize.Y < 500
+	coinsLabel.Position = UDim2.new(1, -12, 0, 158)
+	coinsLabel.AnchorPoint = Vector2.new(1, 0)
+	coinsLabel.Size = UDim2.fromOffset(if compact then 180 else 220, 34)
+	toolLabel.Visible = not compact
+	if compact then
+		grassLabel.AnchorPoint = Vector2.new(1, 0)
+		grassLabel.Position = UDim2.new(1, -12, 0, 200)
+		grassLabel.Size = UDim2.fromOffset(180, 34)
+	else
+		grassLabel.AnchorPoint = Vector2.new(0, 1)
+		grassLabel.Position = UDim2.new(0, 12, 1, -72)
+		grassLabel.Size = UDim2.fromOffset(220, 40)
+	end
 	coinsLabel.Text = "$ " .. Format.Number(profile.Coins)
 	-- Total carried; special variants are listed after it ("+3 Golden Grass").
 	local carried = ("🌿 %s / %s"):format(Format.Number(GrassBag.Total(profile)), Format.Number(GrassBag.Capacity(profile)))
@@ -121,6 +148,8 @@ nextPackButton.Activated:Connect(function()
 	end
 end)
 
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(refresh)
+
 -- Cutting input: click / tap / controller trigger. Auto-Swing buff turns
 -- this into hold-to-mow on the client; the server still rate-limits.
 local autoSwingHeld = false
@@ -128,13 +157,13 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then
 		return
 	end
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch or input.KeyCode == Enum.KeyCode.ButtonR2 then
 		autoSwingHeld = true;
 		(remotes:WaitForChild("CutRequest") :: RemoteEvent):FireServer()
 	end
 end)
 UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch or input.KeyCode == Enum.KeyCode.ButtonR2 then
 		autoSwingHeld = false
 	end
 end)

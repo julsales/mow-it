@@ -22,5 +22,7 @@ local remotes = ReplicatedStorage:WaitForChild("Remotes");
 	profile = newProfile
 	changed:Fire(newProfile)
 end)
+;
+(remotes:WaitForChild("RequestProfile") :: RemoteEvent):FireServer()
 
 return ClientState

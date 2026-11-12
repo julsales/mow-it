@@ -25,24 +25,24 @@ before the next starts. Spec references are to this change's `specs/`.
 - [x] 3.5 Land with six expansions on one property (open map v2); helpers earn fully
 
 ## 4. Phase 2 — Update "Crew & Restock" (v1.1) (`crew-system`, `crew-restock-market`)
-- [ ] 4.1 Crew roster/equip UI; follow & station behavior (server mowing agents)
-- [ ] 4.2 Global 5-min restock market (server-time seeded shelf, Clovers, per-player stock)
+- [x] 4.1 Crew roster/equip UI; follow & station behavior (server mowing agents)
+- [x] 4.2 Global 5-min restock market (server-time seeded shelf, Clovers, per-player stock)
 - [ ] 4.3 Shining-tuft Crew discovery; duplicates equip-stack + merge evolution
 - [ ] 4.4 Crew assets imported per `docs/ASSETS.md` audit flow
 
 ## 5. Phase 3 — Update "Sky & Jobs" (v1.2): contracts, weather, variants, plots (`contracts`, `weather-and-grass-variants`, `seed-plots`)
-- [ ] 5.1 Job board + timed client yards, party-scaled, gentle failure
+- [x] 5.1 Job board + timed client yards, party-scaled, gentle failure
 - [ ] 5.2 Server weather cycle + variant drops end-to-end (tagged sell already in 3.2)
-- [ ] 5.3 Seed plots: planting, real-time + offline growth, variant harvest
+- [x] 5.3 Seed plots: planting, real-time + offline growth, variant harvest
 
 ## 6. Phase 4 — Update "Machines & Franchise" (v1.3): vehicles, fuel, franchise, offline (`tools-and-vehicles`, `franchise-prestige`)
 - [ ] 6.1 Rideable tools as driveable vehicles that mow by contact
 - [ ] 6.2 Fuel: manual points, capped automation refill, Infinite Fuel pass check
-- [ ] 6.3 Franchise flow (confirm screen, reset set, points, tree UI)
-- [ ] 6.4 Offline production from stationed Crew with caps; collect on land
+- [x] 6.3 Franchise flow (confirm screen, reset set, points, tree UI)
+- [x] 6.4 Offline production from stationed Crew with caps; collect on land
 
 ## 7. Phase 5 — Update "Live" (v1.4): retention & monetization (`retention-and-events`, `monetization-and-cosmetics`)
-- [ ] 7.1 Guided first loop (objectives + step rewards)
+- [x] 7.1 Guided first loop (objectives + step rewards)
 - [ ] 7.2 Daily login 7-day, daily/weekly quests, codes, badges + leaderboards
 - [ ] 7.3 Passes/products catalog with single idempotent receipt handler
 - [ ] 7.4 Cosmetics: tool skins/trails, land/showcase decoration, avatar auras/titles
@@ -53,7 +53,25 @@ before the next starts. Spec references are to this change's `specs/`.
 - [ ] 8.3 Monthly event cadence becomes recurring live-ops changes
 
 ## 9. Verification per release
-- [ ] 9.1 `rojo build` both projects; Luau compile check all `src/**/*.luau`
+- [x] 9.1 `rojo build` both projects; Luau compile check all `src/**/*.luau`
 - [ ] 9.2 Play Solo script: first loop ≤3 min to first tool purchase
 - [ ] 9.3 Multiplayer test: party of 4 to host land; helper rewards; teleport failure retains party
 - [ ] 9.4 Economy simulation: casual pacing reaches first franchise in 1–2 weeks
+
+## Playable-slice implementation notes (2026-11-12)
+
+See `docs/PLAYABLE_LOOP.md` for what runs, test evidence and remaining QA.
+Checked implementation tasks are not a blanket acceptance of every v2 scenario.
+
+- 4.3 partial: rarity-weighted mowing discovery, copies and merge evolution run;
+  shining-tuft reveal art/animation remains open.
+- 4.4 partial: project-authored companion silhouettes; species models await asset audit.
+- 5.1 uses the spec's marked-expansion yard option; four-client QA remains open.
+- 5.2 partial: server cycle, announcements and tagged inventory work; featured
+  weekly rotation and full weather audiovisual treatment remain open.
+- 6.1 uses the existing character-mounted rider presentation; physics vehicles remain open.
+- 6.2 partial: motorized-tool consumption and free physical refill at SELL pads;
+  automatic refill and Infinite Fuel pass remain open.
+- 7.2 partial: persistent seven-day claim; quests/codes/badges/global boards remain open.
+- 9.2 partial: Play Solo cut/sell/buy verified with test positioning and funding;
+  the less-than-three-minute timing criterion was not measured.

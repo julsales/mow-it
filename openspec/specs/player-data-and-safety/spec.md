@@ -34,3 +34,10 @@ Crew instances SHALL carry a unique identity and ownership history from day one;
 #### Scenario: Future trade safety by design
 - **WHEN** trading is implemented in a later change
 - **THEN** it can operate on existing Crew instances without a data migration, and a confirmed trade cannot leave the same Crew member owned by two players
+
+### Requirement: Playable-slice persistence ownership
+The playable slice SHALL follow this implementation contract: Live profile loads acquire an expiring session lock with UpdateAsync. Failed or locked loads cannot create writable defaults. Saves require the same session owner and release ownership on leave; Studio profiles remain memory-only.
+
+#### Scenario: Playable-slice acceptance
+- **WHEN** this slice is tested
+- **THEN** its documented behavior and exclusions match `docs/PLAYABLE_LOOP.md`, and broader v2 requirements remain tracked until independently verified

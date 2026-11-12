@@ -7,18 +7,7 @@
 
 local UiKit = {}
 
-UiKit.Colors = {
-	Ink = Color3.fromRGB(42, 32, 24), -- outlines and borders
-	Cream = Color3.fromRGB(251, 243, 223), -- main text, card background
-	CreamShade = Color3.fromRGB(217, 199, 154), -- card bottom edge
-	Track = Color3.fromRGB(228, 214, 174), -- empty progress bar
-	Green = Color3.fromRGB(111, 175, 74), -- progress fill
-	GreenShade = Color3.fromRGB(76, 133, 48),
-	Leaf = Color3.fromRGB(183, 224, 140), -- positive numbers (+12)
-	Gold = Color3.fromRGB(242, 199, 92), -- coins, celebrations
-	Coral = Color3.fromRGB(233, 128, 93), -- warnings (bag full)
-	Blue = Color3.fromRGB(63, 106, 151), -- card labels
-}
+UiKit.Colors = require(game:GetService("ReplicatedStorage").Shared.Config.Interface).Colors
 
 UiKit.Font = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 UiKit.FontBold = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
@@ -35,6 +24,9 @@ function UiKit.Stroke(parent: Instance, thickness: number, color: Color3?): UISt
 	stroke.Thickness = thickness
 	stroke.Color = color or UiKit.Colors.Ink
 	stroke.LineJoinMode = Enum.LineJoinMode.Round
+	if parent:IsA("GuiObject") and not parent:IsA("TextLabel") then
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	end
 	stroke.Parent = parent
 	return stroke
 end
