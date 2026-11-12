@@ -10,8 +10,8 @@ local GameConfig = {
 	-- Lobby is the start place. Game is a sub-place teleported to with a
 	-- ReservedServerId so a party of up to 4 plays alone together.
 	LobbyPlaceId = 0,
-	GamePlaceId = 0, -- legacy name; v2 calls this the Land place (see below)
-	LandPlaceId = 0, -- v2: private land sessions run here (reserved servers)
+	GamePlaceId = 83958278376153, -- legacy name; v2 calls this the Land place (see below)
+	LandPlaceId = 83958278376153, -- v2: private land sessions run here (reserved servers)
 
 	-- Lobby / match --------------------------------------------------------
 	MaxPartySize = 4,
