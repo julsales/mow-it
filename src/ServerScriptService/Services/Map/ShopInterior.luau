@@ -348,7 +348,7 @@ local function logShell(parent: Instance, cf: CFrame): Room
 	end
 	-- Flower beds on the ground either side of the steps (not on the deck,
 	-- where they poked through the railing).
-	for _, x in { -stairW / 2 - 4.5, stairW / 2 + 4.5 } do
+	for _, x in { -stairW / 2 - 8, stairW / 2 + 8 } do
 		Props.planters(parent, cf * CFrame.new(x, 0, deckZ + porchDepth / 2 + 2.2), 0, 0)
 	end
 	lamp(parent, cf * CFrame.new(DOOR_W / 2 + 1.2, FLOOR + postH - 2.6, halfD + LOG_D / 2 + 1.2), 18)
