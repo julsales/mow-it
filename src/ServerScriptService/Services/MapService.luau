@@ -422,6 +422,14 @@ function MapService.BuildIfMissing()
 		local list = placed[zone.Id]
 		local function place(radius: number, build: (CFrame) -> (), near: Vector3?, nearRadius: number?)
 			local spot = findSpot(zone.Id, def, radius, rng, list, blocked, near, nearRadius)
+			if not spot and near then
+				-- No room near the hub: anywhere in the area is better than
+				-- a missing stall/shop.
+				spot = findSpot(zone.Id, def, radius, rng, list, blocked)
+			end
+			if not spot then
+				warn(("[MowIt][Map] No room for a radius-%d piece in %s."):format(radius, zone.Id))
+			end
 			if spot then
 				table.insert(list, { Position = spot, Radius = radius })
 				markDisc(blocked, spot, radius + MapLayout.LawnMargin / 2)
