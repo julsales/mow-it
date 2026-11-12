@@ -68,5 +68,6 @@ co-op help on the host's land, and a franchise prestige loop.
   the mapped UI kit (see `docs/ASSETS.md`).
 - Existing skeleton services (grass/economy/shops/lobby queue) evolve into
   the above; configs remain the numeric source of truth.
-- Design docs: `docs/GDD.md` becomes a summary pointing here; OpenSpec is
-  the behavioral source of truth from this change on.
+- Design docs: OpenSpec is the single source of truth for design and
+  rollout from this change on; `docs/` keeps only how-to and reference
+  material (assets, editing, architecture, Rojo).

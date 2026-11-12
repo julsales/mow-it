@@ -108,7 +108,7 @@ Reused, deliberately:
     mental model, recreated clean here with Rojo project files (the old
     repo syncs by hand; this one doesn't have to).
   - Docs as first-class files + a phased plan with a kanban-style
-    checklist (`docs/DEVELOPMENT_PLAN.md` plays the role its
+    checklist (OpenSpec `tasks.md` plays the role its
     `PROJECT_KANBAN.md` plays, without the generator script).
 
 **Not** reused: any model, item catalog, generated map code, UI images or
