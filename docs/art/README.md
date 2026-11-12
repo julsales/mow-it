@@ -3,7 +3,9 @@
 ## Current generated-art revision
 
 The current visual direction is the owner's simulator reference,
-`references/simulator-ui-owner.png`. The flat brown-outline OpenPencil board
+`references/simulator-ui-owner.png`, with the passes grid following the newer
+`references/passes-grid-owner.png` (three upper cards and two wider lower cards).
+The flat brown-outline OpenPencil board
 below was rejected as too simple and is retained only as history.
 
 The **native image_gen** tool generated 20 separate runtime-art candidates in
@@ -27,7 +29,8 @@ The page **Mow It - Generated UI v3** contains five active boards:
 
 Illustrations and skin images are independent image-filled layers; text and
 basic UI geometry remain editable native nodes. Replaced assembly drafts are
-hidden rather than overwriting the owner's original page/file. Previews are
+preserved on **Mow It - Assembly archive**, keeping the active page free of
+stale lint findings without overwriting the owner's original page/file. Previews are
 design mockups with sample progress/balances, not Studio captures or a working
 OpenPencil scroll prototype. The long board specifies the scroll contents;
 Roblox must use a clipped viewport and dynamic ScrollingFrame canvas.
@@ -37,8 +40,12 @@ against an already-open authenticated local OpenPencil server. It reads the
 local token internally without logging or committing it. `assembly.json` and
 `openpencil-nodes.json` record layout and node mapping; temporary progress lives
 in `/tmp/mowit-pencil-assembly-v3.json`. Commands: `prepare`, `import --board N`,
-`fill --board N --limit 8`, `export --board N`, `save`; `rebuild` preserves the
-previous owned board hidden. All five exported boards were visually inspected.
+`fill --board N --limit 8`, `export --board N`, `lint`, `save`; `rebuild` preserves the
+previous owned board on the archive page when available. All five exported boards were visually inspected. Native frame surfaces
+carry explicit fills and corner radii. The native editor contrast check for
+the active boards is recorded in `generated-v3/contrast-audit.json`. The
+whole active page is also clean for the color-contrast rule, as recorded in
+`generated-v3/contrast-page-audit.json` (zero errors or warnings for both).
 
 Roblox upload, runtime skin binding, responsive input/scroll behavior and Play
 verification remain pending. Current runtime image IDs still reference the

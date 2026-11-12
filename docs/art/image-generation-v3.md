@@ -16,6 +16,24 @@ Layered document: `generated-v3/mow-it-ui-v3.fig`. Roblox upload and runtime
 binding remain pending. The prompts below are the initial art brief; the
 recorded generation prompts and owner selections above govern the final art.
 
+## Passes grid revision
+
+The owner supplied `references/passes-grid-owner.png` for the passes window.
+Its cream body, slim cyan frame, four icon filters, three compact upper cards
+and two wider lower cards now govern boards 1 and 2. Generated illustrations
+and radial effects are reused as separate layers. The four configured passes
+are retained; the fifth card is explicitly future content, not a purchasable
+new pass. No reference prices or luck benefits are copied. Checkout stays
+unavailable. Board 2 documents the longer scroll content.
+
+Native frame backgrounds now match the visible surfaces, including corner
+radii, so the editor can assess actual text/background pairs. Bright buttons
+use dark text; dark surfaces retain light text. `contrast-audit.json` records
+the native OpenPencil color-contrast check for the five active boards;
+`contrast-page-audit.json` covers the whole active page. Both report zero
+errors and warnings. Superseded owned drafts are preserved on an archive page.
+This checks the design file; it does not establish Roblox runtime behavior.
+
 ## Visual authority
 
 Use `references/simulator-ui-owner.png`, recovered from the original user

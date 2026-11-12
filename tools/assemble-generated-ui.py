@@ -53,8 +53,15 @@ def tool(state, name, args):
 class Board:
     def __init__(self, name, width, height, x, y):
         self.name, self.width, self.height, self.x, self.y = name, width, height, x, y
-        self.parts, self.images, self.blends = [], {}, []
+        self.parts, self.images, self.blends, self.surfaces = [], {}, [], {}
         self.sequence = 0
+    def begin_surface(self, x, y, w, h, color, radius=14, stroke='none', weight=0):
+        key = self.key('container')
+        self.parts.append(f'<g id="{key}">')
+        self.surfaces[key] = {'color':color,'radius':radius}
+        self.rect(x,y,w,h,color,radius,stroke,weight)
+    def end_surface(self):
+        self.parts.append('</g>')
     def key(self, prefix):
         self.sequence += 1
         return f'{prefix}_{self.sequence}'
@@ -85,9 +92,11 @@ class Board:
             key = self.rect(round(left,2), round(top,2), round(right-left,2), round(bottom-top,2), tint, radius, key=self.key('tint'))
             self.blends.append(key)
     def button(self, x, y, w, value, color='#A62BEE', height=44):
-        self.rect(x,y,w,height,color,12,'#1B2452',1.5)
+        self.begin_surface(x,y,w,height,color,12,'#1B2452',1.5)
         self.rect(x+4,y+3,w-8,6,'#FFFFFF',4,opacity=.28)
-        self.text(value,x+w/2,y+height/2+6,16,anchor='middle')
+        foreground = WHITE if contrast(WHITE,color)>=4.5 else INK if contrast(INK,color)>=4.5 else '#071A28'
+        self.text(value,x+w/2,y+height/2+6,16,foreground,anchor='middle')
+        self.end_surface()
     def backdrop(self):
         self.image('background',0,0,self.width,self.height,'FILL')
     def navigation(self):
@@ -95,7 +104,9 @@ class Board:
             x,y=20+(i%2)*112,222+(i//2)*112
             self.skin('button-base',x,y,108,108,tint,12,'FIT')
             self.image(asset,x+12,y+2,84,84)
-            self.text(label,x+54,y+93,15,anchor='middle')
+            self.begin_surface(x+7,y+77,94,27,TEAL,8)
+            self.text(label,x+54,y+96,15,anchor='middle')
+            self.end_surface()
             if label=='QUESTS': self.image('quest-available',x+79,y-8,26,46)
         for i,(asset,color) in enumerate([('coin-single','#FFDE59'),('clover','#C3FF8C')]):
             y=465+i*75
@@ -111,51 +122,99 @@ class Board:
     def tracker(self):
         x,y=1144,296
         self.rect(x,y,272,218,TEAL,16,'#73D852',2)
-        self.rect(x+3,y+3,266,55,'#4B992A',13)
+        self.begin_surface(x+3,y+3,266,55,'#285D24',13)
+        self.text('Meet Farmer Joe',x+64,y+35,17)
+        self.end_surface()
         self.image('quests',x+1,y-9,66,66)
         self.image('quest-available',x+239,y-12,30,52)
-        self.text('Meet Farmer Joe',x+64,y+35,17)
         self.text('Follow the trail to',x+20,y+96,17)
         self.text('your neighbor.',x+20,y+121,17)
         self.button(x+17,y+156,238,'SHOW ROUTE','#168CEB')
     def title(self, x, y, w, value, icon):
-        self.rect(x,y,w,68,'#087FBB',13,'#35DDF4',1.5)
-        self.image(icon,x-6,y-11,90,90)
+        self.begin_surface(x,y,w,68,'#07638F',13,'#35DDF4',1.5)
         self.text(value,x+93,y+47,34)
-        self.button(x+w-53,y+11,42,'X','#EF3259',44)
-    def offer(self, x, y, w, title, detail, detail2, icon, tint=None, height=185):
-        self.skin('banner-base' if tint else 'offer-banner',x,y,w,height,tint,13)
-        self.image('rays',x+4,y+4,174,height-8,opacity=.4)
-        self.image(icon,x+4,y+2,178,height-4)
-        self.text(title,x+184,y+55,27,INK if not tint else WHITE)
-        self.text(detail,x+185,y+85,15,'#102D43' if not tint else WHITE)
-        if detail2:self.text(detail2,x+185,y+106,15,'#102D43' if not tint else WHITE)
-        self.button(x+w-204,y+height-64,180,'COMING SOON','#A325EA')
+        self.button(x+w-53,y+11,42,'X','#B51F3D',44)
+        self.end_surface()
+        self.image(icon,x-6,y-11,90,90)
     def dump(self):
         text=f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.width}" height="{self.height}" viewBox="0 0 {self.width} {self.height}">'+''.join(self.parts)+'</svg>'
-        return {'name':self.name,'svg':text,'x':self.x,'y':self.y,'images':self.images,'blends':self.blends}
+        return {'name':self.name,'svg':text,'x':self.x,'y':self.y,'images':self.images,'blends':self.blends,'surfaces':self.surfaces,'background':TEAL}
+
+def contrast(foreground, background):
+    def luminance(color):
+        rgb=[int(color[i:i+2],16)/255 for i in (1,3,5)]
+        linear=[c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in rgb]
+        return sum(c*w for c,w in zip(linear,[.2126,.7152,.0722]))
+    values=sorted([luminance(foreground),luminance(background)])
+    return (values[1]+.05)/(values[0]+.05)
+
+def passes_window(b, x, y, width, full=False):
+    """One catalog, shared between the HUD viewport and long scroll design."""
+    height=1006 if full else 664
+    b.begin_surface(x,y,width,height,'#FFF9E6',24,'#087998',3)
+    b.rect(x+5,y+5,width-10,height-10,'none',20,'#52DAEF',2)
+    b.text('PASSES',x+119,y+48,34,INK)
+    b.text('Make room for a bigger harvest.',x+24,y+91,17,INK,weight=600)
+    top=y+112
+    gap=12; inset=22; cw=(width-2*inset-2*gap)/3
+    ch=348 if full else 264
+    offers=[('2x COINS','coin','#FFDF58',['Double your coins','from every sale.']),
+            ('+2 CREW SLOTS','crew','#C4ACFF',['Bring two extra','helpers along.']),
+            ('AUTO-SELL','grass','#9BE85D',['Sell automatically','as you mow.'])]
+    for i,(title,icon,color,lines) in enumerate(offers):
+        cx=x+inset+i*(cw+gap)
+        b.begin_surface(cx,top,cw,ch,color,17,'#36636B',1.5)
+        b.image('rays',cx+12,top+40,cw-24,ch-88,opacity=.36)
+        b.text(title,cx+cw/2,top+35,21,INK,anchor='middle')
+        art=168 if full else 110
+        b.image(icon,cx+(cw-art)/2,top+43,art,art)
+        for j,line in enumerate(lines):
+            b.text(line,cx+cw/2,top+art+66+j*21,15,INK,anchor='middle',weight=700)
+        b.button(cx+15,top+ch-53,cw-30,'COMING SOON','#79E54A',40)
+        b.end_surface()
+    lower=top+ch+gap; lw=(width-2*inset-gap)/2; lh=330 if full else 208
+    for i,(title,icon,color) in enumerate([('INFINITE FUEL','fuel','#AFE3F3'),('MORE TO GROW','passes','#E3EDC3')]):
+        cx=x+inset+i*(lw+gap)
+        b.begin_surface(cx,lower,lw,lh,color,17,'#36636B',1.5)
+        b.image('rays',cx+7,lower+7,lw-14,lh-14,opacity=.34)
+        b.text(title,cx+lw/2,lower+35,22,INK,anchor='middle')
+        art=148 if full else 112
+        b.image(icon,cx+10,lower+49,art,art)
+        dx=cx+art+24
+        lines=['Keep motorized','tools running.'] if i==0 else ['New passes','coming later.']
+        for j,line in enumerate(lines):b.text(line,dx,lower+86+j*23,15,INK,weight=700)
+        if i==0:b.button(cx+lw-202,lower+lh-53,186,'COMING SOON','#79E54A',40)
+        else:
+            b.begin_surface(cx+lw-202,lower+lh-53,186,40,'#CBD9AB',12)
+            b.text('STAY TUNED',cx+lw-109,lower+lh-27,15,INK,anchor='middle')
+            b.end_surface()
+        b.end_surface()
+    if full:
+        b.text('Permanent upgrades. One purchase per pass.',x+24,lower+lh+50,17,INK,weight=700)
+        b.text('Equipment is sold at the world stalls.',x+24,lower+lh+82,16,INK,weight=600)
+    else:b.text('Passes will be available soon.',x+width/2,y+height-26,15,INK,anchor='middle',weight=600)
+    b.end_surface()
+    # Decorative header objects extend above the body. Keep them outside its
+    # native frame so its solid fill retains the exact rounded body bounds.
+    b.image('passes',x+14,y-21,102,102)
+    for i,asset in enumerate(['passes','coin-single','crew','fuel']):
+        tx=x+346+i*77
+        b.rect(tx,y-15,66,69,'#FFDE58' if i==0 else '#BBEAF4',13,'#087998',2)
+        b.image(asset,tx+4,y-14,58,58)
+        if i==0:b.rect(tx+13,y+44,40,4,INK,2)
+    b.button(x+width-62,y-15,48,'X','#B51F3D',50)
 
 def make_boards():
     boards=[]
     b=Board('01 HUD and passes',1440,900,0,0);b.backdrop();b.navigation();b.indicators();b.tracker()
-    b.image('window-frame',286,78,860,800)
-    b.parts.append('<g id="Modal-content" transform="translate(44.4537815 0) scale(0.9579831933 1)">')
-    b.title(344,134,714,'PASSES','passes')
-    b.offer(344,211,714,'2x COINS','Make every harvest','go further.','coin')
-    b.offer(344,405,714,'+2 CREW SLOTS','Bring two more helpers','along on every job.','crew','#3F9DEB')
-    b.offer(344,599,714,'AUTO-SELL','Keep mowing when','your storage fills.','grass','#73C630')
-    b.parts.append('</g>')
-    b.rect(1058,220,5,552,'#164354',3);b.rect(1058,220,5,250,'#30DDF2',3)
+    passes_window(b,296,133,826)
     b.rect(20,18,433,30,'#102D43',8,opacity=.8);b.text('DESIGN PREVIEW / SAMPLE VALUES',34,39,13)
     boards.append(b.dump())
 
     b=Board('02 Passes full scroll content',860,1150,1520,0)
-    b.rect(0,0,860,1150,TEAL,20,'#20BCD8',2);b.title(28,28,804,'PASSES','passes')
-    b.text('Permanent upgrades for your mowing company',42,136,19)
-    offers=[('2x COINS','Make every harvest go further.','','coin',None),('+2 CREW SLOTS','Bring two more helpers along.','','crew','#3F9DEB'),('AUTO-SELL','Keep mowing when your storage fills.','','grass','#73C630'),('INFINITE FUEL','Keep motorized tools running.','','fuel','#F16662')]
-    for i,(title,d1,d2,icon,tint) in enumerate(offers):b.offer(28,165+i*223,804,title,d1,d2,icon,tint,210)
-    b.text('Equipment is sold at the world stalls.',430,1096,17,anchor='middle')
-    b.text('Each row is a separate layer group for the scroll canvas.',430,1127,13,'#9ECBD8',anchor='middle')
+    b.rect(0,0,860,1150,TEAL,20)
+    passes_window(b,18,64,824,True)
+    b.text('FULL SCROLL CONTENT / DESIGN PREVIEW',430,1118,14,'#C2E2EB',anchor='middle')
     boards.append(b.dump())
 
     b=Board('03 Daily rewards',1440,900,0,990);b.backdrop();b.navigation();b.indicators()
@@ -165,8 +224,9 @@ def make_boards():
     b.image('rewards',350,207,148,132);b.text('Your daily harvest',510,249,29)
     b.text('A little thank-you for tending your lawn.',510,282,16)
     for i,amount in enumerate([50,100,200,350,500,750,1000]):
-        x=348+i*100;b.rect(x,350,92,142,'#407F25' if i==0 else '#19576A',13,'#C5FF80' if i==0 else '#397E92',1.5)
+        x=348+i*100;b.begin_surface(x,350,92,142,'#366D20' if i==0 else '#19576A',13,'#C5FF80' if i==0 else '#397E92',1.5)
         b.text('DAY '+str(i+1),x+46,378,13,anchor='middle');b.image('coin-single',x+17,388,58,58);b.text(str(amount),x+46,476,17,anchor='middle')
+        b.end_surface()
     b.image('coin-single',354,515,46,46);b.text('50',406,548,24,'#FFDF60')
     b.image('clover',476,515,46,46);b.text('5',530,548,24,'#C8FF92')
     b.button(650,518,384,"COLLECT TODAY'S GIFT",'#67AE22',48)
@@ -193,7 +253,7 @@ def make_boards():
         else:
             b.rect(x+22,246,340,18,'#1D5460',9);b.rect(x+22,246,102,18,'#8DD737',9)
             b.text('60 / 200 grass',x+22,298,19);b.text('4:12 left',x+22,333,17)
-        b.button(x+22,440,340,action,'#1F94E9' if i<2 else '#568A2E',48)
+        b.button(x+22,440,340,action,'#1F94E9' if i<2 else '#366D20',48)
     b.image('quest-available',40,555,40,70);b.text('Red ! = a quest is available',104,593,23)
     b.text('Discovery and acceptance remain server-owned.',104,627,16,'#A6CBD7')
     boards.append(b.dump())
@@ -216,21 +276,42 @@ def flatten(value):
         for child in value:yield from flatten(child)
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','import','rebuild','fill','export','save']);parser.add_argument('--board',type=int,default=1);parser.add_argument('--limit',type=int,default=8)
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','import','rebuild','fill','export','lint','save']);parser.add_argument('--board',type=int,default=1);parser.add_argument('--limit',type=int,default=8)
     args=parser.parse_args();OUT.mkdir(exist_ok=True)
     if args.action=='prepare':
         boards=make_boards();(OUT/'assembly.json').write_text(json.dumps(boards,indent=2))
         print('Prepared',len(boards),'editable boards');return
     state=read_state();definitions=json.loads((OUT/'assembly.json').read_text());definition=definitions[args.board-1];key=str(args.board)
+    if args.action=='lint':
+        failed=False
+        for target,scope in [('contrast-audit.json',{'ids':[board['id'] for board in state['boards'].values()]}),
+                             ('contrast-page-audit.json',{})]:
+            result=tool(state,'lint',dict(scope,rules=['color-contrast'],limit=200))
+            (OUT/target).write_text(json.dumps(result,indent=2))
+            print(target,json.dumps(result))
+            failed=failed or bool(result['errors'] or result['warnings'])
+        if failed:raise SystemExit(1)
+        return
     if args.action in ('import','rebuild'):
         if args.action=='rebuild' and key in state['boards']:
             old=state['boards'].pop(key)
             tool(state,'set_visible',{'id':old['id'],'value':False})
+            if state.get('archive_page'):
+                tool(state,'reparent_node',{'id':old['id'],'parent_id':state['archive_page']})
             state.setdefault('previous_boards',[]).append(old['id']);write_state(state)
         if key in state['boards']:print('Already imported:',key);return
         result=tool(state,'import_svg',{'svg':definition['svg'],'name':definition['name'],'x':definition['x'],'y':definition['y']})
+        # SVG groups carry visual sibling surfaces but no semantic background.
+        # Native frames give text its actual background for the editor's lint.
+        tool(state,'lint_fix',{'ids':[result['id']],'rules':['no-groups'],'suggestions':True})
         tree=tool(state,'get_page_tree',{'root_id':result['id'],'depth':12})
         nodes={node['name']:node['id'] for node in flatten(tree)}
+        tool(state,'set_fill',{'id':result['id'],'color':definition['background']})
+        for name,surface in definition['surfaces'].items():
+            tool(state,'set_fill',{'id':nodes[name],'color':surface['color']})
+        tool(state,'batch_update',{'operations':json.dumps([
+            {'id':nodes[name],'props':{'corner_radius':surface['radius']}}
+            for name,surface in definition['surfaces'].items()])})
         missing=set(definition['images'])-set(nodes)
         if missing:raise RuntimeError('Missing imported placeholders: '+str(missing))
         state['boards'][key]={'id':result['id'],'nodes':nodes,'filled':[],'blended':[]};write_state(state)
@@ -257,9 +338,9 @@ def main():
         target=OUT/f'board-{key}.png';target.write_bytes(base64.b64decode(result['base64']))
         print('Exported',target.name,result.get('width'),result.get('height'));return
     if args.action=='save':
-        rpc('save_file',{'document_id':state['document'],'page_id':state['page'],'path':str(OUT/'mow-it-ui-v3.fig')})
         tool(state,'switch_page',{'page':state['page']})
         tool(state,'viewport_zoom_to_fit',{'ids':[state['boards']['1']['id']]})
+        rpc('save_file',{'document_id':state['document'],'page_id':state['page'],'path':str(OUT/'mow-it-ui-v3.fig')})
         (OUT/'openpencil-nodes.json').write_text(json.dumps(state,indent=2))
         print('Saved mow-it-ui-v3.fig and focused the HUD board')
 
