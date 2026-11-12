@@ -96,7 +96,10 @@ local function logWall(parent: Instance, line: CFrame, length: number, openings:
 	for row = 0, ROWS - 1 do
 		local y = LOG_D / 2 + row * LOG_D + lift
 		-- Start with the full log (+ overhang past the corners), subtract openings.
-		local pieces = { { -length / 2 - 1.6, length / 2 + 1.6 } }
+		-- Logs run past the corner far enough that their round ends sit fully
+		-- outside the crossing wall (no half-hidden "lens" slivers).
+		local reach = length / 2 + LOG_D + 0.6
+		local pieces = { { -reach, reach } }
 		for _, o in openings do
 			-- Cut every log whose thickness overlaps the opening.
 			if y + LOG_D / 2 > o.Y1 + 0.01 and y - LOG_D / 2 < o.Y2 - 0.01 then
@@ -131,7 +134,7 @@ local function logWall(parent: Instance, line: CFrame, length: number, openings:
 				})
 				-- Light cut ends where logs stick out past the corners.
 				for _, endX in { piece[1], piece[2] } do
-					if math.abs(math.abs(endX) - (length / 2 + 1.6)) < 0.01 then
+					if math.abs(math.abs(endX) - reach) < 0.01 then
 						Props.make("LogEnd", parent, {
 							Shape = Enum.PartType.Cylinder,
 							Size = Vector3.new(0.12, LOG_D - 0.25, LOG_D - 0.25),
