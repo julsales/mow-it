@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 
 local GrassBag = require(ReplicatedStorage:WaitForChild("Shared").GrassBag)
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local LandState = require(script.Parent:WaitForChild("LandState"))
 
 local player = Players.LocalPlayer
 
@@ -84,14 +85,14 @@ beam.Segments = 2
 beam.Enabled = false
 beam.Parent = targetAnchor
 
-local function nearestPad(from: Vector3, profile): BasePart?
+local function nearestPad(from: Vector3): BasePart?
 	local zones = Workspace:FindFirstChild("Zones")
 	if not zones then
 		return nil
 	end
 	local best: BasePart?, bestDistance = nil, math.huge
 	for _, zone in zones:GetChildren() do
-		if profile.UnlockedZoneIds[zone.Name] then
+		if LandState.IsUnlocked(zone.Name) then
 			for _, d in zone:GetDescendants() do
 				if d.Name == "SellPad" and d:IsA("BasePart") then
 					local distance = (d.Position - from).Magnitude
@@ -133,7 +134,7 @@ RunService.Heartbeat:Connect(function()
 	if not profile or not root then
 		return
 	end
-	local pad = nearestPad(root.Position, profile)
+	local pad = nearestPad(root.Position)
 	if not pad then
 		beam.Enabled = false
 		return

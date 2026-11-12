@@ -10,6 +10,7 @@ local Buffs = require(Shared.Config.Buffs)
 local Zones = require(Shared.Config.Zones)
 
 local ProfileService = require(script.Parent.ProfileService)
+local LandService = require(script.Parent.LandService)
 
 local ShopService = {}
 local remotes: Folder
@@ -136,6 +137,11 @@ local function unlockZone(player: Player, zoneId: string)
 	local profile = ProfileService.Get(player)
 	local def = Zones.ById[zoneId]
 	if not profile or not def or profile.UnlockedZoneIds[zoneId] then
+		return
+	end
+	-- A land only grows for its owner; helpers expand their own land at home.
+	if not LandService.IsHost(player) then
+		notify(player, ("Only %s can expand this land."):format(LandService.HostName()))
 		return
 	end
 	-- Zones unlock in order: no skipping the farm to reach the golf estate.

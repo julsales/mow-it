@@ -1,13 +1,13 @@
 --!strict
 -- Makes sell pads easy to spot without cluttering the screen: a small
 -- "SELL" sign above each pad (visible within ~60 studs, not through
--- walls) and a faint gold light column. Only pads in zones the local player
--- has unlocked get them. Pads are found by their contract name "SellPad"
+-- walls) and a faint gold light column. Only pads in expansions open on
+-- this session's land (LandState) get them. Pads are found by their contract name "SellPad"
 -- (streaming-safe); local only.
 
 local Workspace = game:GetService("Workspace")
 
-local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local LandState = require(script.Parent:WaitForChild("LandState"))
 
 local SIGN_DISTANCE = 60
 
@@ -25,11 +25,10 @@ local function zoneOf(pad: BasePart): string?
 end
 
 local function isUnlocked(zoneId: string?): boolean
-	local profile = ClientState.Get()
-	if not zoneId or not profile then
-		return zoneId == nil -- pads outside zones always show
+	if not zoneId then
+		return true -- pads outside zones always show
 	end
-	return profile.UnlockedZoneIds[zoneId] == true
+	return LandState.IsUnlocked(zoneId)
 end
 
 local function decorate(pad: BasePart)
@@ -109,4 +108,4 @@ Workspace.DescendantAdded:Connect(consider)
 for _, instance in Workspace:GetDescendants() do
 	consider(instance)
 end
-ClientState.Changed:Connect(refreshAll)
+LandState.Changed:Connect(refreshAll)
