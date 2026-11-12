@@ -75,5 +75,16 @@ return function(M)
 	check(epoch == epoch2 and #shelf == #shelf2, "same server-time interval produces identical shelf")
 	for index, item in shelf do check(item.Id == shelf2[index].Id and item.Price > 0, "shelf rows deterministic with positive prices") end
 	check(select(1, Rules.Shelf((epoch + 1) * Tuning.RestockSeconds)) == epoch + 1, "restock boundary advances epoch")
+	local daily = profile()
+	local ready, day = Rules.DailyStatus(daily, 1700000000)
+	check(ready and day == 1, "first daily gift matches the day-one tile")
+	daily.DailyClaimAt = 1700000000; daily.DailyStreak = 7
+	ready, day = Rules.DailyStatus(daily, daily.DailyClaimAt + 100)
+	check(not ready and day == 7, "claimed seventh gift stays selected during cooldown")
+	ready, day = Rules.DailyStatus(daily, daily.DailyClaimAt + Tuning.DailySeconds)
+	check(ready and day == 1, "seventh gift wraps to a new calendar cycle")
+	daily.DailyStreak = 4
+	ready, day = Rules.DailyStatus(daily, daily.DailyClaimAt + Tuning.DailySeconds * 2)
+	check(ready and day == 1, "missing a day restarts calendar consistently with server reward")
 	print("Progression assertions passed:", checks)
 end

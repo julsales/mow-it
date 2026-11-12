@@ -1,3 +1,28 @@
+Quests.Init(remotes)
+check(not Quests.CanAccept(player, "small_yard"), "unmet NPC cannot grant a job")
+player.TestRoot.Position = position(100)
+Quests.Scan()
+check(not profiles[player].KnownQuestContacts.small_yard, "distant NPC is not discovered")
+Quests.Talk(player, "small_yard")
+check(not profiles[player].KnownQuestContacts.small_yard, "forged distant talk cannot discover NPC")
+player.TestRoot.Position = position(0)
+player.TestHumanoid.Health = 0
+Quests.Scan()
+check(not profiles[player].KnownQuestContacts.small_yard, "dead character cannot discover NPC")
+player.TestHumanoid.Health = 100
+Quests.Scan()
+check(profiles[player].KnownQuestContacts.small_yard == true, "nearby NPC is discovered on server")
+check(not profiles[player].KnownQuestContacts.family_house, "locked expansion does not reveal its NPC job")
+local notices = #notifications
+Quests.Scan()
+check(#notifications == notices, "discovery notification is not repeated")
+check(not Quests.CanAccept(player, "made_up_job"), "unknown contact is rejected")
+player.TestRoot.Position = position(100)
+check(not Quests.CanAccept(player, "small_yard"), "persisted discovery does not allow remote acceptance")
+player.TestRoot.Position = position(0)
+check(Quests.CanAccept(player, "small_yard"), "known nearby living player can take job")
+Quests.Talk(player, "small_yard")
+check(notifications[#notifications].message == "small_yard", "NPC conversation sends its real offer")
 Contracts.Init(remotes)
 check(Contracts.Accept(guest, "small_yard") == "Only the land owner can choose a party job.", "guest cannot replace party job")
 check(workspace:GetAttribute("ContractId") == "", "rejected guest job creates no state")
@@ -17,6 +42,7 @@ Contracts.OnCut(player, "front_yard", 340)
 check(profiles[player].Coins == 1120 and profiles[guest].Coins == 1120, "late job pays gentle reduced reward to both")
 profiles[guest].UnlockedZoneIds = { front_yard = true }
 profiles[player].UnlockedZoneIds.backyard = true
+profiles[player].KnownQuestContacts.family_house = true
 Contracts.Accept(player, "family_house")
 Contracts.OnCut(guest, "backyard", 10000)
 check(workspace:GetAttribute("ContractProgress") == 0, "guest cannot farm rewards above their own progression")

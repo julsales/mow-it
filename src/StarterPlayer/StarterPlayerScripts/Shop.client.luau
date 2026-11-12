@@ -1,6 +1,5 @@
 --!strict
--- Shop: a functional shop/inventory panel for tools and storage. Opened
--- with the "SHOP" button. Every row shows the item, its stats and one
+-- Physical equipment shop/inventory. Opened at map stalls. Each row has one
 -- button: price (buy) / Equip / Equipped / Zone N (locked).
 -- No emoji: the UI fonts render 🪙/🛒/🔒 as empty boxes on some clients.
 -- The server validates every purchase (ShopService); buying an owned item
@@ -80,6 +79,7 @@ gui.Name = "ShopGui"
 gui.ResetOnSpawn = false
 gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.DisplayOrder = 5
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local openButton = button(gui, "SHOP", COLORS.Buy)
@@ -108,9 +108,10 @@ do
 	stroke.Parent = panel
 end
 
-local title = label(panel, "SHOP", 26, COLORS.Text, true)
+local title = label(panel, "EQUIPMENT", 26, COLORS.Text, true)
 title.Position = UDim2.new(0, 70, 0, 10)
-title.Size = UDim2.new(1, -80, 0, 34)
+title.Size = UDim2.new(1, -130, 0, 34)
+UiKit.FitText(title, 18, 26)
 
 local shopIcon = Instance.new("ImageLabel")
 shopIcon.BackgroundTransparency = 1
@@ -282,18 +283,19 @@ packsTab.Activated:Connect(function()
 	refresh()
 end)
 buffsTab.Activated:Connect(function() showing = "Automation"; list.CanvasPosition = Vector2.zero; refresh() end)
+UiKit.ManagePanel(panel)
 openButton.Activated:Connect(function()
 	local operations = player.PlayerGui:FindFirstChild("Operations")
 	local other = operations and operations:FindFirstChild("Panel")
 	if other and other:IsA("GuiObject") then other.Visible = false end
-	panel.Visible = not panel.Visible
+	if panel.Visible then panel.Visible = false else UiKit.OpenPanel(panel) end
 	refresh()
 end)
 -- Other scripts (shop counters, ShopDisplay.client.luau) open the panel.
 local openEvent = Instance.new("BindableEvent")
 openEvent.Name = "OpenShop"
 openEvent.Event:Connect(function()
-	panel.Visible = true
+	UiKit.OpenPanel(panel)
 	refresh()
 end)
 openEvent.Parent = script.Parent
@@ -311,10 +313,13 @@ if RunService:IsStudio() then
 		if not devRemote then
 			return
 		end
-		local dev = button(gui, "+$1M (Studio)", Color3.fromRGB(150, 70, 200))
+		local dev = button(panel, "+$1M (Studio)", C.Blue)
 		dev.AnchorPoint = Vector2.new(1, 0)
-		dev.Position = UDim2.new(1, -10, 0, 245)
-		dev.Size = UDim2.new(0, 160, 0, 40)
+		dev.Position = UDim2.new(1, -14, 0, 108)
+		dev.Size = UDim2.new(0, 144, 0, 44)
+		-- A dedicated content row keeps the Studio helper off the HUD/header.
+		list.Position = UDim2.fromOffset(12, 164)
+		list.Size = UDim2.new(1, -24, 1, -176)
 		dev.Activated:Connect(function()
 			devRemote:FireServer()
 		end)

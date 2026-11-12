@@ -39,3 +39,25 @@ The player SHALL be able to sell all carried grass at a Sell Pad, receiving Coin
 #### Scenario: Selling with empty storage
 - **WHEN** a player uses a Sell Pad carrying no grass
 - **THEN** no currency changes
+
+### Requirement: Legible illustrated HUD
+The HUD SHALL use original transparent icon assets with editable vector masters for navigation, Coins, Clovers, fuel, storage and all five weather states. Coins and Clovers SHALL be prominent icon/value indicators below the left navigation. Weather and fuel SHALL be stacked as independent icon/value indicators on the right. Navigation SHALL sit below the upper-left system controls with a compact layout on short screens. The weather name SHALL be available on hover or activation.
+
+#### Scenario: Weather changes
+- **WHEN** the server changes between clear, rain, golden sun, moon night and storm
+- **THEN** the corresponding distinct icon and countdown appear while currencies remain independently readable
+
+### Requirement: Dedicated passes menu and exclusive panels
+The HUD Shop SHALL open a passes catalog. Equipment purchases SHALL remain at physical map stalls. Unpublished or unimplemented pass offers SHALL show Coming soon with checkout disabled; prices SHALL NOT be invented. Menus SHALL have one visible owner, a backdrop and close controls, and rewards SHALL reflow without overlapping values or claim actions on narrow screens.
+
+#### Scenario: Open passes from HUD
+- **WHEN** the player activates Shop in the HUD
+- **THEN** the passes catalog opens, other menus close, and the equipment shop remains available through world stalls
+
+#### Scenario: Unpublished offer
+- **WHEN** an offer has no configured ID or entitlement checkout is disabled
+- **THEN** it displays Coming soon and cannot prompt a purchase
+
+#### Scenario: Narrow rewards menu
+- **WHEN** the rewards panel has insufficient width for seven daily tiles
+- **THEN** the tiles wrap into two rows and the claim button occupies its own row below the currency rewards

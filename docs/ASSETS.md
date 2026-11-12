@@ -44,6 +44,13 @@ Status key: 🗺️ mapped (researched, not yet inserted) · 🔎 verify in Stud
 
 ## 1. Icons (HUD, shop, gamepasses)
 
+HUD revision: project-authored vector sources in `assets/UI/source/`, rendered
+to transparent 1024px PNG by `tools/build-ui-icons.py`. Mapped before import:
+Crew, Shop, Quests, Rewards, Pack, Coin, Clover, Grass, Fuel and five weather
+symbols (clear, rain, golden sun, moon night, storm). No external content or
+scripts; project-owned drawings. Audit: SVG geometry only, PNG RGBA only.
+Final image IDs are recorded in `Shared/Config/Interface.luau` after upload.
+
 | Need in Mow It! | Candidate | Source | Cost / License | Status | Goes to |
 |---|---|---|---|---|---|
 | Coin, grass, tool, backpack, zone, boost, settings, close, arrows (≈125 icons) | **Simulator Icon Pack** | [Creator Store asset 99176447965360](https://create.roblox.com/store/asset/99176447965360/Simulator-Icon-Pack) | Free in Creator Store; use under Roblox Creator Store terms | 🗺️ | `ReplicatedStorage/Assets/Icons/` after upload as Images |
@@ -56,6 +63,16 @@ Status key: 🗺️ mapped (researched, not yet inserted) · 🔎 verify in Stud
 HUD/shop/gamepass art all match. Mixed icon styles = instant slop look.
 
 ## 2. UI kits / frames (shop, inventory, settings...)
+
+Current revision: five project-owned, text-free components were authored as
+editable OpenPencil layers: `panel-frame`, `nav-crew`, `nav-shop`, `nav-quests`,
+`nav-rewards`. Sources, exported SVGs and the `.fig` document are in
+`docs/art/openpencil/`; 512px RGBA runtime candidates are in `assets/UI/`.
+Audit: local SVG paths only; no scripts, links or external images. Alpha was
+verified after removing the editor exporter's opaque full-canvas rectangle
+with `tools/render-ui-chrome.py`. Status: **exported, upload and Studio Play
+review pending**. `Interface.Images.Chrome` remains empty until real upload
+IDs are returned. Native Roblox shapes provide the interim rendering.
 
 | Need in Mow It! | Candidate | Source | Cost / License | Status | Goes to |
 |---|---|---|---|---|---|

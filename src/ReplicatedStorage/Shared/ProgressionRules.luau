@@ -14,7 +14,7 @@ function Rules.Defaults()
 		FranchisePoints = 0, FranchiseRanks = {}, Crew = {}, EquippedCrew = {},
 		NextCrewId = 1, MarketEpoch = -1, MarketBought = {}, Plots = {},
 		LastSeen = 0, OfflineGrass = 0, DailyClaimAt = 0, DailyStreak = 0,
-		TutorialStep = 1,
+		TutorialStep = 1, KnownQuestContacts = {},
 	}
 end
 
@@ -24,6 +24,12 @@ function Rules.CrewSlots(profile): number
 		if profile.Level >= level then slots += 1 end
 	end
 	return slots
+end
+
+function Rules.DailyStatus(profile, time: number): (boolean, number, number)
+	local ready = time - profile.DailyClaimAt >= Tuning.DailySeconds
+	local nextDay = if time - profile.DailyClaimAt < Tuning.DailySeconds * 2 then profile.DailyStreak % #Tuning.DailyCoins + 1 else 1
+	return ready, if ready then nextDay else math.max(1, profile.DailyStreak), profile.DailyClaimAt + Tuning.DailySeconds
 end
 
 function Rules.CrewDef(id: string)

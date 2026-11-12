@@ -75,3 +75,14 @@ Checked implementation tasks are not a blanket acceptance of every v2 scenario.
 - 7.2 partial: persistent seven-day claim; quests/codes/badges/global boards remain open.
 - 9.2 partial: Play Solo cut/sell/buy verified with test positioning and funding;
   the less-than-three-minute timing criterion was not measured.
+
+## HUD and NPC quest revision (2026-11-12)
+- [x] 10.1 Map, author, audit and upload original vector/1024px PNG icons, including five weather states
+- [x] 10.2 Lower responsive navigation and split weather/fuel/currencies into icon indicators
+- [x] 10.3 Persistent server-observed NPC discovery, proximity-gated acceptance and progressive journal
+- [x] 10.4 Reusable local guide with quest pathfinding, NPC marker and full-storage selling priority
+- [ ] 10.5 Validate desktop/phone Play interaction, NPC acceptance, route and existing mowing loop
+
+- [x] 10.6 Author editable OpenPencil boards and separate reusable chrome components; export and audit transparent assets
+- [x] 10.7 Route HUD Shop to passes, keep unpublished checkout disabled, coordinate menus and reflow daily rewards
+- [ ] 10.8 Upload OpenPencil chrome, populate verified IDs and inspect desktop/phone Play screenshots

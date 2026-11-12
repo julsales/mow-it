@@ -1,13 +1,11 @@
 --!strict
--- Mow It! client: input (click/tap to cut) + a FUNCTIONAL placeholder HUD.
--- The final UI comes from ready-made kits (docs/ASSETS.md > UI). This HUD
--- is intentionally plain: it proves the loop and gives the UI kit real
--- data/bindings to replace, widget by widget. Do not polish this file —
--- replace it.
+-- Input, gate presentation and transient notifications. Resources and quests
+-- have dedicated client controllers using the common UiKit.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local Ui = require(script.Parent:WaitForChild("UiKit"))
 
 local player = Players.LocalPlayer
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -36,22 +34,17 @@ local function makeLabel(name: string, position: UDim2, size: UDim2): TextLabel
 	label.Position = position
 	label.Size = size
 	label.BackgroundColor3 = require(Shared.Config.Interface).Colors.Ink
-	label.BackgroundTransparency = 0.3
-	label.TextColor3 = Color3.fromRGB(255, 255, 255)
-	label.TextScaled = true
-	label.Font = Enum.Font.GothamBold
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Ui.Colors.Cream
+	label.FontFace = Ui.FontBold
+	Ui.FitText(label, 14, 18)
+	Ui.Stroke(label, 2)
 	label.Text = name
 	label.Parent = gui
 	return label
 end
 
-local coinsLabel = makeLabel("Coins", UDim2.new(0, 10, 0, 10), UDim2.new(0, 220, 0, 40))
-local grassLabel = makeLabel("Grass", UDim2.new(0, 10, 0, 56), UDim2.new(0, 220, 0, 40))
 local toolLabel = makeLabel("Tool", UDim2.new(0, 10, 0, 102), UDim2.new(0, 220, 0, 40))
-coinsLabel.AnchorPoint = Vector2.new(1, 1)
-coinsLabel.Position = UDim2.new(1, -12, 1, -12)
-grassLabel.AnchorPoint = Vector2.new(0, 1)
-grassLabel.Position = UDim2.new(0, 12, 1, -72)
 toolLabel.AnchorPoint = Vector2.new(1, 1)
 toolLabel.Position = UDim2.new(1, -12, 1, -58)
 local notifyLabel = makeLabel("", UDim2.new(0.5, -250, 0, 10), UDim2.new(0, 500, 0, 40))
@@ -104,29 +97,7 @@ local function refresh()
 	end
 	local tool = Tools.ById[profile.EquippedToolId]
 	local compact = gui.AbsoluteSize.Y < 500
-	coinsLabel.Position = UDim2.new(1, -12, 0, 158)
-	coinsLabel.AnchorPoint = Vector2.new(1, 0)
-	coinsLabel.Size = UDim2.fromOffset(if compact then 180 else 220, 34)
 	toolLabel.Visible = not compact
-	if compact then
-		grassLabel.AnchorPoint = Vector2.new(1, 0)
-		grassLabel.Position = UDim2.new(1, -12, 0, 200)
-		grassLabel.Size = UDim2.fromOffset(180, 34)
-	else
-		grassLabel.AnchorPoint = Vector2.new(0, 1)
-		grassLabel.Position = UDim2.new(0, 12, 1, -72)
-		grassLabel.Size = UDim2.fromOffset(220, 40)
-	end
-	coinsLabel.Text = "$ " .. Format.Number(profile.Coins)
-	-- Total carried; special variants are listed after it ("+3 Golden Grass").
-	local carried = ("🌿 %s / %s"):format(Format.Number(GrassBag.Total(profile)), Format.Number(GrassBag.Capacity(profile)))
-	for variantId, count in profile.GrassByVariant do
-		if variantId ~= GrassBag.DefaultVariant and count > 0 then
-			local def = GrassTypes.ById[variantId]
-			carried ..= (" +%s %s"):format(Format.Number(count), if def then def.DisplayName else variantId)
-		end
-	end
-	grassLabel.Text = carried
 	toolLabel.Text = tool and tool.DisplayName or "?"
 
 	local nextTool = nextUnowned(Tools.List, profile.OwnedToolIds)
@@ -154,7 +125,7 @@ gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(refresh)
 -- this into hold-to-mow on the client; the server still rate-limits.
 local autoSwingHeld = false
 UserInputService.InputBegan:Connect(function(input, processed)
-	if processed then
+	if processed or Ui.MenuOpen then
 		return
 	end
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch or input.KeyCode == Enum.KeyCode.ButtonR2 then
@@ -170,7 +141,7 @@ end)
 task.spawn(function()
 	while true do
 		task.wait(0.15)
-		if autoSwingHeld and profile and (profile.BuffStacks or {}).auto_swing then
+		if autoSwingHeld and not Ui.MenuOpen and profile and (profile.BuffStacks or {}).auto_swing then
 			(remotes:WaitForChild("CutRequest") :: RemoteEvent):FireServer()
 		end
 	end

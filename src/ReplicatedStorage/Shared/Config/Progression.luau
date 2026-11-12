@@ -43,7 +43,7 @@ return {
 	Tutorial = {
 		{ Id = "cut", Text = "Cut 10 grass. Click or tap the lawn, or press the controller trigger.", Target = 10, Coins = 20, Clovers = 2 },
 		{ Id = "sell", Text = "Walk onto the buyer's SELL pad to sell your grass.", Target = 1, Coins = 20, Clovers = 3 },
-		{ Id = "tool", Text = "Open SHOP and buy Safety Scissors.", Target = 1, Coins = 50, Clovers = 5 },
+		{ Id = "tool", Text = "Visit the equipment stall and buy Safety Scissors.", Target = 1, Coins = 50, Clovers = 5 },
 		{ Id = "expansion", Text = "Reach Company Level 2, then buy the Backyard gate.", Target = 1, Coins = 150, Clovers = 10 },
 	},
 	PlotRailHeight = 1.6,

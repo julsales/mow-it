@@ -13,6 +13,8 @@ local GrassBag = require(ReplicatedStorage:WaitForChild("Shared").GrassBag)
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local LandState = require(script.Parent:WaitForChild("LandState"))
 
+local Guide = require(script.Parent:WaitForChild("WorldGuide"))
+local Ui = require(script.Parent:WaitForChild("UiKit"))
 local player = Players.LocalPlayer
 
 -- Banner ------------------------------------------------------------------------
@@ -21,10 +23,6 @@ local playerGui = player:WaitForChild("PlayerGui")
 local old = playerGui:FindFirstChild("SellGuide")
 if old then
 	old:Destroy()
-end
-local oldAnchor = Workspace:FindFirstChild("SellGuideTarget")
-if oldAnchor then
-	oldAnchor:Destroy()
 end
 
 local gui = Instance.new("ScreenGui")
@@ -56,35 +54,6 @@ do
 	pad.Parent = banner
 end
 
--- Beam --------------------------------------------------------------------------
-local targetAnchor = Instance.new("Part")
-targetAnchor.Name = "SellGuideTarget"
-targetAnchor.Anchored = true
-targetAnchor.CanCollide = false
-targetAnchor.CanQuery = false
-targetAnchor.CanTouch = false
-targetAnchor.Transparency = 1
-targetAnchor.Size = Vector3.one * 0.2
-targetAnchor.Parent = Workspace
-local targetAttachment = Instance.new("Attachment")
-targetAttachment.Parent = targetAnchor
-
-local beam = Instance.new("Beam")
-beam.Name = "SellGuideBeam"
-beam.Attachment1 = targetAttachment
-beam.Color = ColorSequence.new(Color3.fromRGB(255, 210, 80))
-beam.Transparency = NumberSequence.new({
-	NumberSequenceKeypoint.new(0, 0.2),
-	NumberSequenceKeypoint.new(1, 0.6),
-})
-beam.Width0 = 0.6
-beam.Width1 = 0.6
-beam.FaceCamera = true
-beam.LightEmission = 0.6
-beam.Segments = 2
-beam.Enabled = false
-beam.Parent = targetAnchor
-
 local function nearestPad(from: Vector3): BasePart?
 	local zones = Workspace:FindFirstChild("Zones")
 	if not zones then
@@ -109,9 +78,10 @@ end
 local active = false
 local function setActive(on: boolean)
 	active = on
-	gui.Enabled = on
-	beam.Enabled = on
+	gui.Enabled = on and not Ui.MenuOpen
+	if not on then Guide.Clear("Sell") end
 end
+Ui.MenuChanged:Connect(function(open) gui.Enabled = active and not open end)
 
 ClientState.Changed:Connect(function(profile)
 	setActive(GrassBag.IsFull(profile))
@@ -136,18 +106,10 @@ RunService.Heartbeat:Connect(function()
 	end
 	local pad = nearestPad(root.Position)
 	if not pad then
-		beam.Enabled = false
+		Guide.Clear("Sell")
 		return
 	end
-	targetAnchor.Position = pad.Position + Vector3.new(0, 1, 0)
-	local source = root:FindFirstChild("SellGuideSource") :: Attachment?
-	if not source then
-		local a = Instance.new("Attachment")
-		a.Name = "SellGuideSource"
-		a.Position = Vector3.new(0, -1.5, 0)
-		a.Parent = root
-		source = a
-	end
-	beam.Attachment0 = source
-	beam.Enabled = true
+	Guide.Set("Sell", pad, 100, false)
 end)
+
+if ClientState.Get() then setActive(GrassBag.IsFull(ClientState.Get())) end

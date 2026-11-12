@@ -59,6 +59,29 @@ tutorial idempotency, and persistent profile session ownership/migration.
 
 ## Evidence and limits
 
+### HUD/NPC revision, 2026-11-12
+
+The latest revision replaces blurred reference crops with 14 original SVG/PNG
+icons, gives Coins and Clovers their own large values below left navigation,
+and stacks weather/fuel indicators on the right. The HUD Shop opens **passes**;
+equipment remains at physical stalls. All pass IDs are currently zero and
+checkout is explicitly disabled pending server entitlement implementation.
+
+NPC discovery is persisted and observed by the server. Journal entries reveal
+jobs as contacts are found; remote acceptance requires a living player near
+the contact. Local pathfinding points toward the NPC approach pad; full-storage
+selling guidance takes precedence. Menus share exclusive visibility, a backdrop
+and close controls; daily rewards reflow on narrow panels.
+
+Current automated checks: 68 Luau sources compile, 65 progression assertions,
+27 service assertions and 17 persistence assertions pass; Land and Lobby build.
+The editable OpenPencil document and both exported preview boards were inspected.
+Five reusable chrome assets are exported and audited, but their upload is
+pending (`Interface.Images.Chrome` is empty). Studio MCP returned no connected
+instances during this revision, so desktop/phone Play, actual menu input,
+NPC route/acceptance and the mowing loop must be checked again. The older
+Studio evidence below belongs to the previous revision, not this new layout.
+
 - Compiled all 57 source scripts; built Land and Lobby.
 - 61 progression assertions, 16 service assertions, 17 persistence assertions.
 - In Studio Play Solo: cut grass via client request, mixed Normal/Golden

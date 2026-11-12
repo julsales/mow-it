@@ -43,10 +43,30 @@ function game:GetService(name) return services[name] end
 local task = { spawn = function() end }
 local script = { Parent = {} }
 local remotes = {}
-for _, name in { "Notify", "FranchiseOffer", "GameAction" } do
+for _, name in { "Notify", "FranchiseOffer", "QuestOffer", "GameAction" } do
 	remotes[name] = { OnServerEvent = signal() }
 	local remote = remotes[name]
 	function remote:FireClient(p, message) table.insert(notifications, { player = p, message = message }) end
 end
 local checks = 0
 local function check(condition, label) assert(condition, label); checks += 1 end
+
+-- Only engine/world boundaries are mocked; discovery and distance decisions run
+-- in the real QuestService, called by the real ContractService below.
+local function position(x)
+	return setmetatable({ X = x }, { __sub = function(a, b) return { Magnitude = math.abs(a.X - b.X) } end })
+end
+local npcRoots = {}
+for _, def in M.Quests.List do
+	npcRoots[def.Id] = { Position = position(0), FindFirstChild = function() return true end }
+end
+local QuestWorld = { Find = function(id) return npcRoots[id] end }
+for _, actor in actors do
+	local root = { Position = position(0) }
+	local humanoid = { Health = 100 }
+	actor.Character = {
+		FindFirstChild = function() return root end,
+		FindFirstChildOfClass = function() return humanoid end,
+	}
+	actor.TestRoot = root; actor.TestHumanoid = humanoid
+end

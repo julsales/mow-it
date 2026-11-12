@@ -10,6 +10,7 @@ local Profiles = require(script.Parent.ProfileService)
 local Land = require(script.Parent.LandService)
 local Crew = require(Shared.Config.Crew)
 local Contracts = require(script.Parent.ContractService)
+local Quests = require(script.Parent.QuestService)
 local Plots = require(script.Parent.PlotService)
 local Lawn = require(Shared.PlantingPlots)
 local ProgressionService = {}
@@ -101,9 +102,9 @@ local function action(player: Player, name: any, id: any)
 		end
 	elseif name == "Daily" then
 		local time = os.time()
-		if time - profile.DailyClaimAt < Tuning.DailySeconds then message = "Your next daily reward is not ready yet."
+		local ready, streak = Rules.DailyStatus(profile, time)
+		if not ready then message = "Your next daily reward is not ready yet."
 		else
-			local streak = if time - profile.DailyClaimAt < Tuning.DailySeconds * 2 then profile.DailyStreak % #Tuning.DailyCoins + 1 else 1
 			profile.DailyClaimAt = time; profile.DailyStreak = streak
 			Rules.AwardCoins(profile, Tuning.DailyCoins[streak])
 			profile.Clovers += Tuning.DailyClovers[streak]
@@ -159,6 +160,7 @@ end
 function ProgressionService.Init(folder: Folder, economy)
 	remotes = folder
 	Contracts.Init(folder);
+	Quests.Init(folder);
 	(folder.GameAction :: RemoteEvent).OnServerEvent:Connect(action)
 	Players.PlayerRemoving:Connect(function(player) lastRequest[player] = nil; confirmUntil[player] = nil end)
 	task.spawn(function()

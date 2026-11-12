@@ -9,6 +9,7 @@ local Rules = require(Shared.ProgressionRules)
 local Profiles = require(script.Parent.ProfileService)
 local Levels = require(script.Parent.LevelService)
 local Land = require(script.Parent.LandService)
+local Quests = require(script.Parent.QuestService)
 local ContractService = {}
 local active: any = nil
 local remotes: Folder
@@ -22,6 +23,7 @@ end
 function ContractService.Accept(player: Player, id: string): string
 	if not Land.IsHost(player) then return "Only the land owner can choose a party job." end
 	if active then return "Finish or abandon the current job first." end
+	if not Quests.CanAccept(player, id) then return "Talk to this job's NPC nearby first." end
 	local profile = Profiles.Get(player)
 	if not profile then return "Profile is loading." end
 	for _, def in Config.Bands do

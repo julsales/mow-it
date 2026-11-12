@@ -34,6 +34,7 @@ local ToolVisualService = require(Services.ToolVisualService)
 local REMOTE_NAMES = {
 	"GameAction",
 	"FranchiseOffer",
+	"QuestOffer",
 	"RequestProfile",
 	"CutRequest",
 	"SellRequest",
