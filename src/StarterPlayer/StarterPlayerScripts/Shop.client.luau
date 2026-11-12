@@ -208,19 +208,8 @@ for i, def in Backpacks.List do
 	table.insert(packRows, makeRow(100 + i, def.Id, def.DisplayName, stats, def.Price, def.RequiredZone, "BuyBackpack"))
 end
 
-local function highestZone(profile): number
-	local highest = 1
-	for zoneId in profile.UnlockedZoneIds do
-		local index = Zones.IndexById[zoneId]
-		if index and index > highest then
-			highest = index
-		end
-	end
-	return highest
-end
-
 local function paintRows(rows: { Row }, owned: { [string]: boolean }, equipped: string, profile)
-	local zone = highestZone(profile)
+	local zone = Zones.HighestUnlockedIndex(profile.UnlockedZoneIds)
 	for _, row in rows do
 		local action = row.Action
 		row.Frame.BackgroundColor3 = if row.Id == equipped then COLORS.RowEquipped else COLORS.Row

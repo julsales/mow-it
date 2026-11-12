@@ -45,7 +45,7 @@ Code finds things by these names and attributes, never by position:
 | `Workspace/Zones/<ZoneId>` folders | ids from `Config/Zones.luau` | one folder per area |
 | `GrassArea` (Part, any size/rotation) | inside `Zones/<ZoneId>` | grass grows on every 4×4 cell inside it; its bottom is the lawn surface. Move/resize/duplicate to reshape lawns |
 | `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it sells grass |
-| `ZoneGate` (Part) | inside `Zones/<ZoneId>` | locked gate, opens for players who unlocked the zone |
+| `ZoneGate` (Part) | inside `Zones/<ZoneId>` | locked gate, opens for players who unlocked the zone. The game adds its "Unlock" prompt at runtime (`PromptAnchor` attachment, 4.5 studs above the gate's bottom edge); add your own `PromptAnchor` to place it elsewhere |
 | `ZoneWall` (Parts, invisible) | inside `Zones/<ZoneId>` | blocks jumping into a locked zone |
 | `ShopItem` (Part) with attribute `ToolId` + a `ShopItemPrompt` | any shop | buys/equips that tool; the `Status` label shows price/Owned/Equipped |
 | `OpenShopPrompt` (ProximityPrompt) | on a counter | opens the full Shop panel |

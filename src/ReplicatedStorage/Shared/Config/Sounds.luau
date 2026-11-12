@@ -30,6 +30,8 @@ local Sounds: { [string]: SoundDef } = {
 	Sell = { Id = "rbxasset://sounds/electronicpingshort.wav", Volume = 0.6, Pitch = 1.0 },
 	-- Buying a tool / storage / zone.
 	Buy = { Id = "rbxasset://sounds/victory.wav", Volume = 0.4, Pitch = 1.0 },
+	-- Company Level up.
+	LevelUp = { Id = "rbxasset://sounds/victory.wav", Volume = 0.55, Pitch = 1.25 },
 	-- Engine loop of motor mowers. PLACEHOLDER: a fast click looped at low
 	-- pitch reads as a small two-stroke engine. Replace with a real mower
 	-- loop: Toolbox -> Audio -> "lawn mower", or upload the CC0 BigSoundBank

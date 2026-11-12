@@ -15,6 +15,10 @@ local Format = require(Shared.Format)
 local Tools = require(Shared.Config.Tools)
 local Backpacks = require(Shared.Config.Backpacks)
 local Zones = require(Shared.Config.Zones)
+local GrassTypes = require(Shared.Config.GrassTypes)
+local GrassBag = require(Shared.GrassBag)
+
+local LandState = require(script.Parent:WaitForChild("LandState"))
 
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local profile: any = nil
@@ -64,8 +68,8 @@ end
 -- is a scrolling list built from the same configs (Phase 3 in the plan).
 local nextToolButton = makeButton("NextTool", "Next Tool", UDim2.new(1, -170, 0, 10))
 local nextPackButton = makeButton("NextPack", "Next Storage", UDim2.new(1, -170, 0, 60))
-local nextZoneButton = makeButton("NextZone", "Next Zone", UDim2.new(1, -170, 0, 10))
--- Tools and storage are bought in the Shop panel (Shop.client.luau) now.
+-- Tools and storage are bought in the Shop panel (Shop.client.luau) now;
+-- land expansions at their gate (refreshGates below).
 nextToolButton.Visible = false
 nextPackButton.Visible = false
 -- No on-screen SELL button: selling happens by walking onto a sell stall's
@@ -85,24 +89,23 @@ local function refresh()
 	if not profile then
 		return
 	end
-	local pack = Backpacks.ById[profile.EquippedBackpackId]
 	local tool = Tools.ById[profile.EquippedToolId]
 	coinsLabel.Text = "$ " .. Format.Number(profile.Coins)
-	grassLabel.Text = ("🌿 %s / %s"):format(Format.Number(profile.Grass), Format.Number(pack and pack.Capacity or 0))
+	-- Total carried; special variants are listed after it ("+3 Golden Grass").
+	local carried = ("🌿 %s / %s"):format(Format.Number(GrassBag.Total(profile)), Format.Number(GrassBag.Capacity(profile)))
+	for variantId, count in profile.GrassByVariant do
+		if variantId ~= GrassBag.DefaultVariant and count > 0 then
+			local def = GrassTypes.ById[variantId]
+			carried ..= (" +%s %s"):format(Format.Number(count), if def then def.DisplayName else variantId)
+		end
+	end
+	grassLabel.Text = carried
 	toolLabel.Text = tool and tool.DisplayName or "?"
 
 	local nextTool = nextUnowned(Tools.List, profile.OwnedToolIds)
 	nextToolButton.Text = nextTool and ("Tool: " .. nextTool.DisplayName .. " (" .. Format.Number(nextTool.Price) .. ")") or "Tools MAX"
 	local nextPack = nextUnowned(Backpacks.List, profile.OwnedBackpackIds)
 	nextPackButton.Text = nextPack and ("Storage: " .. nextPack.DisplayName .. " (" .. Format.Number(nextPack.Price) .. ")") or "Storage MAX"
-	local nextZone = nil
-	for _, zone in Zones.List do
-		if not profile.UnlockedZoneIds[zone.Id] then
-			nextZone = zone
-			break
-		end
-	end
-	nextZoneButton.Text = nextZone and ("Unlock " .. nextZone.DisplayName .. " ($" .. Format.Number(nextZone.UnlockPrice) .. ")") or "All zones unlocked"
 end
 
 nextToolButton.Activated:Connect(function()
@@ -115,17 +118,6 @@ nextPackButton.Activated:Connect(function()
 	local nextPack = profile and nextUnowned(Backpacks.List, profile.OwnedBackpackIds)
 	if nextPack then
 		(remotes:WaitForChild("BuyBackpack") :: RemoteEvent):FireServer(nextPack.Id)
-	end
-end)
-nextZoneButton.Activated:Connect(function()
-	if not profile then
-		return
-	end
-	for _, zone in Zones.List do
-		if not profile.UnlockedZoneIds[zone.Id] then
-			(remotes:WaitForChild("UnlockZone") :: RemoteEvent):FireServer(zone.Id)
-			break
-		end
 	end
 end)
 
@@ -157,9 +149,31 @@ end);
 
 -- Server pushes ----------------------------------------------------------------
 -- Zone gates (Workspace/Zones/<id>/ZoneGate) are solid on the server.
--- Each client opens the gates of the zones its own player unlocked, so
--- locked land stays fenced off without one player's unlock opening it for
--- everyone. The server still refuses cutting in locked zones.
+-- Each client opens the gates of the expansions unlocked on the land of
+-- this session (the host's, LandState). The server still refuses cutting
+-- in locked expansions.
+--
+-- The gate's "Unlock" prompt (Map/Gates on the server) is painted here for
+-- this player: what it costs, or what is still missing.
+local function paintGatePrompt(gate: BasePart, zone, open: boolean)
+	local prompt = gate:FindFirstChild("ZoneGatePrompt", true)
+	if not prompt or not prompt:IsA("ProximityPrompt") then
+		return
+	end
+	local nextZone = Zones.NextLocked(LandState.Unlocked())
+	prompt.Enabled = not open
+	prompt.ObjectText = zone.DisplayName
+	if not LandState.IsHost() then
+		prompt.ActionText = ("Only %s can expand this land"):format(LandState.HostName())
+	elseif nextZone and nextZone.Id ~= zone.Id then
+		prompt.ActionText = "Unlock " .. nextZone.DisplayName .. " first"
+	elseif (profile.Level or 1) < zone.RequiredLevel then
+		prompt.ActionText = ("Needs Company Level %d"):format(zone.RequiredLevel)
+	else
+		prompt.ActionText = "Unlock · " .. Format.Coins(zone.UnlockPrice)
+	end
+end
+
 local function refreshGates()
 	local zonesFolder = workspace:FindFirstChild("Zones")
 	if not zonesFolder or not profile then
@@ -169,7 +183,8 @@ local function refreshGates()
 		local folder = zonesFolder:FindFirstChild(zone.Id)
 		local gate = folder and folder:FindFirstChild("ZoneGate")
 		if gate and gate:IsA("BasePart") then
-			local open = profile.UnlockedZoneIds[zone.Id] == true
+			local open = LandState.IsUnlocked(zone.Id)
+			paintGatePrompt(gate, zone, open)
 			gate.CanCollide = not open
 			gate.Transparency = if open then 1 else 0.3
 			for _, child in gate:GetChildren() do
@@ -181,7 +196,7 @@ local function refreshGates()
 		-- Invisible walls above the fences of this zone (MapService): they
 		-- stop jumping in until the zone is unlocked.
 		if folder then
-			local open = profile.UnlockedZoneIds[zone.Id] == true
+			local open = LandState.IsUnlocked(zone.Id)
 			for _, child in folder:GetChildren() do
 				if child.Name == "ZoneWall" and child:IsA("BasePart") then
 					child.CanCollide = not open
@@ -195,7 +210,8 @@ end
 -- did. Many arrive at once, so refresh once per frame at most.
 local refreshQueued = false
 workspace.DescendantAdded:Connect(function(instance)
-	if (instance.Name == "ZoneGate" or instance.Name == "ZoneWall") and not refreshQueued then
+	local name = instance.Name
+	if (name == "ZoneGate" or name == "ZoneWall" or name == "ZoneGatePrompt") and not refreshQueued then
 		refreshQueued = true
 		task.defer(function()
 			refreshQueued = false
@@ -203,6 +219,8 @@ workspace.DescendantAdded:Connect(function(instance)
 		end)
 	end
 end);
+
+LandState.Changed:Connect(refreshGates)
 
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local function onProfile(newProfile)

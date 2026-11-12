@@ -1,7 +1,7 @@
 --!strict
 -- Mow It! server entry point. One codebase, two places:
 --   * Lobby place (start place) -> queue pad + teleport (LobbyService)
---   * Game place                -> mowing loop (Grass/Economy/Shop)
+--   * Land place                -> the host's land: mowing loop (Land/Grass/Economy/Shop)
 -- Which one runs is decided by GameConfig place IDs; in Studio (PlaceId 0
 -- for unpublished places) BOTH grayboxes are built so Play Solo can test
 -- the loop and the queue without publishing anything.
@@ -18,6 +18,9 @@ local ProfileService = require(Services.ProfileService)
 local GrassService = require(Services.GrassService)
 local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
+local LevelService = require(Services.LevelService)
+local LandService = require(Services.LandService)
+local GrassBag = require(Shared.GrassBag)
 local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
 local MapService = require(Services.MapService)
@@ -39,6 +42,7 @@ local REMOTE_NAMES = {
 	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit, cutPositions) after each swing
 	"SellFeedback", -- server -> client: (coinsEarned)
 	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
+	"LevelUp", -- server -> client: (newLevel) when the Company Level goes up
 }
 
 local remotes = Instance.new("Folder")
@@ -53,11 +57,11 @@ remotes.Parent = ReplicatedStorage
 -- Place detection -------------------------------------------------------------
 local placeId = game.PlaceId
 local isLobbyPlace = placeId == GameConfig.LobbyPlaceId
-local isGamePlace = placeId == GameConfig.GamePlaceId
+local isLandPlace = placeId == GameConfig.LandPlaceId
 if RunService:IsStudio() or placeId == 0 then
 	-- Unpublished/Studio: run everything against the graybox.
 	isLobbyPlace = true
-	isGamePlace = true
+	isLandPlace = true
 end
 
 -- Profile -> client sync + leaderstats ---------------------------------------
@@ -74,10 +78,14 @@ local function syncProfile(player: Player, profile)
 		local grass = Instance.new("IntValue")
 		grass.Name = "Grass"
 		grass.Parent = leaderstats
+		local level = Instance.new("IntValue")
+		level.Name = "Level"
+		level.Parent = leaderstats
 		leaderstats.Parent = player
 	end
 	(leaderstats:FindFirstChild("Coins") :: IntValue).Value = profile.Coins;
-	(leaderstats:FindFirstChild("Grass") :: IntValue).Value = profile.Grass
+	(leaderstats:FindFirstChild("Grass") :: IntValue).Value = GrassBag.Total(profile);
+	(leaderstats:FindFirstChild("Level") :: IntValue).Value = profile.Level
 
 	-- The client recomputes derived numbers (capacity, prices) from the
 	-- same Shared configs, so we only ship raw profile state.
@@ -87,13 +95,16 @@ end
 ProfileService.OnChanged(syncProfile)
 
 -- Boot ------------------------------------------------------------------------
-if isGamePlace then
+if isLandPlace then
 	MapService.BuildIfMissing()
+	LandService.Init()
 	GrassService.Init()
+	LevelService.Init(remotes)
 	EconomyService.Init(remotes)
 	ToolVisualService.Init()
 	ShopService.Init(remotes)
-	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool);
+	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool)
+	require(Services.Map.Gates).Init(ShopService.UnlockZone);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
 		-- Selling is physical (sell pads). Remote selling is only for players
 		-- with Auto-Sell (later also a "Sell Anywhere" pass).
@@ -128,6 +139,24 @@ if RunService:IsStudio() then
 	end
 	give.Parent = game:GetService("ServerStorage")
 
+	-- ServerStorage.DevGiveXp:Invoke(player, amount): same idea for levels.
+	local giveXp = Instance.new("BindableFunction")
+	giveXp.Name = "DevGiveXp"
+	giveXp.OnInvoke = function(player: Player, amount: number)
+		LevelService.AddXp(player, amount)
+		ProfileService.NotifyChanged(player)
+		local profile = ProfileService.Get(player)
+		return profile and profile.Level
+	end
+	giveXp.Parent = game:GetService("ServerStorage")
+
+	-- ServerStorage.DevSetLandHost:Invoke(userId, name, { zoneIds }): makes
+	-- the session someone else's land, to try the helper experience solo.
+	local setHost = Instance.new("BindableFunction")
+	setHost.Name = "DevSetLandHost"
+	setHost.OnInvoke = LandService.DevSetHost
+	setHost.Parent = game:GetService("ServerStorage")
+
 	-- Same, from the HUD's "+1M (Studio)" button (Shop.client.luau).
 	local devRemote = Instance.new("RemoteEvent")
 	devRemote.Name = "DevGiveCoins"
@@ -146,10 +175,10 @@ for _, player in Players:GetPlayers() do
 end
 
 if GameConfig.Verbose then
-	print(("[MowIt] Server booted. PlaceId=%d Lobby=%s Game=%s Studio=%s"):format(
+	print(("[MowIt] Server booted. PlaceId=%d Lobby=%s Land=%s Studio=%s"):format(
 		placeId,
 		tostring(isLobbyPlace),
-		tostring(isGamePlace),
+		tostring(isLandPlace),
 		tostring(RunService:IsStudio())
 	))
 end

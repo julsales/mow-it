@@ -12,7 +12,7 @@ local GameConfig = require(Shared.Config.GameConfig)
 
 export type Profile = {
 	Coins: number,
-	Grass: number, -- currently carried (sold for Coins at a Sell Pad)
+	GrassByVariant: { [string]: number }, -- carried grass per variant (Shared/GrassBag.luau)
 	LifetimeGrass: number,
 	EquippedToolId: string,
 	OwnedToolIds: { [string]: boolean },
@@ -20,6 +20,8 @@ export type Profile = {
 	OwnedBackpackIds: { [string]: boolean },
 	UnlockedZoneIds: { [string]: boolean },
 	BuffStacks: { [string]: number },
+	Level: number, -- Company Level (Shared/Config/CompanyLevel.luau)
+	Xp: number, -- experience inside the current level
 }
 
 local ProfileService = {}
@@ -42,7 +44,7 @@ local changeCallbacks: { (Player, Profile) -> () } = {}
 local function defaultProfile(): Profile
 	return {
 		Coins = GameConfig.StartingCoins,
-		Grass = 0,
+		GrassByVariant = {},
 		LifetimeGrass = 0,
 		EquippedToolId = GameConfig.StartingToolId,
 		OwnedToolIds = { [GameConfig.StartingToolId] = true },
@@ -50,6 +52,8 @@ local function defaultProfile(): Profile
 		OwnedBackpackIds = { [GameConfig.StartingBackpackId] = true },
 		UnlockedZoneIds = { front_yard = true },
 		BuffStacks = {},
+		Level = 1,
+		Xp = 0,
 	}
 end
 
@@ -63,6 +67,10 @@ local function reconcile(saved: any): Profile
 		if saved[key] ~= nil then
 			(profile :: any)[key] = saved[key]
 		end
+	end
+	-- Saves from before per-variant inventory carried one plain number.
+	if type(saved.Grass) == "number" and saved.GrassByVariant == nil and saved.Grass > 0 then
+		profile.GrassByVariant.normal = saved.Grass
 	end
 	return profile
 end
