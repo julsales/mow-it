@@ -57,7 +57,9 @@ local function tryCut(player: Player)
 	local feedback = remotes:FindFirstChild("CutFeedback") :: RemoteEvent
 	local capacity = capacityOf(profile)
 	if profile.Grass >= capacity then
-		(remotes:FindFirstChild("Notify") :: RemoteEvent):FireClient(player, "Storage full! Sell at a stall.")
+		-- No Notify here: the client's single STORAGE FULL banner
+		-- (SellGuide.client.luau) already says it; notifying on every swing
+		-- stacked messages while auto-mowing.
 		feedback:FireClient(player, 0, true)
 		-- Auto-Sell Conveyor (final-zone automation) empties it for you.
 		if buffStacks(profile, "auto_sell") > 0 then

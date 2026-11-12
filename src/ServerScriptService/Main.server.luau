@@ -89,11 +89,11 @@ ProfileService.OnChanged(syncProfile)
 -- Boot ------------------------------------------------------------------------
 if isGamePlace then
 	MapService.BuildIfMissing()
-	GrassService.Init(MapService.GetLawnCells())
+	GrassService.Init()
 	EconomyService.Init(remotes)
 	ToolVisualService.Init()
 	ShopService.Init(remotes)
-	require(Services.Map.ShopDisplay).SetBuyHandler(ShopService.BuyTool);
+	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
 		-- Selling is physical (sell pads). Remote selling is only for players
 		-- with Auto-Sell (later also a "Sell Anywhere" pass).

@@ -227,14 +227,14 @@ end
 -- The grass buyer: a farmer NPC (default R15 body, colored clothes, a
 -- straw hat built from parts) standing still behind the stall counter.
 -- No dialog: stepping on the pad sells instantly, he is the face of it.
-local function buyerNpc(parent: Instance, at: CFrame)
+local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
 	task.spawn(function()
 		local description = Instance.new("HumanoidDescription")
 		local skin = Color3.fromRGB(234, 184, 146)
 		description.HeadColor = skin
 		description.LeftArmColor = skin
 		description.RightArmColor = skin
-		description.TorsoColor = Color3.fromRGB(196, 64, 52) -- red plaid shirt
+		description.TorsoColor = shirt
 		description.LeftLegColor = Color3.fromRGB(60, 90, 150) -- jeans
 		description.RightLegColor = Color3.fromRGB(60, 90, 150)
 		local ok, npc = pcall(function()
@@ -244,7 +244,7 @@ local function buyerNpc(parent: Instance, at: CFrame)
 			warn("[MowIt][Graybox] Could not build the grass buyer NPC:", npc)
 			return
 		end
-		npc.Name = "GrassBuyer"
+		npc.Name = "Npc"
 		local humanoid = npc:FindFirstChildOfClass("Humanoid") :: Humanoid
 		humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 		local root = npc:FindFirstChild("HumanoidRootPart") :: BasePart
@@ -283,7 +283,7 @@ local function buyerNpc(parent: Instance, at: CFrame)
 		text.TextScaled = true
 		text.TextColor3 = Color3.new(1, 1, 1)
 		text.TextStrokeTransparency = 0.3
-		text.Text = "Farmer Joe · Grass Buyer"
+		text.Text = title
 		text.Parent = tag
 		tag.Parent = head
 		npc.Parent = parent
@@ -311,7 +311,7 @@ local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 	end
 	local board = box("Board", m, cf, Vector3.new(7, 1.6, 0.3), x, back + 2.75, COLORS.White, nil, 7.9)
 	label(board, Enum.NormalId.Back, "WE BUY GRASS", Color3.fromRGB(90, 60, 0))
-	buyerNpc(m, at(cf, x, 0, back - 1) * CFrame.Angles(0, math.pi, 0))
+	npc(m, at(cf, x, 0, back - 1) * CFrame.Angles(0, math.pi, 0), "Farmer Joe · Grass Buyer", Color3.fromRGB(196, 64, 52))
 end
 
 local function sellPad(parent: Instance, cf: CFrame, x: number, z: number)
@@ -489,6 +489,7 @@ Props.tree = tree
 Props.sign = sign
 Props.shop = shop
 Props.sellPad = sellPad
+Props.npc = npc
 
 -- Late summer afternoon: low warm sun, long soft shadows, warm haze, a
 -- little bloom and sun rays (roblox-world-building: Lighting children).
@@ -505,6 +506,12 @@ local function effect(className: string, name: string): Instance
 end
 
 function Props.BuildAmbience()
+	-- Applied once; after that the place's own Lighting wins (hand-tuned in
+	-- Studio). Delete the attribute to re-apply the defaults.
+	if Lighting:GetAttribute("MowItLighting") then
+		return
+	end
+	Lighting:SetAttribute("MowItLighting", true)
 	Lighting.ClockTime = 17.3
 	Lighting.GeographicLatitude = 38
 	Lighting.Brightness = 2.4

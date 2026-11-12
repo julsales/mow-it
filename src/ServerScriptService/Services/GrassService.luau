@@ -1,6 +1,7 @@
 --!strict
--- Grass on the lawns. MapService decides WHERE lawns are (cell centers per
--- zone, painted as Terrain Grass, whose 3D blades sway in the wind); this
+-- Grass on the lawns. "GrassArea" parts under Workspace/Zones/<id> decide
+-- WHERE lawns are (cells are the voxel columns inside them; their terrain is
+-- Grass, whose 3D blades sway in the wind); this
 -- service owns the STATE of every cell: health, grass type, cut/regrowth.
 --
 -- Mowing = changing the Terrain material of one 4x4 voxel column:
@@ -56,11 +57,8 @@ local function paintColors()
 		-- project file and must be saved in the place (Terrain > Decoration).
 		warn("[MowIt][Grass] Workspace.Terrain.Decoration is off: lawns will look flat.")
 	end
-	terrain:SetMaterialColor(Enum.Material.LeafyGrass, Color3.fromRGB(76, 124, 56)) -- wild ground
-	terrain:SetMaterialColor(TALL, Color3.fromRGB(92, 168, 60)) -- uncut lawn
-	terrain:SetMaterialColor(MOWED_LIGHT, Color3.fromRGB(150, 204, 92))
-	terrain:SetMaterialColor(MOWED_DARK, Color3.fromRGB(116, 178, 70))
-	terrain:SetMaterialColor(Enum.Material.Sand, Color3.fromRGB(206, 186, 140)) -- paths
+	-- Terrain colors are set once by MapService (and saved with a baked
+	-- map), so hand-tuned colors in Studio are never overwritten here.
 end
 
 -- Picks this cell's grass type (normal, or a lucky rare one).
@@ -171,14 +169,50 @@ function GrassService.Damage(cell: Cell, power: number): boolean
 	return true
 end
 
--- `lawnCells`: zoneId -> cell centers, from MapService.GetLawnCells().
-function GrassService.Init(lawnCells: { [string]: { Vector3 } })
+-- Lawn cell centers from the contract parts: every 4x4 voxel column whose
+-- center lies inside a "GrassArea" part under Workspace/Zones/<ZoneId>
+-- (built by MapService, or baked and hand-edited in Studio). The lawn's
+-- surface is the bottom of the part.
+local function collectLawnCells(): { [string]: { Vector3 } }
+	local result: { [string]: { Vector3 } } = {}
+	local zones = Workspace:FindFirstChild("Zones")
+	if not zones then
+		return result
+	end
+	local seen: { [string]: boolean } = {}
+	for _, zoneFolder in zones:GetChildren() do
+		for _, part in zoneFolder:GetDescendants() do
+			if part.Name ~= "GrassArea" or not part:IsA("BasePart") then
+				continue
+			end
+			local cf, size = part.CFrame, part.Size
+			local half = size / 2
+			local reach = Vector3.new(size.X, 0, size.Z).Magnitude / 2
+			local y = cf.Position.Y - half.Y
+			for ix = math.floor((cf.X - reach) / CELL), math.floor((cf.X + reach) / CELL) do
+				for iz = math.floor((cf.Z - reach) / CELL), math.floor((cf.Z + reach) / CELL) do
+					local center = Vector3.new(ix * CELL + CELL / 2, y, iz * CELL + CELL / 2)
+					local p = cf:PointToObjectSpace(Vector3.new(center.X, cf.Y, center.Z))
+					local k = ix .. "," .. iz
+					if math.abs(p.X) <= half.X and math.abs(p.Z) <= half.Z and not seen[k] then
+						seen[k] = true
+						result[zoneFolder.Name] = result[zoneFolder.Name] or {}
+						table.insert(result[zoneFolder.Name], center)
+					end
+				end
+			end
+		end
+	end
+	return result
+end
+
+function GrassService.Init()
 	paintColors()
 	markers = Instance.new("Folder")
 	markers.Name = "RareGrass"
 	markers.Parent = Workspace
 
-	for zoneId, centers in lawnCells do
+	for zoneId, centers in collectLawnCells() do
 		if not Zones.ById[zoneId] then
 			continue
 		end
@@ -196,9 +230,15 @@ function GrassService.Init(lawnCells: { [string]: { Vector3 } })
 				TypeId = "normal",
 				Yield = 1,
 			}
+			-- Hand-moved lawns: make sure the ground under them is lawn.
+			terrain:ReplaceMaterial(cell.Region, CELL, Enum.Material.LeafyGrass, TALL)
+			terrain:ReplaceMaterial(cell.Region, CELL, cell.MowedMaterial, TALL)
 			grow(cell)
 			cells[ix .. "," .. iz] = cell
 			cellCount += 1
+			if cellCount % 400 == 0 then
+				task.wait()
+			end
 		end
 	end
 	if GameConfig.Verbose then

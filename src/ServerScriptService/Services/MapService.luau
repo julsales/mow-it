@@ -22,6 +22,7 @@ local Format = require(Shared.Format)
 
 local Props = require(script.Parent.Map.Props)
 local ShopDisplay = require(script.Parent.Map.ShopDisplay)
+local ShopInterior = require(script.Parent.Map.ShopInterior)
 local Geo = require(script.Parent.Map.MapGeometry)
 
 local MapService = {}
@@ -152,24 +153,11 @@ addCounterPrompt = function(counter: BasePart?)
 	prompt.Parent = counter
 end
 
--- The starter shop is the house itself: a pegboard of tools on the front
--- wall (left of the door), mowers parked on the lawn to the right, and a
--- small counter by the door that opens the full Shop panel.
--- House frame (Props.Kinds.House): 30 wide, 20 deep, front wall at +Z 10.
+-- The starter shop is the house itself: a walk-in shop (ShopInterior)
+-- with the tools on wall plaques, a shopkeeper at the counter and mowers
+-- parked by the porch.
 buildHouseShop = function(parent: Instance, cf: CFrame, toolIds: { string })
-	local wall = cf * CFrame.new(0, 0, 10.2)
-	ShopDisplay.Build(parent, wall, toolIds, {
-		BoardWidth = 10,
-		BoardHeight = 6,
-		BoardLift = 1.4,
-		BoardOffsetX = -8.5,
-		ParkOffsetX = 9,
-		ParkDistance = 9,
-	})
-	local counter = Props.box("Counter", parent, wall, Vector3.new(4.5, 3, 1.6), 5.5, 1.6, COLORS.Wood, Enum.Material.WoodPlanks)
-	local board = Props.box("ShopSign", parent, wall, Vector3.new(8, 1.6, 0.3), -8.5, 0.2, COLORS.White, nil, 7.8)
-	Props.label(board, Enum.NormalId.Back, "TOOL SHOP", Color3.fromRGB(90, 60, 0))
-	addCounterPrompt(counter)
+	ShopInterior.Build(parent, cf, toolIds, "Tool Shop", "Sam · Shopkeeper")
 end
 
 -- Props placement ----------------------------------------------------------------
@@ -352,6 +340,13 @@ function MapService.BuildIfMissing()
 		baseplate:Destroy() -- the terrain is the ground now (runtime only)
 	end
 
+	-- Terrain colors (saved with a baked map; tune them in Studio under
+	-- Terrain > MaterialColors and they stay).
+	terrain:SetMaterialColor(Enum.Material.LeafyGrass, Color3.fromRGB(76, 124, 56)) -- wild ground
+	terrain:SetMaterialColor(Enum.Material.Grass, Color3.fromRGB(92, 168, 60)) -- uncut lawn
+	terrain:SetMaterialColor(Enum.Material.Ground, Color3.fromRGB(150, 204, 92)) -- mowed stripe
+	terrain:SetMaterialColor(Enum.Material.Mud, Color3.fromRGB(116, 178, 70)) -- mowed stripe
+
 	local rng = Random.new(MapLayout.Seed)
 	local land = Props.model("Land", Workspace)
 	local zonesFolder = Instance.new("Folder")
@@ -435,9 +430,7 @@ function MapService.BuildIfMissing()
 		if def.ShopAt == "House" then
 			-- The starter shop is the house: place it first, near the hub,
 			-- facing it, so it always fits.
-			local house = Props.Kinds.House
-			place(house.Radius + 6, function(cf)
-				house.Build(dressing, cf)
+			place(ShopInterior.Radius, function(cf)
 				buildHouseShop(dressing, cf, zoneTools)
 			end, hub + Vector3.new(0, 0, 30), 10) -- south of the hub; the first path leaves north
 		else
@@ -588,14 +581,51 @@ function MapService.BuildIfMissing()
 		terrain:FillBall(Vector3.new(p.X, GROUND_TOP - hillRadius * 0.35, p.Z), hillRadius, MapService.Materials.Wild)
 	end
 
+	-- Lawns as contract parts: invisible "GrassArea" strips (one per run of
+	-- cells in a row). GrassService grows grass wherever these are, so a
+	-- baked map can be re-shaped in Studio by moving/resizing them.
+	for zoneId, cells in lawnCells do
+		local rows: { [number]: { number } } = {}
+		for _, center in cells do
+			local ix, iz = math.floor(center.X / CELL), math.floor(center.Z / CELL)
+			rows[iz] = rows[iz] or {}
+			table.insert(rows[iz], ix)
+		end
+		local lawns = Instance.new("Folder")
+		lawns.Name = "Lawns"
+		for iz, xs in rows do
+			table.sort(xs)
+			local runStart = xs[1]
+			for i = 1, #xs do
+				local x = xs[i]
+				if xs[i + 1] ~= x + 1 then
+					local count = x - runStart + 1
+					local part = Props.make("GrassArea", lawns, {
+						Size = Vector3.new(count * CELL, 0.2, CELL),
+						CFrame = CFrame.new((runStart + count / 2) * CELL, GROUND_TOP + 0.1, iz * CELL + CELL / 2),
+						Color = Color3.fromRGB(92, 168, 60),
+						Transparency = 1,
+						Solid = false,
+					})
+					part.Locked = false
+					runStart = xs[i + 1]
+				end
+			end
+		end
+		lawns.Parent = zoneFolders[zoneId]
+	end
+
 	zonesFolder.Parent = Workspace
 	buildSpawn()
 	print(("[MowIt][Map] Land built: %d lawn cells, %d path cells, %d gates."):format(count, #pathMarks, #gates))
 end
 
--- Lawn cell centers per zone (GrassService grows grass on them).
-function MapService.GetLawnCells(): LawnCells
-	return lawnCells
+-- Edit-mode "bake": run from the Command Bar (or Studio MCP) to build the
+-- land into the place so it can be edited by hand and saved:
+--   require(game.ServerScriptService.Services.MapService).Bake()
+-- Does nothing if Workspace/Zones already exists. See docs/EDITING.md.
+function MapService.Bake()
+	MapService.BuildIfMissing()
 end
 
 return MapService
