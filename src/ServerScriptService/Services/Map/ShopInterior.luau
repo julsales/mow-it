@@ -80,13 +80,26 @@ type Opening = { X1: number, X2: number, Y1: number, Y2: number }
 
 -- One log wall along the local X axis of `line` (origin = wall center line
 -- at floor level), cut around `openings` (in the same local units).
-local function logWall(parent: Instance, line: CFrame, length: number, openings: { Opening })
+-- `lift` raises every course by half a log on the side walls, so the logs
+-- of crossing walls sit at alternating heights (saddle-notch corners)
+-- instead of cutting through each other at the same height.
+local function logWall(parent: Instance, line: CFrame, length: number, openings: { Opening }, lift: number)
+	if lift > 0 then
+		-- Squared sill beam under the raised courses (no gap at the floor).
+		Props.make("SillBeam", parent, {
+			Size = Vector3.new(length, lift, LOG_D * 0.9),
+			CFrame = line * CFrame.new(0, lift / 2, 0),
+			Color = LOG_DARK,
+			Material = Enum.Material.Wood,
+		})
+	end
 	for row = 0, ROWS - 1 do
-		local y = LOG_D / 2 + row * LOG_D
+		local y = LOG_D / 2 + row * LOG_D + lift
 		-- Start with the full log (+ overhang past the corners), subtract openings.
 		local pieces = { { -length / 2 - 1.6, length / 2 + 1.6 } }
 		for _, o in openings do
-			if y > o.Y1 and y < o.Y2 then
+			-- Cut every log whose thickness overlaps the opening.
+			if y + LOG_D / 2 > o.Y1 + 0.01 and y - LOG_D / 2 < o.Y2 - 0.01 then
 				local nextPieces = {}
 				for _, piece in pieces do
 					if o.X2 <= piece[1] or o.X1 >= piece[2] then
@@ -201,11 +214,13 @@ local function logShell(parent: Instance, cf: CFrame): Room
 		{ X1 = -11.5, X2 = -7, Y1 = winH.Y1, Y2 = winH.Y2 },
 		{ X1 = 7, X2 = 11.5, Y1 = winH.Y1, Y2 = winH.Y2 },
 	}
-	logWall(parent, front, W, { door, frontWindows[1], frontWindows[2] })
-	logWall(parent, back, W, {})
-	local sideWindow = { X1 = -2.25, X2 = 2.25, Y1 = winH.Y1, Y2 = winH.Y2 }
-	logWall(parent, left, D, { sideWindow })
-	logWall(parent, right, D, { sideWindow })
+	logWall(parent, front, W, { door, frontWindows[1], frontWindows[2] }, 0)
+	logWall(parent, back, W, {}, 0)
+	-- Side courses sit half a log higher: their window opening lines up
+	-- with whole logs (3..7).
+	local sideWindow = { X1 = -2.25, X2 = 2.25, Y1 = 3, Y2 = 7 }
+	logWall(parent, left, D, { sideWindow }, LOG_D / 2)
+	logWall(parent, right, D, { sideWindow }, LOG_D / 2)
 	for _, o in frontWindows do
 		window(parent, front, (o.X1 + o.X2) / 2, o)
 	end
