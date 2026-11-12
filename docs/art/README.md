@@ -3,8 +3,10 @@
 ## Current generated-art revision
 
 The current visual direction is the owner's simulator reference,
-`references/simulator-ui-owner.png`, with the passes grid following the newer
+`references/simulator-ui-owner.png`, with the passes grid arrangement following the newer
 `references/passes-grid-owner.png` (three upper cards and two wider lower cards).
+The original dark teal/cyan frame and richly colored generated materials are
+retained. No icon-filter tabs are added to the passes header.
 The flat brown-outline OpenPencil board
 below was rejected as too simple and is retained only as history.
 

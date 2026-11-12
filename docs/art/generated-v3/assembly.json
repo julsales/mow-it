@@ -1,7 +1,7 @@
 [
   {
     "name": "01 HUD and passes",
-    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1440\" height=\"900\" viewBox=\"0 0 1440 900\"><rect id=\"asset_1\" x=\"0\" y=\"0\" width=\"1440\" height=\"900\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_2\" x=\"20\" y=\"222\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_3\" x=\"31.87\" y=\"234.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#238DE8\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_4\" x=\"32\" y=\"224\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_5\"><rect id=\"surface_6\" x=\"27\" y=\"299\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"CREW\" x=\"74\" y=\"318\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">CREW</text></g><rect id=\"asset_7\" x=\"132\" y=\"222\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_8\" x=\"143.87\" y=\"234.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#FFB721\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_9\" x=\"144\" y=\"224\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_10\"><rect id=\"surface_11\" x=\"139\" y=\"299\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"SHOP\" x=\"186\" y=\"318\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">SHOP</text></g><rect id=\"asset_12\" x=\"20\" y=\"334\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_13\" x=\"31.87\" y=\"346.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#9A4DE5\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_14\" x=\"32\" y=\"336\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_15\"><rect id=\"surface_16\" x=\"27\" y=\"411\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"QUESTS\" x=\"74\" y=\"430\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">QUESTS</text></g><rect id=\"asset_17\" x=\"99\" y=\"326\" width=\"26\" height=\"46\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_18\" x=\"132\" y=\"334\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_19\" x=\"143.87\" y=\"346.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#DC46B6\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_20\" x=\"144\" y=\"336\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_21\"><rect id=\"surface_22\" x=\"139\" y=\"411\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"REWARDS\" x=\"186\" y=\"430\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">REWARDS</text></g><rect id=\"surface_23\" x=\"26\" y=\"465\" width=\"222\" height=\"62\" rx=\"16\" fill=\"#073746\" stroke=\"#31D7EB\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_24\" x=\"14\" y=\"457\" width=\"78\" height=\"78\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"0\" x=\"100\" y=\"508\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#FFDE59\" text-anchor=\"start\">0</text><rect id=\"surface_25\" x=\"26\" y=\"540\" width=\"222\" height=\"62\" rx=\"16\" fill=\"#073746\" stroke=\"#31D7EB\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_26\" x=\"14\" y=\"532\" width=\"78\" height=\"78\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"0\" x=\"100\" y=\"583\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#C3FF8C\" text-anchor=\"start\">0</text><rect id=\"surface_27\" x=\"1200\" y=\"24\" width=\"216\" height=\"58\" rx=\"15\" fill=\"#073746\" stroke=\"#22CDE8\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_28\" x=\"1202\" y=\"21\" width=\"64\" height=\"64\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"4:00\" x=\"1280\" y=\"63\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"26\" fill=\"#FFFFFF\" text-anchor=\"start\">4:00</text><rect id=\"surface_29\" x=\"1200\" y=\"94\" width=\"216\" height=\"58\" rx=\"15\" fill=\"#073746\" stroke=\"#22CDE8\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_30\" x=\"1202\" y=\"91\" width=\"64\" height=\"64\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"100%\" x=\"1280\" y=\"133\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"26\" fill=\"#FFFFFF\" text-anchor=\"start\">100%</text><rect id=\"surface_31\" x=\"1144\" y=\"296\" width=\"272\" height=\"218\" rx=\"16\" fill=\"#073746\" stroke=\"#73D852\" stroke-width=\"2\" opacity=\"1\"/><g id=\"container_32\"><rect id=\"surface_33\" x=\"1147\" y=\"299\" width=\"266\" height=\"55\" rx=\"13\" fill=\"#285D24\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Meet Farmer Joe\" x=\"1208\" y=\"331\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Meet Farmer Joe</text></g><rect id=\"asset_34\" x=\"1145\" y=\"287\" width=\"66\" height=\"66\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_35\" x=\"1383\" y=\"284\" width=\"30\" height=\"52\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Follow the trail to\" x=\"1164\" y=\"392\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Follow the trail to</text><text id=\"your neighbor.\" x=\"1164\" y=\"417\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">your neighbor.</text><g id=\"container_36\"><rect id=\"surface_37\" x=\"1161\" y=\"452\" width=\"238\" height=\"44\" rx=\"12\" fill=\"#168CEB\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_38\" x=\"1165\" y=\"455\" width=\"230\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"SHOW ROUTE\" x=\"1280.0\" y=\"480.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#071A28\" text-anchor=\"middle\">SHOW ROUTE</text></g><g id=\"container_39\"><rect id=\"surface_40\" x=\"296\" y=\"133\" width=\"826\" height=\"664\" rx=\"24\" fill=\"#FFF9E6\" stroke=\"#087998\" stroke-width=\"3\" opacity=\"1\"/><rect id=\"surface_41\" x=\"301\" y=\"138\" width=\"816\" height=\"654\" rx=\"20\" fill=\"none\" stroke=\"#52DAEF\" stroke-width=\"2\" opacity=\"1\"/><text id=\"PASSES\" x=\"415\" y=\"181\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#102D43\" text-anchor=\"start\">PASSES</text><text id=\"Make room for a bigger harvest.\" x=\"320\" y=\"224\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"17\" fill=\"#102D43\" text-anchor=\"start\">Make room for a bigger harvest.</text><g id=\"container_42\"><rect id=\"surface_43\" x=\"318.0\" y=\"245\" width=\"252.66666666666666\" height=\"264\" rx=\"17\" fill=\"#FFDF58\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_44\" x=\"330.0\" y=\"285\" width=\"228.66666666666666\" height=\"176\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.36\"/><text id=\"2x COINS\" x=\"444.3333333333333\" y=\"280\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">2x COINS</text><rect id=\"asset_45\" x=\"389.3333333333333\" y=\"288\" width=\"110\" height=\"110\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Double your coins\" x=\"444.3333333333333\" y=\"421\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Double your coins</text><text id=\"from every sale.\" x=\"444.3333333333333\" y=\"442\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">from every sale.</text><g id=\"container_46\"><rect id=\"surface_47\" x=\"333.0\" y=\"456\" width=\"222.66666666666666\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_48\" x=\"337.0\" y=\"459\" width=\"214.66666666666666\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"444.3333333333333\" y=\"482.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_49\"><rect id=\"surface_50\" x=\"582.6666666666666\" y=\"245\" width=\"252.66666666666666\" height=\"264\" rx=\"17\" fill=\"#C4ACFF\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_51\" x=\"594.6666666666666\" y=\"285\" width=\"228.66666666666666\" height=\"176\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.36\"/><text id=\"+2 CREW SLOTS\" x=\"709.0\" y=\"280\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">+2 CREW SLOTS</text><rect id=\"asset_52\" x=\"654.0\" y=\"288\" width=\"110\" height=\"110\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Bring two extra\" x=\"709.0\" y=\"421\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Bring two extra</text><text id=\"helpers along.\" x=\"709.0\" y=\"442\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">helpers along.</text><g id=\"container_53\"><rect id=\"surface_54\" x=\"597.6666666666666\" y=\"456\" width=\"222.66666666666666\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_55\" x=\"601.6666666666666\" y=\"459\" width=\"214.66666666666666\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"709.0\" y=\"482.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_56\"><rect id=\"surface_57\" x=\"847.3333333333333\" y=\"245\" width=\"252.66666666666666\" height=\"264\" rx=\"17\" fill=\"#9BE85D\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_58\" x=\"859.3333333333333\" y=\"285\" width=\"228.66666666666666\" height=\"176\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.36\"/><text id=\"AUTO-SELL\" x=\"973.6666666666666\" y=\"280\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">AUTO-SELL</text><rect id=\"asset_59\" x=\"918.6666666666666\" y=\"288\" width=\"110\" height=\"110\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Sell automatically\" x=\"973.6666666666666\" y=\"421\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Sell automatically</text><text id=\"as you mow.\" x=\"973.6666666666666\" y=\"442\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">as you mow.</text><g id=\"container_60\"><rect id=\"surface_61\" x=\"862.3333333333333\" y=\"456\" width=\"222.66666666666666\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_62\" x=\"866.3333333333333\" y=\"459\" width=\"214.66666666666666\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"973.6666666666666\" y=\"482.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_63\"><rect id=\"surface_64\" x=\"318.0\" y=\"521\" width=\"385.0\" height=\"208\" rx=\"17\" fill=\"#AFE3F3\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_65\" x=\"325.0\" y=\"528\" width=\"371.0\" height=\"194\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.34\"/><text id=\"INFINITE FUEL\" x=\"510.5\" y=\"556\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#102D43\" text-anchor=\"middle\">INFINITE FUEL</text><rect id=\"asset_66\" x=\"328.0\" y=\"570\" width=\"112\" height=\"112\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Keep motorized\" x=\"454.0\" y=\"607\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">Keep motorized</text><text id=\"tools running.\" x=\"454.0\" y=\"630\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">tools running.</text><g id=\"container_67\"><rect id=\"surface_68\" x=\"501.0\" y=\"676\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_69\" x=\"505.0\" y=\"679\" width=\"178\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"594.0\" y=\"702.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_70\"><rect id=\"surface_71\" x=\"715.0\" y=\"521\" width=\"385.0\" height=\"208\" rx=\"17\" fill=\"#E3EDC3\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_72\" x=\"722.0\" y=\"528\" width=\"371.0\" height=\"194\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.34\"/><text id=\"MORE TO GROW\" x=\"907.5\" y=\"556\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#102D43\" text-anchor=\"middle\">MORE TO GROW</text><rect id=\"asset_73\" x=\"725.0\" y=\"570\" width=\"112\" height=\"112\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"New passes\" x=\"851.0\" y=\"607\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">New passes</text><text id=\"coming later.\" x=\"851.0\" y=\"630\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">coming later.</text><g id=\"container_74\"><rect id=\"surface_75\" x=\"898.0\" y=\"676\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#CBD9AB\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"STAY TUNED\" x=\"991.0\" y=\"702\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">STAY TUNED</text></g></g><text id=\"Passes will be available soon.\" x=\"709.0\" y=\"771\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Passes will be available soon.</text></g><rect id=\"asset_76\" x=\"310\" y=\"112\" width=\"102\" height=\"102\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_77\" x=\"642\" y=\"118\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#FFDE58\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_78\" x=\"646\" y=\"119\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_79\" x=\"655\" y=\"177\" width=\"40\" height=\"4\" rx=\"2\" fill=\"#102D43\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_80\" x=\"719\" y=\"118\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#BBEAF4\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_81\" x=\"723\" y=\"119\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_82\" x=\"796\" y=\"118\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#BBEAF4\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_83\" x=\"800\" y=\"119\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_84\" x=\"873\" y=\"118\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#BBEAF4\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_85\" x=\"877\" y=\"119\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_86\"><rect id=\"surface_87\" x=\"1060\" y=\"118\" width=\"48\" height=\"50\" rx=\"12\" fill=\"#B51F3D\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_88\" x=\"1064\" y=\"121\" width=\"40\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"X\" x=\"1084.0\" y=\"149.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">X</text></g><rect id=\"surface_89\" x=\"20\" y=\"18\" width=\"433\" height=\"30\" rx=\"8\" fill=\"#102D43\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.8\"/><text id=\"DESIGN PREVIEW / SAMPLE VALUES\" x=\"34\" y=\"39\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"13\" fill=\"#FFFFFF\" text-anchor=\"start\">DESIGN PREVIEW / SAMPLE VALUES</text></svg>",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1440\" height=\"900\" viewBox=\"0 0 1440 900\"><rect id=\"asset_1\" x=\"0\" y=\"0\" width=\"1440\" height=\"900\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_2\" x=\"20\" y=\"222\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_3\" x=\"31.87\" y=\"234.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#238DE8\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_4\" x=\"32\" y=\"224\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_5\"><rect id=\"surface_6\" x=\"27\" y=\"299\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"CREW\" x=\"74\" y=\"318\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">CREW</text></g><rect id=\"asset_7\" x=\"132\" y=\"222\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_8\" x=\"143.87\" y=\"234.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#FFB721\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_9\" x=\"144\" y=\"224\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_10\"><rect id=\"surface_11\" x=\"139\" y=\"299\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"SHOP\" x=\"186\" y=\"318\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">SHOP</text></g><rect id=\"asset_12\" x=\"20\" y=\"334\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_13\" x=\"31.87\" y=\"346.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#9A4DE5\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_14\" x=\"32\" y=\"336\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_15\"><rect id=\"surface_16\" x=\"27\" y=\"411\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"QUESTS\" x=\"74\" y=\"430\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">QUESTS</text></g><rect id=\"asset_17\" x=\"99\" y=\"326\" width=\"26\" height=\"46\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_18\" x=\"132\" y=\"334\" width=\"108\" height=\"108\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_19\" x=\"143.87\" y=\"346.73\" width=\"84.17\" height=\"84.09\" rx=\"12\" fill=\"#DC46B6\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_20\" x=\"144\" y=\"336\" width=\"84\" height=\"84\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_21\"><rect id=\"surface_22\" x=\"139\" y=\"411\" width=\"94\" height=\"27\" rx=\"8\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"REWARDS\" x=\"186\" y=\"430\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">REWARDS</text></g><rect id=\"surface_23\" x=\"26\" y=\"465\" width=\"222\" height=\"62\" rx=\"16\" fill=\"#073746\" stroke=\"#31D7EB\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_24\" x=\"14\" y=\"457\" width=\"78\" height=\"78\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"0\" x=\"100\" y=\"508\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#FFDE59\" text-anchor=\"start\">0</text><rect id=\"surface_25\" x=\"26\" y=\"540\" width=\"222\" height=\"62\" rx=\"16\" fill=\"#073746\" stroke=\"#31D7EB\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_26\" x=\"14\" y=\"532\" width=\"78\" height=\"78\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"0\" x=\"100\" y=\"583\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#C3FF8C\" text-anchor=\"start\">0</text><rect id=\"surface_27\" x=\"1200\" y=\"24\" width=\"216\" height=\"58\" rx=\"15\" fill=\"#073746\" stroke=\"#22CDE8\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_28\" x=\"1202\" y=\"21\" width=\"64\" height=\"64\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"4:00\" x=\"1280\" y=\"63\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"26\" fill=\"#FFFFFF\" text-anchor=\"start\">4:00</text><rect id=\"surface_29\" x=\"1200\" y=\"94\" width=\"216\" height=\"58\" rx=\"15\" fill=\"#073746\" stroke=\"#22CDE8\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_30\" x=\"1202\" y=\"91\" width=\"64\" height=\"64\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"100%\" x=\"1280\" y=\"133\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"26\" fill=\"#FFFFFF\" text-anchor=\"start\">100%</text><rect id=\"surface_31\" x=\"1144\" y=\"296\" width=\"272\" height=\"218\" rx=\"16\" fill=\"#073746\" stroke=\"#73D852\" stroke-width=\"2\" opacity=\"1\"/><g id=\"container_32\"><rect id=\"surface_33\" x=\"1147\" y=\"299\" width=\"266\" height=\"55\" rx=\"13\" fill=\"#285D24\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Meet Farmer Joe\" x=\"1208\" y=\"331\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Meet Farmer Joe</text></g><rect id=\"asset_34\" x=\"1145\" y=\"287\" width=\"66\" height=\"66\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_35\" x=\"1383\" y=\"284\" width=\"30\" height=\"52\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Follow the trail to\" x=\"1164\" y=\"392\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Follow the trail to</text><text id=\"your neighbor.\" x=\"1164\" y=\"417\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">your neighbor.</text><g id=\"container_36\"><rect id=\"surface_37\" x=\"1161\" y=\"452\" width=\"238\" height=\"44\" rx=\"12\" fill=\"#168CEB\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_38\" x=\"1165\" y=\"455\" width=\"230\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"SHOW ROUTE\" x=\"1280.0\" y=\"480.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#071A28\" text-anchor=\"middle\">SHOW ROUTE</text></g><rect id=\"asset_39\" x=\"286\" y=\"78\" width=\"860\" height=\"800\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"Passes-content\"><g id=\"container_40\"><rect id=\"surface_41\" x=\"368\" y=\"134\" width=\"696\" height=\"68\" rx=\"13\" fill=\"#07638F\" stroke=\"#35DDF4\" stroke-width=\"1.5\" opacity=\"1\"/><text id=\"PASSES\" x=\"461\" y=\"181\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#FFFFFF\" text-anchor=\"start\">PASSES</text><g id=\"container_42\"><rect id=\"surface_43\" x=\"1011\" y=\"145\" width=\"42\" height=\"44\" rx=\"12\" fill=\"#B51F3D\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_44\" x=\"1015\" y=\"148\" width=\"34\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"X\" x=\"1032.0\" y=\"173.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">X</text></g></g><rect id=\"asset_45\" x=\"362\" y=\"123\" width=\"90\" height=\"90\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Make room for a bigger harvest.\" x=\"386\" y=\"230\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Make room for a bigger harvest.</text><g id=\"container_46\"><rect id=\"surface_47\" x=\"390.0\" y=\"246\" width=\"209.33333333333334\" height=\"264\" rx=\"17\" fill=\"#EFB52B\" stroke=\"#F5D66B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_48\" x=\"390.0\" y=\"246\" width=\"209.33333333333334\" height=\"264\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_49\" x=\"402.0\" y=\"286\" width=\"185.33333333333334\" height=\"176\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.24\"/><text id=\"2x COINS\" x=\"494.6666666666667\" y=\"281\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"19\" fill=\"#102D43\" text-anchor=\"middle\">2x COINS</text><rect id=\"asset_50\" x=\"439.6666666666667\" y=\"289\" width=\"110\" height=\"110\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Double your coins\" x=\"494.6666666666667\" y=\"422\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Double your coins</text><text id=\"from every sale.\" x=\"494.6666666666667\" y=\"443\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">from every sale.</text><g id=\"container_51\"><rect id=\"surface_52\" x=\"405.0\" y=\"457\" width=\"179.33333333333334\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_53\" x=\"409.0\" y=\"460\" width=\"171.33333333333334\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"494.6666666666667\" y=\"483.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_54\"><rect id=\"surface_55\" x=\"611.3333333333334\" y=\"246\" width=\"209.33333333333334\" height=\"264\" rx=\"17\" fill=\"#195C96\" stroke=\"#67B1D3\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_56\" x=\"611.3333333333334\" y=\"246\" width=\"209.33333333333334\" height=\"264\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_57\" x=\"611.33\" y=\"293.49\" width=\"209.33\" height=\"168.66\" rx=\"0\" fill=\"#195C96\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_58\" x=\"623.3333333333334\" y=\"286\" width=\"185.33333333333334\" height=\"176\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"+2 CREW SLOTS\" x=\"716.0\" y=\"281\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"19\" fill=\"#FFFFFF\" text-anchor=\"middle\">+2 CREW SLOTS</text><rect id=\"asset_59\" x=\"661.0\" y=\"289\" width=\"110\" height=\"110\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Bring two extra\" x=\"716.0\" y=\"422\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">Bring two extra</text><text id=\"helpers along.\" x=\"716.0\" y=\"443\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">helpers along.</text><g id=\"container_60\"><rect id=\"surface_61\" x=\"626.3333333333334\" y=\"457\" width=\"179.33333333333334\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_62\" x=\"630.3333333333334\" y=\"460\" width=\"171.33333333333334\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"716.0\" y=\"483.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_63\"><rect id=\"surface_64\" x=\"832.6666666666667\" y=\"246\" width=\"209.33333333333334\" height=\"264\" rx=\"17\" fill=\"#326A1D\" stroke=\"#88BE4B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_65\" x=\"832.6666666666667\" y=\"246\" width=\"209.33333333333334\" height=\"264\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_66\" x=\"832.67\" y=\"293.49\" width=\"209.33\" height=\"168.66\" rx=\"0\" fill=\"#326A1D\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_67\" x=\"844.6666666666667\" y=\"286\" width=\"185.33333333333334\" height=\"176\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"AUTO-SELL\" x=\"937.3333333333334\" y=\"281\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"19\" fill=\"#FFFFFF\" text-anchor=\"middle\">AUTO-SELL</text><rect id=\"asset_68\" x=\"882.3333333333334\" y=\"289\" width=\"110\" height=\"110\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Sell automatically\" x=\"937.3333333333334\" y=\"422\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">Sell automatically</text><text id=\"as you mow.\" x=\"937.3333333333334\" y=\"443\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">as you mow.</text><g id=\"container_69\"><rect id=\"surface_70\" x=\"847.6666666666667\" y=\"457\" width=\"179.33333333333334\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_71\" x=\"851.6666666666667\" y=\"460\" width=\"171.33333333333334\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"937.3333333333334\" y=\"483.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_72\"><rect id=\"surface_73\" x=\"390.0\" y=\"522\" width=\"320.0\" height=\"208\" rx=\"17\" fill=\"#9E3948\" stroke=\"#DA8591\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_74\" x=\"390.0\" y=\"522\" width=\"320.0\" height=\"208\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_75\" x=\"390.0\" y=\"560.05\" width=\"320.0\" height=\"131.61\" rx=\"0\" fill=\"#9E3948\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_76\" x=\"397.0\" y=\"529\" width=\"306.0\" height=\"194\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"INFINITE FUEL\" x=\"550.0\" y=\"557\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\">INFINITE FUEL</text><rect id=\"asset_77\" x=\"400.0\" y=\"571\" width=\"112\" height=\"112\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Keep motorized\" x=\"526.0\" y=\"608\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">Keep motorized</text><text id=\"tools running.\" x=\"526.0\" y=\"631\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">tools running.</text><g id=\"container_78\"><rect id=\"surface_79\" x=\"508.0\" y=\"677\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_80\" x=\"512.0\" y=\"680\" width=\"178\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"601.0\" y=\"703.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_81\"><rect id=\"surface_82\" x=\"722.0\" y=\"522\" width=\"320.0\" height=\"208\" rx=\"17\" fill=\"#174C60\" stroke=\"#387D91\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_83\" x=\"722.0\" y=\"522\" width=\"320.0\" height=\"208\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_84\" x=\"722.0\" y=\"560.05\" width=\"320.0\" height=\"131.61\" rx=\"0\" fill=\"#174C60\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_85\" x=\"729.0\" y=\"529\" width=\"306.0\" height=\"194\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"MORE TO GROW\" x=\"882.0\" y=\"557\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\">MORE TO GROW</text><rect id=\"asset_86\" x=\"732.0\" y=\"571\" width=\"112\" height=\"112\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"New passes\" x=\"858.0\" y=\"608\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">New passes</text><text id=\"coming later.\" x=\"858.0\" y=\"631\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">coming later.</text><g id=\"container_87\"><rect id=\"surface_88\" x=\"840.0\" y=\"677\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#245768\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"STAY TUNED\" x=\"933.0\" y=\"703\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#C2E2EB\" text-anchor=\"middle\">STAY TUNED</text></g></g><text id=\"Passes will be available soon.\" x=\"716.0\" y=\"772\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">Passes will be available soon.</text></g><rect id=\"surface_89\" x=\"20\" y=\"18\" width=\"433\" height=\"30\" rx=\"8\" fill=\"#102D43\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.8\"/><text id=\"DESIGN PREVIEW / SAMPLE VALUES\" x=\"34\" y=\"39\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"13\" fill=\"#FFFFFF\" text-anchor=\"start\">DESIGN PREVIEW / SAMPLE VALUES</text></svg>",
     "x": 0,
     "y": 0,
     "images": {
@@ -69,64 +69,72 @@
         "path": "assets/UI/generated-v3/quest-available.png",
         "mode": "FILL"
       },
-      "asset_44": {
-        "path": "assets/UI/generated-v3/rays.png",
+      "asset_39": {
+        "path": "assets/UI/generated-v3/window-frame.png",
         "mode": "FIT"
       },
       "asset_45": {
-        "path": "assets/UI/generated-v3/coin.png",
+        "path": "assets/UI/generated-v3/passes.png",
         "mode": "FIT"
       },
-      "asset_51": {
+      "asset_48": {
+        "path": "assets/UI/generated-v3/offer-banner.png",
+        "mode": "FILL"
+      },
+      "asset_49": {
         "path": "assets/UI/generated-v3/rays.png",
         "mode": "FIT"
       },
-      "asset_52": {
-        "path": "assets/UI/generated-v3/crew.png",
+      "asset_50": {
+        "path": "assets/UI/generated-v3/coin.png",
         "mode": "FIT"
+      },
+      "asset_56": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
       },
       "asset_58": {
         "path": "assets/UI/generated-v3/rays.png",
         "mode": "FIT"
       },
       "asset_59": {
-        "path": "assets/UI/generated-v3/grass.png",
-        "mode": "FIT"
-      },
-      "asset_65": {
-        "path": "assets/UI/generated-v3/rays.png",
-        "mode": "FIT"
-      },
-      "asset_66": {
-        "path": "assets/UI/generated-v3/fuel.png",
-        "mode": "FIT"
-      },
-      "asset_72": {
-        "path": "assets/UI/generated-v3/rays.png",
-        "mode": "FIT"
-      },
-      "asset_73": {
-        "path": "assets/UI/generated-v3/passes.png",
-        "mode": "FIT"
-      },
-      "asset_76": {
-        "path": "assets/UI/generated-v3/passes.png",
-        "mode": "FIT"
-      },
-      "asset_78": {
-        "path": "assets/UI/generated-v3/passes.png",
-        "mode": "FIT"
-      },
-      "asset_81": {
-        "path": "assets/UI/generated-v3/coin-single.png",
-        "mode": "FIT"
-      },
-      "asset_83": {
         "path": "assets/UI/generated-v3/crew.png",
         "mode": "FIT"
       },
-      "asset_85": {
+      "asset_65": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
+      },
+      "asset_67": {
+        "path": "assets/UI/generated-v3/rays.png",
+        "mode": "FIT"
+      },
+      "asset_68": {
+        "path": "assets/UI/generated-v3/grass.png",
+        "mode": "FIT"
+      },
+      "asset_74": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
+      },
+      "asset_76": {
+        "path": "assets/UI/generated-v3/rays.png",
+        "mode": "FIT"
+      },
+      "asset_77": {
         "path": "assets/UI/generated-v3/fuel.png",
+        "mode": "FIT"
+      },
+      "asset_83": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
+      },
+      "asset_85": {
+        "path": "assets/UI/generated-v3/rays.png",
+        "mode": "FIT"
+      },
+      "asset_86": {
+        "path": "assets/UI/generated-v3/passes.png",
         "mode": "FIT"
       }
     },
@@ -134,7 +142,11 @@
       "tint_3",
       "tint_8",
       "tint_13",
-      "tint_19"
+      "tint_19",
+      "tint_57",
+      "tint_66",
+      "tint_75",
+      "tint_84"
     ],
     "surfaces": {
       "container_5": {
@@ -161,52 +173,52 @@
         "color": "#168CEB",
         "radius": 12
       },
-      "container_39": {
-        "color": "#FFF9E6",
-        "radius": 24
+      "container_40": {
+        "color": "#07638F",
+        "radius": 13
       },
       "container_42": {
-        "color": "#FFDF58",
-        "radius": 17
+        "color": "#B51F3D",
+        "radius": 12
       },
       "container_46": {
-        "color": "#79E54A",
-        "radius": 12
-      },
-      "container_49": {
-        "color": "#C4ACFF",
+        "color": "#EFB52B",
         "radius": 17
       },
-      "container_53": {
-        "color": "#79E54A",
+      "container_51": {
+        "color": "#9822D5",
         "radius": 12
       },
-      "container_56": {
-        "color": "#9BE85D",
+      "container_54": {
+        "color": "#195C96",
         "radius": 17
       },
       "container_60": {
-        "color": "#79E54A",
+        "color": "#9822D5",
         "radius": 12
       },
       "container_63": {
-        "color": "#AFE3F3",
+        "color": "#326A1D",
         "radius": 17
       },
-      "container_67": {
-        "color": "#79E54A",
+      "container_69": {
+        "color": "#9822D5",
         "radius": 12
       },
-      "container_70": {
-        "color": "#E3EDC3",
+      "container_72": {
+        "color": "#9E3948",
         "radius": 17
       },
-      "container_74": {
-        "color": "#CBD9AB",
+      "container_78": {
+        "color": "#9822D5",
         "radius": 12
       },
-      "container_86": {
-        "color": "#B51F3D",
+      "container_81": {
+        "color": "#174C60",
+        "radius": 17
+      },
+      "container_87": {
+        "color": "#245768",
         "radius": 12
       }
     },
@@ -214,119 +226,132 @@
   },
   {
     "name": "02 Passes full scroll content",
-    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"860\" height=\"1150\" viewBox=\"0 0 860 1150\"><rect id=\"surface_1\" x=\"0\" y=\"0\" width=\"860\" height=\"1150\" rx=\"20\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_2\"><rect id=\"surface_3\" x=\"18\" y=\"64\" width=\"824\" height=\"1006\" rx=\"24\" fill=\"#FFF9E6\" stroke=\"#087998\" stroke-width=\"3\" opacity=\"1\"/><rect id=\"surface_4\" x=\"23\" y=\"69\" width=\"814\" height=\"996\" rx=\"20\" fill=\"none\" stroke=\"#52DAEF\" stroke-width=\"2\" opacity=\"1\"/><text id=\"PASSES\" x=\"137\" y=\"112\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#102D43\" text-anchor=\"start\">PASSES</text><text id=\"Make room for a bigger harvest.\" x=\"42\" y=\"155\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"17\" fill=\"#102D43\" text-anchor=\"start\">Make room for a bigger harvest.</text><g id=\"container_5\"><rect id=\"surface_6\" x=\"40.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"17\" fill=\"#FFDF58\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_7\" x=\"52.0\" y=\"216\" width=\"228.0\" height=\"260\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.36\"/><text id=\"2x COINS\" x=\"166.0\" y=\"211\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">2x COINS</text><rect id=\"asset_8\" x=\"82.0\" y=\"219\" width=\"168\" height=\"168\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Double your coins\" x=\"166.0\" y=\"410\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Double your coins</text><text id=\"from every sale.\" x=\"166.0\" y=\"431\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">from every sale.</text><g id=\"container_9\"><rect id=\"surface_10\" x=\"55.0\" y=\"471\" width=\"222.0\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_11\" x=\"59.0\" y=\"474\" width=\"214.0\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"166.0\" y=\"497.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_12\"><rect id=\"surface_13\" x=\"304.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"17\" fill=\"#C4ACFF\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_14\" x=\"316.0\" y=\"216\" width=\"228.0\" height=\"260\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.36\"/><text id=\"+2 CREW SLOTS\" x=\"430.0\" y=\"211\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">+2 CREW SLOTS</text><rect id=\"asset_15\" x=\"346.0\" y=\"219\" width=\"168\" height=\"168\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Bring two extra\" x=\"430.0\" y=\"410\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Bring two extra</text><text id=\"helpers along.\" x=\"430.0\" y=\"431\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">helpers along.</text><g id=\"container_16\"><rect id=\"surface_17\" x=\"319.0\" y=\"471\" width=\"222.0\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_18\" x=\"323.0\" y=\"474\" width=\"214.0\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"430.0\" y=\"497.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_19\"><rect id=\"surface_20\" x=\"568.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"17\" fill=\"#9BE85D\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_21\" x=\"580.0\" y=\"216\" width=\"228.0\" height=\"260\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.36\"/><text id=\"AUTO-SELL\" x=\"694.0\" y=\"211\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">AUTO-SELL</text><rect id=\"asset_22\" x=\"610.0\" y=\"219\" width=\"168\" height=\"168\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Sell automatically\" x=\"694.0\" y=\"410\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Sell automatically</text><text id=\"as you mow.\" x=\"694.0\" y=\"431\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">as you mow.</text><g id=\"container_23\"><rect id=\"surface_24\" x=\"583.0\" y=\"471\" width=\"222.0\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_25\" x=\"587.0\" y=\"474\" width=\"214.0\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"694.0\" y=\"497.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_26\"><rect id=\"surface_27\" x=\"40.0\" y=\"536\" width=\"384.0\" height=\"330\" rx=\"17\" fill=\"#AFE3F3\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_28\" x=\"47.0\" y=\"543\" width=\"370.0\" height=\"316\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.34\"/><text id=\"INFINITE FUEL\" x=\"232.0\" y=\"571\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#102D43\" text-anchor=\"middle\">INFINITE FUEL</text><rect id=\"asset_29\" x=\"50.0\" y=\"585\" width=\"148\" height=\"148\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Keep motorized\" x=\"212.0\" y=\"622\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">Keep motorized</text><text id=\"tools running.\" x=\"212.0\" y=\"645\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">tools running.</text><g id=\"container_30\"><rect id=\"surface_31\" x=\"222.0\" y=\"813\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#79E54A\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_32\" x=\"226.0\" y=\"816\" width=\"178\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"315.0\" y=\"839.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_33\"><rect id=\"surface_34\" x=\"436.0\" y=\"536\" width=\"384.0\" height=\"330\" rx=\"17\" fill=\"#E3EDC3\" stroke=\"#36636B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_35\" x=\"443.0\" y=\"543\" width=\"370.0\" height=\"316\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.34\"/><text id=\"MORE TO GROW\" x=\"628.0\" y=\"571\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#102D43\" text-anchor=\"middle\">MORE TO GROW</text><rect id=\"asset_36\" x=\"446.0\" y=\"585\" width=\"148\" height=\"148\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"New passes\" x=\"608.0\" y=\"622\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">New passes</text><text id=\"coming later.\" x=\"608.0\" y=\"645\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"start\">coming later.</text><g id=\"container_37\"><rect id=\"surface_38\" x=\"618.0\" y=\"813\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#CBD9AB\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"STAY TUNED\" x=\"711.0\" y=\"839\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">STAY TUNED</text></g></g><text id=\"Permanent upgrades. One purchase per pass.\" x=\"42\" y=\"916\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"17\" fill=\"#102D43\" text-anchor=\"start\">Permanent upgrades. One purchase per pass.</text><text id=\"Equipment is sold at the world stalls.\" x=\"42\" y=\"948\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"16\" fill=\"#102D43\" text-anchor=\"start\">Equipment is sold at the world stalls.</text></g><rect id=\"asset_39\" x=\"32\" y=\"43\" width=\"102\" height=\"102\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_40\" x=\"364\" y=\"49\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#FFDE58\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_41\" x=\"368\" y=\"50\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_42\" x=\"377\" y=\"108\" width=\"40\" height=\"4\" rx=\"2\" fill=\"#102D43\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_43\" x=\"441\" y=\"49\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#BBEAF4\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_44\" x=\"445\" y=\"50\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_45\" x=\"518\" y=\"49\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#BBEAF4\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_46\" x=\"522\" y=\"50\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"surface_47\" x=\"595\" y=\"49\" width=\"66\" height=\"69\" rx=\"13\" fill=\"#BBEAF4\" stroke=\"#087998\" stroke-width=\"2\" opacity=\"1\"/><rect id=\"asset_48\" x=\"599\" y=\"50\" width=\"58\" height=\"58\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_49\"><rect id=\"surface_50\" x=\"780\" y=\"49\" width=\"48\" height=\"50\" rx=\"12\" fill=\"#B51F3D\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_51\" x=\"784\" y=\"52\" width=\"40\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"X\" x=\"804.0\" y=\"80.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">X</text></g><text id=\"FULL SCROLL CONTENT / DESIGN PREVIEW\" x=\"430\" y=\"1118\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"14\" fill=\"#C2E2EB\" text-anchor=\"middle\">FULL SCROLL CONTENT / DESIGN PREVIEW</text></svg>",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"860\" height=\"1150\" viewBox=\"0 0 860 1150\"><rect id=\"surface_1\" x=\"0\" y=\"0\" width=\"860\" height=\"1150\" rx=\"20\" fill=\"#073746\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><g id=\"container_2\"><rect id=\"surface_3\" x=\"18\" y=\"64\" width=\"824\" height=\"1006\" rx=\"20\" fill=\"#073746\" stroke=\"#20BCD8\" stroke-width=\"2\" opacity=\"1\"/><g id=\"container_4\"><rect id=\"surface_5\" x=\"18\" y=\"64\" width=\"824\" height=\"68\" rx=\"13\" fill=\"#07638F\" stroke=\"#35DDF4\" stroke-width=\"1.5\" opacity=\"1\"/><text id=\"PASSES\" x=\"111\" y=\"111\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"34\" fill=\"#FFFFFF\" text-anchor=\"start\">PASSES</text><g id=\"container_6\"><rect id=\"surface_7\" x=\"789\" y=\"75\" width=\"42\" height=\"44\" rx=\"12\" fill=\"#B51F3D\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_8\" x=\"793\" y=\"78\" width=\"34\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"X\" x=\"810.0\" y=\"103.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">X</text></g></g><rect id=\"asset_9\" x=\"12\" y=\"53\" width=\"90\" height=\"90\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Make room for a bigger harvest.\" x=\"36\" y=\"160\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Make room for a bigger harvest.</text><g id=\"container_10\"><rect id=\"surface_11\" x=\"40.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"17\" fill=\"#EFB52B\" stroke=\"#F5D66B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_12\" x=\"40.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_13\" x=\"52.0\" y=\"216\" width=\"228.0\" height=\"260\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.24\"/><text id=\"2x COINS\" x=\"166.0\" y=\"211\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#102D43\" text-anchor=\"middle\">2x COINS</text><rect id=\"asset_14\" x=\"82.0\" y=\"219\" width=\"168\" height=\"168\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Double your coins\" x=\"166.0\" y=\"410\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">Double your coins</text><text id=\"from every sale.\" x=\"166.0\" y=\"431\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#102D43\" text-anchor=\"middle\">from every sale.</text><g id=\"container_15\"><rect id=\"surface_16\" x=\"55.0\" y=\"471\" width=\"222.0\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_17\" x=\"59.0\" y=\"474\" width=\"214.0\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"166.0\" y=\"497.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_18\"><rect id=\"surface_19\" x=\"304.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"17\" fill=\"#195C96\" stroke=\"#67B1D3\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_20\" x=\"304.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_21\" x=\"304.0\" y=\"237.64\" width=\"252.0\" height=\"224.24\" rx=\"0\" fill=\"#195C96\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_22\" x=\"316.0\" y=\"216\" width=\"228.0\" height=\"260\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"+2 CREW SLOTS\" x=\"430.0\" y=\"211\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#FFFFFF\" text-anchor=\"middle\">+2 CREW SLOTS</text><rect id=\"asset_23\" x=\"346.0\" y=\"219\" width=\"168\" height=\"168\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Bring two extra\" x=\"430.0\" y=\"410\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">Bring two extra</text><text id=\"helpers along.\" x=\"430.0\" y=\"431\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">helpers along.</text><g id=\"container_24\"><rect id=\"surface_25\" x=\"319.0\" y=\"471\" width=\"222.0\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_26\" x=\"323.0\" y=\"474\" width=\"214.0\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"430.0\" y=\"497.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_27\"><rect id=\"surface_28\" x=\"568.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"17\" fill=\"#326A1D\" stroke=\"#88BE4B\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_29\" x=\"568.0\" y=\"176\" width=\"252.0\" height=\"348\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_30\" x=\"568.0\" y=\"237.64\" width=\"252.0\" height=\"224.24\" rx=\"0\" fill=\"#326A1D\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_31\" x=\"580.0\" y=\"216\" width=\"228.0\" height=\"260\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"AUTO-SELL\" x=\"694.0\" y=\"211\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"21\" fill=\"#FFFFFF\" text-anchor=\"middle\">AUTO-SELL</text><rect id=\"asset_32\" x=\"610.0\" y=\"219\" width=\"168\" height=\"168\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Sell automatically\" x=\"694.0\" y=\"410\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">Sell automatically</text><text id=\"as you mow.\" x=\"694.0\" y=\"431\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"middle\">as you mow.</text><g id=\"container_33\"><rect id=\"surface_34\" x=\"583.0\" y=\"471\" width=\"222.0\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_35\" x=\"587.0\" y=\"474\" width=\"214.0\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"694.0\" y=\"497.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_36\"><rect id=\"surface_37\" x=\"40.0\" y=\"536\" width=\"384.0\" height=\"330\" rx=\"17\" fill=\"#9E3948\" stroke=\"#DA8591\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_38\" x=\"40.0\" y=\"536\" width=\"384.0\" height=\"330\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_39\" x=\"40.0\" y=\"594.61\" width=\"384.0\" height=\"212.33\" rx=\"0\" fill=\"#9E3948\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_40\" x=\"47.0\" y=\"543\" width=\"370.0\" height=\"316\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"INFINITE FUEL\" x=\"232.0\" y=\"571\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\">INFINITE FUEL</text><rect id=\"asset_41\" x=\"50.0\" y=\"585\" width=\"148\" height=\"148\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"Keep motorized\" x=\"212.0\" y=\"622\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">Keep motorized</text><text id=\"tools running.\" x=\"212.0\" y=\"645\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">tools running.</text><g id=\"container_42\"><rect id=\"surface_43\" x=\"222.0\" y=\"813\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#9822D5\" stroke=\"#1B2452\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"surface_44\" x=\"226.0\" y=\"816\" width=\"178\" height=\"6\" rx=\"4\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.28\"/><text id=\"COMING SOON\" x=\"315.0\" y=\"839.0\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\">COMING SOON</text></g></g><g id=\"container_45\"><rect id=\"surface_46\" x=\"436.0\" y=\"536\" width=\"384.0\" height=\"330\" rx=\"17\" fill=\"#174C60\" stroke=\"#387D91\" stroke-width=\"1.5\" opacity=\"1\"/><rect id=\"asset_47\" x=\"436.0\" y=\"536\" width=\"384.0\" height=\"330\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"tint_48\" x=\"436.0\" y=\"594.61\" width=\"384.0\" height=\"212.33\" rx=\"0\" fill=\"#174C60\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><rect id=\"asset_49\" x=\"443.0\" y=\"543\" width=\"370.0\" height=\"316\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"0.12\"/><text id=\"MORE TO GROW\" x=\"628.0\" y=\"571\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\">MORE TO GROW</text><rect id=\"asset_50\" x=\"446.0\" y=\"585\" width=\"148\" height=\"148\" rx=\"0\" fill=\"#FFFFFF\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"New passes\" x=\"608.0\" y=\"622\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">New passes</text><text id=\"coming later.\" x=\"608.0\" y=\"645\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"15\" fill=\"#FFFFFF\" text-anchor=\"start\">coming later.</text><g id=\"container_51\"><rect id=\"surface_52\" x=\"618.0\" y=\"813\" width=\"186\" height=\"40\" rx=\"12\" fill=\"#245768\" stroke=\"none\" stroke-width=\"0\" opacity=\"1\"/><text id=\"STAY TUNED\" x=\"711.0\" y=\"839\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"15\" fill=\"#C2E2EB\" text-anchor=\"middle\">STAY TUNED</text></g></g><text id=\"Permanent upgrades. One purchase per pass.\" x=\"42\" y=\"916\" font-family=\"Montserrat\" font-weight=\"700\" font-size=\"17\" fill=\"#FFFFFF\" text-anchor=\"start\">Permanent upgrades. One purchase per pass.</text><text id=\"Equipment is sold at the world stalls.\" x=\"42\" y=\"948\" font-family=\"Montserrat\" font-weight=\"600\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"start\">Equipment is sold at the world stalls.</text></g><text id=\"FULL SCROLL CONTENT / DESIGN PREVIEW\" x=\"430\" y=\"1118\" font-family=\"Montserrat\" font-weight=\"800\" font-size=\"14\" fill=\"#C2E2EB\" text-anchor=\"middle\">FULL SCROLL CONTENT / DESIGN PREVIEW</text></svg>",
     "x": 1520,
     "y": 0,
     "images": {
-      "asset_7": {
-        "path": "assets/UI/generated-v3/rays.png",
+      "asset_9": {
+        "path": "assets/UI/generated-v3/passes.png",
         "mode": "FIT"
       },
-      "asset_8": {
-        "path": "assets/UI/generated-v3/coin.png",
+      "asset_12": {
+        "path": "assets/UI/generated-v3/offer-banner.png",
+        "mode": "FILL"
+      },
+      "asset_13": {
+        "path": "assets/UI/generated-v3/rays.png",
         "mode": "FIT"
       },
       "asset_14": {
-        "path": "assets/UI/generated-v3/rays.png",
+        "path": "assets/UI/generated-v3/coin.png",
         "mode": "FIT"
       },
-      "asset_15": {
-        "path": "assets/UI/generated-v3/crew.png",
-        "mode": "FIT"
-      },
-      "asset_21": {
-        "path": "assets/UI/generated-v3/rays.png",
-        "mode": "FIT"
+      "asset_20": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
       },
       "asset_22": {
-        "path": "assets/UI/generated-v3/grass.png",
+        "path": "assets/UI/generated-v3/rays.png",
         "mode": "FIT"
       },
-      "asset_28": {
-        "path": "assets/UI/generated-v3/rays.png",
+      "asset_23": {
+        "path": "assets/UI/generated-v3/crew.png",
         "mode": "FIT"
       },
       "asset_29": {
-        "path": "assets/UI/generated-v3/fuel.png",
-        "mode": "FIT"
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
       },
-      "asset_35": {
+      "asset_31": {
         "path": "assets/UI/generated-v3/rays.png",
         "mode": "FIT"
       },
-      "asset_36": {
-        "path": "assets/UI/generated-v3/passes.png",
+      "asset_32": {
+        "path": "assets/UI/generated-v3/grass.png",
         "mode": "FIT"
       },
-      "asset_39": {
-        "path": "assets/UI/generated-v3/passes.png",
+      "asset_38": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
+      },
+      "asset_40": {
+        "path": "assets/UI/generated-v3/rays.png",
         "mode": "FIT"
       },
       "asset_41": {
-        "path": "assets/UI/generated-v3/passes.png",
-        "mode": "FIT"
-      },
-      "asset_44": {
-        "path": "assets/UI/generated-v3/coin-single.png",
-        "mode": "FIT"
-      },
-      "asset_46": {
-        "path": "assets/UI/generated-v3/crew.png",
-        "mode": "FIT"
-      },
-      "asset_48": {
         "path": "assets/UI/generated-v3/fuel.png",
+        "mode": "FIT"
+      },
+      "asset_47": {
+        "path": "assets/UI/generated-v3/banner-base.png",
+        "mode": "FILL"
+      },
+      "asset_49": {
+        "path": "assets/UI/generated-v3/rays.png",
+        "mode": "FIT"
+      },
+      "asset_50": {
+        "path": "assets/UI/generated-v3/passes.png",
         "mode": "FIT"
       }
     },
-    "blends": [],
+    "blends": [
+      "tint_21",
+      "tint_30",
+      "tint_39",
+      "tint_48"
+    ],
     "surfaces": {
       "container_2": {
-        "color": "#FFF9E6",
-        "radius": 24
+        "color": "#073746",
+        "radius": 20
       },
-      "container_5": {
-        "color": "#FFDF58",
-        "radius": 17
+      "container_4": {
+        "color": "#07638F",
+        "radius": 13
       },
-      "container_9": {
-        "color": "#79E54A",
+      "container_6": {
+        "color": "#B51F3D",
         "radius": 12
       },
-      "container_12": {
-        "color": "#C4ACFF",
+      "container_10": {
+        "color": "#EFB52B",
         "radius": 17
       },
-      "container_16": {
-        "color": "#79E54A",
+      "container_15": {
+        "color": "#9822D5",
         "radius": 12
       },
-      "container_19": {
-        "color": "#9BE85D",
+      "container_18": {
+        "color": "#195C96",
         "radius": 17
       },
-      "container_23": {
-        "color": "#79E54A",
+      "container_24": {
+        "color": "#9822D5",
         "radius": 12
       },
-      "container_26": {
-        "color": "#AFE3F3",
+      "container_27": {
+        "color": "#326A1D",
         "radius": 17
-      },
-      "container_30": {
-        "color": "#79E54A",
-        "radius": 12
       },
       "container_33": {
-        "color": "#E3EDC3",
-        "radius": 17
-      },
-      "container_37": {
-        "color": "#CBD9AB",
+        "color": "#9822D5",
         "radius": 12
       },
-      "container_49": {
-        "color": "#B51F3D",
+      "container_36": {
+        "color": "#9E3948",
+        "radius": 17
+      },
+      "container_42": {
+        "color": "#9822D5",
+        "radius": 12
+      },
+      "container_45": {
+        "color": "#174C60",
+        "radius": 17
+      },
+      "container_51": {
+        "color": "#245768",
         "radius": 12
       }
     },

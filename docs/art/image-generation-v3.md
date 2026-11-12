@@ -18,13 +18,17 @@ recorded generation prompts and owner selections above govern the final art.
 
 ## Passes grid revision
 
-The owner supplied `references/passes-grid-owner.png` for the passes window.
-Its cream body, slim cyan frame, four icon filters, three compact upper cards
-and two wider lower cards now govern boards 1 and 2. Generated illustrations
-and radial effects are reused as separate layers. The four configured passes
-are retained; the fifth card is explicitly future content, not a purchasable
-new pass. No reference prices or luck benefits are copied. Checkout stays
-unavailable. Board 2 documents the longer scroll content.
+The owner supplied `references/passes-grid-owner.png` for the arrangement of
+three compact upper cards and two wider lower cards. The later correction
+keeps that layout while restoring the original generated visual style:
+textured dark teal frame, cyan header, strong gold/blue/green/coral offers,
+and purple buttons. The four icon-filter tabs were removed; they had no
+corresponding purpose. The reference does not replace the approved palette
+or materials. Generated illustrations, skins and radial effects remain
+independent layers. The four configured passes are retained; the fifth card
+is explicitly future content, not a purchasable new pass. No reference prices
+or luck benefits are copied. Checkout stays unavailable. Board 2 documents
+the longer scroll content.
 
 Native frame backgrounds now match the visible surfaces, including corner
 radii, so the editor can assess actual text/background pairs. Bright buttons

@@ -151,63 +151,61 @@ def contrast(foreground, background):
 def passes_window(b, x, y, width, full=False):
     """One catalog, shared between the HUD viewport and long scroll design."""
     height=1006 if full else 664
-    b.begin_surface(x,y,width,height,'#FFF9E6',24,'#087998',3)
-    b.rect(x+5,y+5,width-10,height-10,'none',20,'#52DAEF',2)
-    b.text('PASSES',x+119,y+48,34,INK)
-    b.text('Make room for a bigger harvest.',x+24,y+91,17,INK,weight=600)
+    if full:
+        b.begin_surface(x,y,width,height,TEAL,20,'#20BCD8',2)
+    else:
+        # The original generated frame already supplies the textured body.
+        b.parts.append('<g id="Passes-content">')
+    b.title(x,y,width,'PASSES','passes')
+    b.text('Make room for a bigger harvest.',x+18,y+96,17,weight=600)
     top=y+112
     gap=12; inset=22; cw=(width-2*inset-2*gap)/3
     ch=348 if full else 264
-    offers=[('2x COINS','coin','#FFDF58',['Double your coins','from every sale.']),
-            ('+2 CREW SLOTS','crew','#C4ACFF',['Bring two extra','helpers along.']),
-            ('AUTO-SELL','grass','#9BE85D',['Sell automatically','as you mow.'])]
+    offers=[('2x COINS','coin','#EFB52B',['Double your coins','from every sale.']),
+            ('+2 CREW SLOTS','crew','#195C96',['Bring two extra','helpers along.']),
+            ('AUTO-SELL','grass','#326A1D',['Sell automatically','as you mow.'])]
     for i,(title,icon,color,lines) in enumerate(offers):
         cx=x+inset+i*(cw+gap)
-        b.begin_surface(cx,top,cw,ch,color,17,'#36636B',1.5)
-        b.image('rays',cx+12,top+40,cw-24,ch-88,opacity=.36)
-        b.text(title,cx+cw/2,top+35,21,INK,anchor='middle')
+        foreground=INK if i==0 else WHITE
+        b.begin_surface(cx,top,cw,ch,color,17,'#F5D66B' if i==0 else '#67B1D3' if i==1 else '#88BE4B',1.5)
+        b.skin('offer-banner' if i==0 else 'banner-base',cx,top,cw,ch,None if i==0 else color,0)
+        b.image('rays',cx+12,top+40,cw-24,ch-88,opacity=.24 if i==0 else .12)
+        b.text(title,cx+cw/2,top+35,21 if full else 19,foreground,anchor='middle')
         art=168 if full else 110
         b.image(icon,cx+(cw-art)/2,top+43,art,art)
         for j,line in enumerate(lines):
-            b.text(line,cx+cw/2,top+art+66+j*21,15,INK,anchor='middle',weight=700)
-        b.button(cx+15,top+ch-53,cw-30,'COMING SOON','#79E54A',40)
+            b.text(line,cx+cw/2,top+art+66+j*21,15,foreground,anchor='middle',weight=700)
+        b.button(cx+15,top+ch-53,cw-30,'COMING SOON','#9822D5',40)
         b.end_surface()
     lower=top+ch+gap; lw=(width-2*inset-gap)/2; lh=330 if full else 208
-    for i,(title,icon,color) in enumerate([('INFINITE FUEL','fuel','#AFE3F3'),('MORE TO GROW','passes','#E3EDC3')]):
+    for i,(title,icon,color) in enumerate([('INFINITE FUEL','fuel','#9E3948'),('MORE TO GROW','passes','#174C60')]):
         cx=x+inset+i*(lw+gap)
-        b.begin_surface(cx,lower,lw,lh,color,17,'#36636B',1.5)
-        b.image('rays',cx+7,lower+7,lw-14,lh-14,opacity=.34)
-        b.text(title,cx+lw/2,lower+35,22,INK,anchor='middle')
+        b.begin_surface(cx,lower,lw,lh,color,17,'#DA8591' if i==0 else '#387D91',1.5)
+        b.skin('banner-base',cx,lower,lw,lh,color,0)
+        b.image('rays',cx+7,lower+7,lw-14,lh-14,opacity=.12)
+        b.text(title,cx+lw/2,lower+35,22,anchor='middle')
         art=148 if full else 112
         b.image(icon,cx+10,lower+49,art,art)
         dx=cx+art+24
         lines=['Keep motorized','tools running.'] if i==0 else ['New passes','coming later.']
-        for j,line in enumerate(lines):b.text(line,dx,lower+86+j*23,15,INK,weight=700)
-        if i==0:b.button(cx+lw-202,lower+lh-53,186,'COMING SOON','#79E54A',40)
+        for j,line in enumerate(lines):b.text(line,dx,lower+86+j*23,15,weight=700)
+        if i==0:b.button(cx+lw-202,lower+lh-53,186,'COMING SOON','#9822D5',40)
         else:
-            b.begin_surface(cx+lw-202,lower+lh-53,186,40,'#CBD9AB',12)
-            b.text('STAY TUNED',cx+lw-109,lower+lh-27,15,INK,anchor='middle')
+            b.begin_surface(cx+lw-202,lower+lh-53,186,40,'#245768',12)
+            b.text('STAY TUNED',cx+lw-109,lower+lh-27,15,'#C2E2EB',anchor='middle')
             b.end_surface()
         b.end_surface()
     if full:
-        b.text('Permanent upgrades. One purchase per pass.',x+24,lower+lh+50,17,INK,weight=700)
-        b.text('Equipment is sold at the world stalls.',x+24,lower+lh+82,16,INK,weight=600)
-    else:b.text('Passes will be available soon.',x+width/2,y+height-26,15,INK,anchor='middle',weight=600)
+        b.text('Permanent upgrades. One purchase per pass.',x+24,lower+lh+50,17,weight=700)
+        b.text('Equipment is sold at the world stalls.',x+24,lower+lh+82,16,weight=600)
+    else:b.text('Passes will be available soon.',x+width/2,y+height-26,15,anchor='middle',weight=600)
     b.end_surface()
-    # Decorative header objects extend above the body. Keep them outside its
-    # native frame so its solid fill retains the exact rounded body bounds.
-    b.image('passes',x+14,y-21,102,102)
-    for i,asset in enumerate(['passes','coin-single','crew','fuel']):
-        tx=x+346+i*77
-        b.rect(tx,y-15,66,69,'#FFDE58' if i==0 else '#BBEAF4',13,'#087998',2)
-        b.image(asset,tx+4,y-14,58,58)
-        if i==0:b.rect(tx+13,y+44,40,4,INK,2)
-    b.button(x+width-62,y-15,48,'X','#B51F3D',50)
 
 def make_boards():
     boards=[]
     b=Board('01 HUD and passes',1440,900,0,0);b.backdrop();b.navigation();b.indicators();b.tracker()
-    passes_window(b,296,133,826)
+    b.image('window-frame',286,78,860,800)
+    passes_window(b,368,134,696)
     b.rect(20,18,433,30,'#102D43',8,opacity=.8);b.text('DESIGN PREVIEW / SAMPLE VALUES',34,39,13)
     boards.append(b.dump())
 
