@@ -18,11 +18,11 @@ before the next starts. Spec references are to this change's `specs/`.
 - [x] 2.6 `Config/Contracts.luau`: yard sizes, targets, deadlines, reward bands
 
 ## 3. Phase 1 — Update "Your Land" (v1): land instead of neutral match (`private-land-progression`, `lobby-showcase-and-party`, `core-mowing-loop`)
-- [ ] 3.1 Rename Game place → Land place in configs/projects; land loads host profile
+- [x] 3.1 Rename Game place → Land place in configs; land loads host profile (`LandService`). Rojo project names stay until the places are split
 - [x] 3.2 Grass inventory becomes per-variant table (Normal only at first)
 - [x] 3.3 Company Level + XP sources (cutting, selling); expansion gating = Coins + Level, bought at the gate
 - [ ] 3.4 Lobby showcase lots (snapshot builder) + PLAY pad + PARTY pad → host land
-- [ ] 3.5 Graybox land: six expansions in a row on one property; helpers earn fully
+- [x] 3.5 Land with six expansions on one property (open map v2); helpers earn fully
 
 ## 4. Phase 2 — Update "Crew & Restock" (v1.1) (`crew-system`, `crew-restock-market`)
 - [ ] 4.1 Crew roster/equip UI; follow & station behavior (server mowing agents)

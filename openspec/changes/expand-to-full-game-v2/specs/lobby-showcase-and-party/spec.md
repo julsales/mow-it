@@ -36,6 +36,10 @@ The lobby SHALL provide a party block that queues up to 4 players; when the part
 - **WHEN** a guest helps mow on the host's land
 - **THEN** the guest earns their own Coins, Clovers and experience normally (respecting the guest's own unlocks), while land expansion state only progresses for the host
 
+#### Scenario: What a helper can do on the host's land
+- **WHEN** a guest is on a host's land with expansions the guest has not unlocked themselves
+- **THEN** the guest can walk into and mow every expansion the host has unlocked, sells at the value of the guest's own best expansion, can only buy shop content the guest's own progression allows, and cannot buy expansions there
+
 #### Scenario: Teleport failure keeps the party
 - **WHEN** the teleport to the host's land fails
 - **THEN** party members remain in the lobby with the party intact so they can retry

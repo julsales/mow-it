@@ -7,11 +7,11 @@ local GameConfig = {
 	GameName = "Mow It!",
 
 	-- Places ---------------------------------------------------------------
-	-- Lobby is the start place. Game is a sub-place teleported to with a
-	-- ReservedServerId so a party of up to 4 plays alone together.
+	-- Lobby is the start place. Land is a sub-place teleported to with a
+	-- ReservedServerId: each session is one player's private land (the
+	-- host's), alone or with a party of up to 4 (LandService).
 	LobbyPlaceId = 0,
-	GamePlaceId = 0, -- legacy name; v2 calls this the Land place (see below)
-	LandPlaceId = 0, -- v2: private land sessions run here (reserved servers)
+	LandPlaceId = 0,
 
 	-- Lobby / match --------------------------------------------------------
 	MaxPartySize = 4,

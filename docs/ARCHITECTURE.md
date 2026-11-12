@@ -24,7 +24,9 @@ Research summary (sources below):
    joins the same one. The old `ReserveServer()` /
    `TeleportToPrivateServer()` pattern is **deprecated** — don't copy it
    from old tutorials.
-   → Applied: `GameConfig.LobbyPlaceId/GamePlaceId`, `LobbyService`
+   → Applied: `GameConfig.LobbyPlaceId/LandPlaceId`, `LobbyService`
+   (sends `HostUserId` with the party), `LandService` (the session is the
+   host's land: gates, mowing and sell pads follow the host's expansions)
    (queue of up to 4 on a physical pad, countdown, one teleport for the party).
 
 2. **Filesystem projects with Rojo** are the professional default for
@@ -38,7 +40,7 @@ Research summary (sources below):
      ReplicatedFirst) instead of relying on StarterGui copies, which cost
      server memory.
    → Applied: two project files sharing one `src/` tree
-   (`default.project.json` = Game place, `lobby.project.json` = Lobby),
+   (`default.project.json` = Land place, `lobby.project.json` = Lobby),
    `Workspace.$ignoreUnknownInstances: true` so maps built by hand in
    Studio are never deleted by a sync.
 

@@ -15,6 +15,7 @@ local GrassBag = require(Shared.GrassBag)
 local ProfileService = require(script.Parent.ProfileService)
 local GrassService = require(script.Parent.GrassService)
 local LevelService = require(script.Parent.LevelService)
+local LandService = require(script.Parent.LandService)
 
 local EconomyService = {}
 
@@ -63,10 +64,10 @@ local function tryCut(player: Player)
 		return
 	end
 
-	-- Locked zones cannot be farmed by standing on the fence line.
-	local cells = GrassService.GetCellsInRadius(root.Position, radius, function(zoneId)
-		return profile.UnlockedZoneIds[zoneId] == true
-	end)
+	-- Locked expansions cannot be farmed by standing on the fence line.
+	-- What is open is the land's (the host's) state, so helpers mow
+	-- wherever the host has unlocked.
+	local cells = GrassService.GetCellsInRadius(root.Position, radius, LandService.IsUnlocked)
 
 	local harvested = 0
 	local xp = 0
@@ -111,8 +112,9 @@ function EconomyService.SellAll(player: Player)
 	if not profile or GrassBag.Total(profile) <= 0 then
 		return
 	end
-	-- Value uses the best unlocked zone the grass *could* be from; per-tuft
-	-- origin tracking is a Phase-4 refinement (docs/DEVELOPMENT_PLAN.md).
+	-- Value uses the best zone THIS player has unlocked (helpers on a richer
+	-- land still sell at their own progression); per-tuft origin tracking
+	-- is a Phase-4 refinement (docs/DEVELOPMENT_PLAN.md).
 	local bestValue = 1
 	for zoneId in profile.UnlockedZoneIds do
 		local zone = Zones.ById[zoneId]

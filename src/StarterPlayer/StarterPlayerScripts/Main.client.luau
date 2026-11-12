@@ -18,6 +18,8 @@ local Zones = require(Shared.Config.Zones)
 local GrassTypes = require(Shared.Config.GrassTypes)
 local GrassBag = require(Shared.GrassBag)
 
+local LandState = require(script.Parent:WaitForChild("LandState"))
+
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local profile: any = nil
 
@@ -147,9 +149,9 @@ end);
 
 -- Server pushes ----------------------------------------------------------------
 -- Zone gates (Workspace/Zones/<id>/ZoneGate) are solid on the server.
--- Each client opens the gates of the zones its own player unlocked, so
--- locked land stays fenced off without one player's unlock opening it for
--- everyone. The server still refuses cutting in locked zones.
+-- Each client opens the gates of the expansions unlocked on the land of
+-- this session (the host's, LandState). The server still refuses cutting
+-- in locked expansions.
 --
 -- The gate's "Unlock" prompt (Map/Gates on the server) is painted here for
 -- this player: what it costs, or what is still missing.
@@ -158,10 +160,12 @@ local function paintGatePrompt(gate: BasePart, zone, open: boolean)
 	if not prompt or not prompt:IsA("ProximityPrompt") then
 		return
 	end
-	local nextZone = Zones.NextLocked(profile.UnlockedZoneIds)
+	local nextZone = Zones.NextLocked(LandState.Unlocked())
 	prompt.Enabled = not open
 	prompt.ObjectText = zone.DisplayName
-	if nextZone and nextZone.Id ~= zone.Id then
+	if not LandState.IsHost() then
+		prompt.ActionText = ("Only %s can expand this land"):format(LandState.HostName())
+	elseif nextZone and nextZone.Id ~= zone.Id then
 		prompt.ActionText = "Unlock " .. nextZone.DisplayName .. " first"
 	elseif (profile.Level or 1) < zone.RequiredLevel then
 		prompt.ActionText = ("Needs Company Level %d"):format(zone.RequiredLevel)
@@ -179,7 +183,7 @@ local function refreshGates()
 		local folder = zonesFolder:FindFirstChild(zone.Id)
 		local gate = folder and folder:FindFirstChild("ZoneGate")
 		if gate and gate:IsA("BasePart") then
-			local open = profile.UnlockedZoneIds[zone.Id] == true
+			local open = LandState.IsUnlocked(zone.Id)
 			paintGatePrompt(gate, zone, open)
 			gate.CanCollide = not open
 			gate.Transparency = if open then 1 else 0.3
@@ -192,7 +196,7 @@ local function refreshGates()
 		-- Invisible walls above the fences of this zone (MapService): they
 		-- stop jumping in until the zone is unlocked.
 		if folder then
-			local open = profile.UnlockedZoneIds[zone.Id] == true
+			local open = LandState.IsUnlocked(zone.Id)
 			for _, child in folder:GetChildren() do
 				if child.Name == "ZoneWall" and child:IsA("BasePart") then
 					child.CanCollide = not open
@@ -215,6 +219,8 @@ workspace.DescendantAdded:Connect(function(instance)
 		end)
 	end
 end);
+
+LandState.Changed:Connect(refreshGates)
 
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local function onProfile(newProfile)
