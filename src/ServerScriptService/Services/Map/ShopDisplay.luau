@@ -257,9 +257,25 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	local _, rawSize = model:GetBoundingBox()
 	model:ScaleTo(model:GetScale() * 5 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
 	model:PivotTo(frame * CFrame.Angles(0, 0, math.rad(-35)) * CFrame.Angles(math.rad(90), 0, 0))
+	-- Center it on the board, then push it out just enough that its back
+	-- sits in front of the board face: nothing goes into the wall.
 	local box = model:GetBoundingBox()
-	local target = frame * CFrame.new(0, 0, 0.45)
-	model:PivotTo(model:GetPivot() + (target.Position - box.Position))
+	model:PivotTo(model:GetPivot() + (frame.Position - box.Position))
+	local deepest = math.huge
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			local half = d.Size / 2
+			for _, sx in { -1, 1 } do
+				for _, sy in { -1, 1 } do
+					for _, sz in { -1, 1 } do
+						local corner = d.CFrame * Vector3.new(sx * half.X, sy * half.Y, sz * half.Z)
+						deepest = math.min(deepest, frame:PointToObjectSpace(corner).Z)
+					end
+				end
+			end
+		end
+	end
+	model:PivotTo(model:GetPivot() + frame.LookVector * -(0.3 - deepest))
 	model.Name = "Display_" .. toolId
 	model.Parent = plaque
 

@@ -121,7 +121,7 @@ buildPaths = function(parent: Instance, segments: { { Vector3 } }, rng: Random)
 				Color = PATH_COLOR,
 				Material = Enum.Material.Ground,
 			}).CanQuery = false
-			if rng:NextNumber() < 0.35 then
+			if rng:NextNumber() < 0.35 and i > 3 and i < #points - 6 then
 				local side = if rng:NextNumber() < 0.5 then -1 else 1
 				local stone = Props.make("EdgeStone", folder, {
 					Size = Vector3.new(0.9 + rng:NextNumber() * 0.6, 0.5, 0.8 + rng:NextNumber() * 0.6),
@@ -434,6 +434,17 @@ function MapService.BuildIfMissing()
 			-- facing it, so it always fits.
 			place(ShopInterior.Radius, function(cf)
 				buildHouseShop(dressing, cf, zoneTools)
+				-- A path from the hub straight to the porch steps.
+				local shop = dressing:FindFirstChild("ShopBuilding")
+				local entrancePos = shop and shop:GetAttribute("Entrance") :: Vector3?
+				if entrancePos then
+					local segment = curve(hub, entrancePos, rng)
+					table.insert(pathSegments, segment)
+					for _, point in segment do
+						markDisc(pathCells, point, MapLayout.PathWidth / 2)
+						markDisc(blocked, point, MapLayout.PathWidth / 2)
+					end
+				end
 			end, hub + Vector3.new(0, 0, 30), 10) -- south of the hub; the first path leaves north
 		else
 			place(11, function(cf)

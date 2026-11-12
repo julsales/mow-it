@@ -490,6 +490,7 @@ Props.sign = sign
 Props.shop = shop
 Props.sellPad = sellPad
 Props.npc = npc
+Props.planters = planters
 
 -- Late summer afternoon: low warm sun, long soft shadows, warm haze, a
 -- little bloom and sun rays (roblox-world-building: Lighting children).
