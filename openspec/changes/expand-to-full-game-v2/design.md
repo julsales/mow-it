@@ -66,7 +66,24 @@ the genre's most hated pattern.
 Implementation follows `tasks.md` in releasable slices (v1 loop on land →
 Crew/restock → contracts/weather → franchise/offline → later trading/
 Crewdex/events cadence). The graybox approach from Phase 1 remains: every
-slice must Play Solo end-to-end.
+slice must Play Solo end-to-end. Order inside every slice: **assets →
+maps → code** (assets go through `docs/ASSETS.md` first). A phase only
+starts when the previous one is playable end-to-end. Each main spec
+carries a `**Phase:**` line; the checklist is `tasks.md`, same numbering.
+
+| Phase | Update | Assets | Maps | Exit criteria |
+|---|---|---|---|---|
+| 0 | Foundation (done) | asset map, `roblox` skill | graybox | cut → sell → buy → unlock in Play Solo |
+| 0.9 | Map v2 | grass looks per area, fences, stalls | open organic land: home base at center, areas expanding outward, fences + invisible walls + gates (AGENTS.md "Map rules") | every area has its grass type, lucky rare patches and a sell stall |
+| 1 | "Your Land" (v1) | icon family + UI kit; house + Front Yard set; first tool models | lobby street (showcase lots, market, PLAY/PARTY pads); land with 6 expansions grayboxed, physical shop in each | new player buys first scissors in ≈3 min; party of 4 mows a friend's land; failed teleport keeps the party in the lobby |
+| 2 | "Crew & Restock" (v1.1) | ~60 Crew models by zone/rarity, market stall, shining-tuft effect | Crew Market in the lobby; Crew on showcase lots | two servers show the same shelf and countdown; found-Crew reveal plays while mowing; merging duplicates evolves a Crew |
+| 3 | "Sky & Jobs" (v1.2) | variant grass visuals, weather sky/audio, client-yard props, seed/plot models | job board (lobby + land), generated client yards, seed plots per expansion | a Storm makes the session chase Rainbow grass; a party finishes a contract and everyone is paid; seeds grow offline |
+| 4 | "Machines & Franchise" (v1.3) | rideable mower/tractor/combine, robot Crew, fuel station, franchise office | driveable fields/roads in Ranch → Mega Fields; fuel points | driving a mower cuts; franchising resets progress but never collection; casual simulation franchises in 1–2 weeks |
+| 5 | "Live" (v1.4) | cosmetics, event dressing kit, badge icons | event overlay for lobby/land; VIP/showcase cosmetics | day-7 reward claimable; duplicate receipt grants once; an event runs start to finish with limited Crew in the restock pool |
+| Later | Trading, Crewdex, events cadence, 7th expansion | | | each ships as its own OpenSpec change |
+
+Per release, also: `openspec validate --all --strict` green and specs
+updated in the same PR as behavior.
 
 ## Risks
 

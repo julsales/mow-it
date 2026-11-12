@@ -13,11 +13,9 @@ Lobby parties of up to **4 players** teleport together into a private match.
 | File | What |
 |---|---|
 | [openspec/specs/](openspec/specs) | **Behavioral source of truth (OpenSpec):** 14 capabilities, SHALL requirements + scenarios |
-| [docs/GDD.md](docs/GDD.md) | Readable v2 design summary (OpenSpec wins on disagreement) |
+| [openspec/changes/expand-to-full-game-v2/](openspec/changes/expand-to-full-game-v2) | Current change: proposal, design + rollout phases (`design.md`), checklist (`tasks.md`) |
 | [docs/ASSETS.md](docs/ASSETS.md) | **Reusable asset map** — ready-made icons/UI/models/audio with links & licenses. Map first, import second. |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How Roblox games are normally structured (researched), our Rojo layout, and the Studio map contract |
-| [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) | Phased plan: **assets → maps → code** |
-| [docs/PHASES.md](docs/PHASES.md) | Every system separated by phase/update (v1 → v1.4 → later) |
 | [docs/ROJO.md](docs/ROJO.md) | Como conectar o repo ao Roblox Studio com Rojo (pt-BR) |
 
 ## Quick start (Studio)
@@ -46,8 +44,9 @@ src/
   ReplicatedStorage/Shared/Config/   ← all progression tables (tools, zones…)
   ServerScriptService/Services/      ← server authority: profiles, grass, economy, shops, lobby
   StarterPlayer/StarterPlayerScripts/← client input + placeholder HUD
-docs/                                ← design, asset map, architecture, plan
-.agents/skills/roblox/               ← agent skill copied from Roblox_Game (see below)
+openspec/                            ← design source of truth: specs + current change
+docs/                                ← how-to/reference: assets, editing, architecture, Rojo
+.agents/skills/                      ← agent skills: roblox* + openspec-* (.claude/skills links here)
 ```
 
 ## Reuse policy
