@@ -75,6 +75,7 @@ local ROWS = 6 -- logs per wall -> wall height 12
 local FLOOR = 1.6 -- floor height above the ground
 local DOOR_W, DOOR_H = 5, 8
 local RISE = 7 -- roof height above the walls
+local CORNER_POST = 2.6 -- square corner timbers (logs butt into them)
 
 type Opening = { X1: number, X2: number, Y1: number, Y2: number }
 
@@ -96,9 +97,8 @@ local function logWall(parent: Instance, line: CFrame, length: number, openings:
 	for row = 0, ROWS - 1 do
 		local y = LOG_D / 2 + row * LOG_D + lift
 		-- Start with the full log (+ overhang past the corners), subtract openings.
-		-- Logs run past the corner far enough that their round ends sit fully
-		-- outside the crossing wall (no half-hidden "lens" slivers).
-		local reach = length / 2 + LOG_D + 0.6
+		-- Logs stop flush against the square corner posts (no crossing ends).
+		local reach = length / 2 + LOG_D / 2 - CORNER_POST / 2
 		local pieces = { { -reach, reach } }
 		for _, o in openings do
 			-- Cut every log whose thickness overlaps the opening.
@@ -132,19 +132,6 @@ local function logWall(parent: Instance, line: CFrame, length: number, openings:
 					Color = LOG:Lerp(LOG_DARK, shade * 0.5),
 					Material = Enum.Material.Wood,
 				})
-				-- Light cut ends where logs stick out past the corners.
-				for _, endX in { piece[1], piece[2] } do
-					if math.abs(math.abs(endX) - reach) < 0.01 then
-						Props.make("LogEnd", parent, {
-							Shape = Enum.PartType.Cylinder,
-							Size = Vector3.new(0.12, LOG_D - 0.25, LOG_D - 0.25),
-							CFrame = line * CFrame.new(endX + (if endX > 0 then 0.05 else -0.05), y, 0),
-							Color = Color3.fromRGB(214, 176, 124),
-							Material = Enum.Material.Wood,
-							Solid = false,
-						})
-					end
-				end
 			end
 		end
 	end
@@ -162,7 +149,8 @@ local function window(parent: Instance, line: CFrame, x: number, o: Opening)
 		Material = Enum.Material.Glass,
 		Transparency = 0.45,
 	})
-	for _, spec in { { 0, h / 2 + 0.2, w + 0.8, 0.4 }, { 0, -h / 2 - 0.2, w + 0.8, 0.4 }, { -w / 2 - 0.2, 0, 0.4, h }, { w / 2 + 0.2, 0, 0.4, h }, { 0, 0, 0.25, h } } do
+	-- Trim boards around the opening hide the cut log ends.
+	for _, spec in { { 0, h / 2 + 0.3, w + 1.2, 0.6 }, { 0, -h / 2 - 0.3, w + 1.2, 0.6 }, { -w / 2 - 0.3, 0, 0.6, h }, { w / 2 + 0.3, 0, 0.6, h }, { 0, 0, 0.25, h } } do
 		Props.make("WindowFrame", parent, {
 			Size = Vector3.new(spec[3], spec[4], LOG_D + 0.4),
 			CFrame = c * CFrame.new(spec[1], spec[2], 0),
@@ -172,14 +160,14 @@ local function window(parent: Instance, line: CFrame, x: number, o: Opening)
 	end
 	Props.make("Sill", parent, {
 		Size = Vector3.new(w + 1.4, 0.35, 1.2),
-		CFrame = c * CFrame.new(0, -h / 2 - 0.55, LOG_D / 2 + 0.3),
+		CFrame = c * CFrame.new(0, -h / 2 - 0.75, LOG_D / 2 + 0.3),
 		Color = LOG_DARK,
 		Material = Enum.Material.Wood,
 	})
 	for _, side in { -1, 1 } do
 		Props.make("Shutter", parent, {
 			Size = Vector3.new(w / 2 + 0.2, h + 0.6, 0.25),
-			CFrame = c * CFrame.new(side * (w / 2 + w / 4 + 0.8), 0, LOG_D / 2 + 0.35) * CFrame.Angles(0, side * math.rad(-12), 0),
+			CFrame = c * CFrame.new(side * (w / 2 + w / 4 + 0.9), 0, LOG_D / 2 + 0.35) * CFrame.Angles(0, side * math.rad(-12), 0),
 			Color = Color3.fromRGB(70, 120, 80),
 			Material = Enum.Material.WoodPlanks,
 		})
@@ -219,11 +207,20 @@ local function logShell(parent: Instance, cf: CFrame): Room
 	}
 	logWall(parent, front, W, { door, frontWindows[1], frontWindows[2] }, 0)
 	logWall(parent, back, W, {}, 0)
-	-- Side courses sit half a log higher: their window opening lines up
-	-- with whole logs (3..7).
-	local sideWindow = { X1 = -2.25, X2 = 2.25, Y1 = 3, Y2 = 7 }
-	logWall(parent, left, D, { sideWindow }, LOG_D / 2)
-	logWall(parent, right, D, { sideWindow }, LOG_D / 2)
+	local sideWindow = { X1 = -2.25, X2 = 2.25, Y1 = winH.Y1, Y2 = winH.Y2 }
+	logWall(parent, left, D, { sideWindow }, 0)
+	logWall(parent, right, D, { sideWindow }, 0)
+	-- Square corner posts, foundation to eave, slightly darker wood.
+	for _, x in { -halfW, halfW } do
+		for _, z in { -halfD, halfD } do
+			Props.make("CornerPost", parent, {
+				Size = Vector3.new(CORNER_POST, wallH + FLOOR + 0.4, CORNER_POST),
+				CFrame = cf * CFrame.new(x, (wallH + FLOOR + 0.4) / 2, z),
+				Color = LOG_DARK,
+				Material = Enum.Material.Wood,
+			})
+		end
+	end
 	for _, o in frontWindows do
 		window(parent, front, (o.X1 + o.X2) / 2, o)
 	end
@@ -231,7 +228,7 @@ local function logShell(parent: Instance, cf: CFrame): Room
 	window(parent, right, 0, sideWindow)
 
 	-- Door: frame and a plank door swung open into the room.
-	for _, spec in { { -DOOR_W / 2 - 0.25, DOOR_H / 2, 0.5, DOOR_H }, { DOOR_W / 2 + 0.25, DOOR_H / 2, 0.5, DOOR_H }, { 0, DOOR_H + 0.25, DOOR_W + 1, 0.5 } } do
+	for _, spec in { { -DOOR_W / 2 - 0.35, DOOR_H / 2, 0.7, DOOR_H }, { DOOR_W / 2 + 0.35, DOOR_H / 2, 0.7, DOOR_H }, { 0, DOOR_H + 0.35, DOOR_W + 1.4, 0.7 } } do
 		Props.make("DoorFrame", parent, {
 			Size = Vector3.new(spec[3], spec[4], LOG_D + 0.5),
 			CFrame = front * CFrame.new(spec[1], spec[2], 0),
