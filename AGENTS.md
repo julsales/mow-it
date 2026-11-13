@@ -55,27 +55,29 @@ Read before working in this repo:
 
 ## Map rules (direction from the project owner)
 
-11. The map is a **farm road, never grid-like or maze-like**: one winding
-    road starts at the house (home base) and runs through every area in
-    unlock order; each area straddles the road and is bigger than the one
-    before. Lawns are a few big fields on both sides of the road covering
-    most of each area (grass is the game). Shapes, edges, trees and props
-    are irregular (curves, clusters, varied spacing). The land is an island:
-    tree lines, beaches, then water to the horizon; the player must never
-    see the end of the world (invisible shore walls stop swimming).
-12. Areas are separated only by **one fence line across the land with a
-    gate on the road** (plus invisible walls); no fences around whole
-    areas. The next gate is always ahead on the road and in sight. Each
-    area's sell pad and shop stand by the road right after its gate (with
-    room kept for a future quick-travel pad). Layout = data in
-    `Config/MapLayout.luau` (a new area is a config row).
+11. The map is a **chain of islands, never grid-like or maze-like**: one
+    island per area in unlock order, the small home island (the player's
+    base, where they spawn) first and every next island clearly bigger.
+    The chain wanders irregularly; the next island is always in sight
+    across the water. Lawns cover most of every island (grass is the
+    game). Coasts, trees and props are irregular (curves, clusters, varied
+    spacing); props are few, fit the island's theme and stand together in
+    sensible groups, never scattered at random. Water runs to the horizon:
+    the player must never see the end of the world (invisible walls just
+    offshore stop swimming).
+12. Islands are joined by **wooden bridges**; each area's gate (and the
+    invisible wall above it) stands on its bridge, so there are no fences
+    on land. Each island has a **SellPad** by the bridge arrival (no buyer
+    NPC) and a **farmer's tool stand** off to the side near the coast
+    (`Map/FarmerStand`), with room kept for a future quick-travel pad.
+    Layout = data in `Config/MapLayout.luau` (a new area is a config row).
 13. **Each area has its own, better grass types** (higher value/health,
     different look: color, height, blade shape in `Config/GrassTypes.luau`).
     Rare better grass (lucky, golden, the next area's) also appears
     **sparsely, by luck, as small patches in earlier areas**.
-14. Selling is **physical**: walk onto a sell stall's pad (stall + buyer
-    NPC). No free on-screen sell button; remote selling is only for
-    Auto-Sell / a future "Sell Anywhere" pass.
+14. Selling is **physical**: walk onto an island's sell pad. No free
+    on-screen sell button; remote selling is only for Auto-Sell / a future
+    "Sell Anywhere" pass.
 15. First-person play must work (camera can be zoomed into first person);
     tools must look right from the player's own view.
 

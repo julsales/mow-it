@@ -38,11 +38,6 @@ function QuestService.Scan()
 	for _, def in Config.List do
 		local root = World.Find(def.Id)
 		if root and not root:FindFirstChild(Config.PromptName) then
-			-- Replace only the procedural builder's generic label; custom baked
-			-- names and geometry remain the map author's property.
-			local tag = root.Parent:FindFirstChild("NameTag", true)
-			local label = tag and tag:FindFirstChildOfClass("TextLabel")
-			if label and label.Text == "Farmer Joe · Grass Buyer" then label.Text = def.NpcName .. " · Grass Buyer" end
 			local prompt = Instance.new("ProximityPrompt")
 			prompt.Name = Config.PromptName
 			prompt.ObjectText = def.NpcName

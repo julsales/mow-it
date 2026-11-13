@@ -1,17 +1,12 @@
 --!strict
--- The shape of the land, as pure math (no instances). The land is laid out
--- along one road (Shared/Config/MapLayout.luau): every ground point is
--- described by road coordinates (s, d):
---   s = distance along the road from its start (the house porch is s = 0),
---   d = signed distance from the road's center line (+ = right side when
---       walking away from the house).
--- An area is a stretch [start, finish) of s; its land reaches HalfWidth(s)
--- to each side. Past that: a beach, then water. Every builder (road, gates,
--- lawns, props, trees, terrain, shore walls) asks this module, so they all
--- agree on where things are.
+-- The shape of the land, as pure math (no instances). One island per area
+-- (Shared/Config/MapLayout.luau): a center, and a coast whose radius
+-- wobbles with the angle. Each island after the first is joined to the
+-- previous one by a straight bridge. Every builder (terrain, lawns, paths,
+-- props, bridges, walls) asks this module, so they all agree on where the
+-- coast is.
 --
--- Points map to (s, d) through a raster of 4-stud cells built once at
--- require time by sweeping the road's normals (nearest road point wins).
+-- Angles are degrees clockwise from north (-Z); points live on y = 0.
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local MapLayout = require(Shared.Config.MapLayout)
@@ -19,266 +14,189 @@ local Zones = require(Shared.Config.Zones)
 
 local MapGeometry = {}
 
-local CELL = 4
-local STEP = 1 -- road sample spacing (studs of s)
-local ROAD = MapLayout.Road
-MapGeometry.Cell = CELL
+-- Unit vector on the ground for an angle in degrees.
+function MapGeometry.Direction(angle: number): Vector3
+	local a = math.rad(angle)
+	return Vector3.new(math.sin(a), 0, -math.cos(a))
+end
 
--- Areas in unlock order, with their stretch of road ----------------------------
+-- Angle (degrees) of a ground vector.
+function MapGeometry.AngleOf(v: Vector3): number
+	return math.deg(math.atan2(v.X, -v.Z))
+end
 
-export type Stretch = { Id: string, Def: MapLayout.AreaDef, Start: number, Finish: number, Index: number }
+local function flat(v: Vector3): Vector3
+	return Vector3.new(v.X, 0, v.Z)
+end
+
+-- Islands in unlock order --------------------------------------------------------
+
+export type Island = {
+	Id: string,
+	Def: MapLayout.AreaDef,
+	Index: number,
+	Center: Vector3,
+	Phases: { number }, -- coast wobble phases (from the seed)
+}
 
 MapGeometry.Order = {} :: { [string]: number }
-MapGeometry.Areas = {} :: { Stretch }
-MapGeometry.ById = {} :: { [string]: Stretch }
+MapGeometry.Islands = {} :: { Island }
+MapGeometry.ById = {} :: { [string]: Island }
+
+local function coastRadius(island: Island, angle: number): number
+	local a = math.rad(angle)
+	local p = island.Phases
+	local wobble = 0.11 * math.sin(3 * a + p[1]) + 0.07 * math.sin(5 * a + p[2]) + 0.04 * math.sin(9 * a + p[3])
+	return island.Def.Radius * (1 + wobble)
+end
+
 do
-	local s = 0
+	local rng = Random.new(MapLayout.Seed)
+	local previous: Island? = nil
 	for index, zone in Zones.List do
 		MapGeometry.Order[zone.Id] = index
 		local def = MapLayout.Areas[zone.Id]
-		if def then
-			local stretch = { Id = zone.Id, Def = def, Start = s, Finish = s + def.Length, Index = #MapGeometry.Areas + 1 }
-			table.insert(MapGeometry.Areas, stretch)
-			MapGeometry.ById[zone.Id] = stretch
-			s += def.Length
+		if not def then
+			continue
+		end
+		local island: Island = {
+			Id = zone.Id,
+			Def = def,
+			Index = #MapGeometry.Islands + 1,
+			Center = Vector3.zero,
+			Phases = { rng:NextNumber() * 6.28, rng:NextNumber() * 6.28, rng:NextNumber() * 6.28 },
+		}
+		if previous then
+			-- Place it so the coasts are `Gap` apart along the heading.
+			local dir = MapGeometry.Direction(def.Heading)
+			local out = coastRadius(previous, def.Heading)
+			island.Center = previous.Center + dir * out -- temporary, for its own radius
+			local back = coastRadius(island, def.Heading + 180)
+			island.Center = previous.Center + dir * (out + def.Gap + back)
+		end
+		table.insert(MapGeometry.Islands, island)
+		MapGeometry.ById[zone.Id] = island
+		previous = island
+	end
+end
+
+-- Coast radius of an island in a direction (degrees).
+MapGeometry.CoastRadius = coastRadius
+
+-- Signed distance from an island's coast (negative inland), approximated
+-- radially. Good enough for shapes this round.
+function MapGeometry.EdgeDistance(island: Island, point: Vector3): number
+	local v = flat(point) - island.Center
+	if v.Magnitude < 0.01 then
+		return -coastRadius(island, 0)
+	end
+	return v.Magnitude - coastRadius(island, MapGeometry.AngleOf(v))
+end
+
+-- The island whose coast is nearest (smallest edge distance), and that distance.
+function MapGeometry.Nearest(point: Vector3): (Island, number)
+	local best, bestEdge = MapGeometry.Islands[1], math.huge
+	for _, island in MapGeometry.Islands do
+		local edge = MapGeometry.EdgeDistance(island, point)
+		if edge < bestEdge then
+			best, bestEdge = island, edge
 		end
 	end
-	MapGeometry.LastAreaEnd = s
-end
-MapGeometry.LandStart = -ROAD.StartLand
-MapGeometry.LandEnd = MapGeometry.LastAreaEnd + ROAD.EndLand
-MapGeometry.RoadEnd = MapGeometry.LandEnd + ROAD.BridgeLength
-
--- The stretch an s falls in (before the road: the first area; past the last
--- area: the last one).
-function MapGeometry.StretchAt(s: number): Stretch?
-	local areas = MapGeometry.Areas
-	for _, stretch in areas do
-		if s < stretch.Finish then
-			return stretch
-		end
-	end
-	return areas[#areas]
+	return best, bestEdge
 end
 
--- Smooth noise along the road, so edges wobble instead of running straight.
--- `salt` picks an independent wave; result in [-amplitude, amplitude].
-function MapGeometry.Wobble(s: number, salt: number, amplitude: number): number
-	local phase = (MapLayout.Seed % 997) / 97 + salt * 2.39
-	return amplitude * (0.55 * math.sin(s / 27 + phase) + 0.3 * math.sin(s / 11.7 + phase * 1.9) + 0.15 * math.sin(s / 5.3 + phase * 3.1))
-end
-
-local function smoothstep(t: number): number
-	t = math.clamp(t, 0, 1)
-	return t * t * (3 - 2 * t)
-end
-
--- How far the land reaches from the road center on one side (side = 1 or
--- -1). Widths blend between neighbouring areas so the shore never steps.
-local BLEND = 30
-function MapGeometry.HalfWidth(s: number, side: number): number
-	local areas = MapGeometry.Areas
-	local stretch = MapGeometry.StretchAt(s) :: Stretch
-	local width = stretch.Def.HalfWidth
-	local prev = areas[stretch.Index - 1]
-	local nextArea = areas[stretch.Index + 1]
-	if prev and s - stretch.Start < BLEND then
-		local t = smoothstep(0.5 + (s - stretch.Start) / (2 * BLEND))
-		width = prev.Def.HalfWidth + (width - prev.Def.HalfWidth) * t
-	elseif nextArea and stretch.Finish - s < BLEND then
-		local t = smoothstep(0.5 - (stretch.Finish - s) / (2 * BLEND))
-		width = width + (nextArea.Def.HalfWidth - width) * t
-	end
-	width *= 1 + MapGeometry.Wobble(s, side * 3.7, 0.12)
-	-- Round both ends of the island instead of cutting them square.
-	local taper = math.min(width, 90)
-	local fromEnd = math.max(s - (MapGeometry.LandEnd - taper), (MapGeometry.LandStart + taper) - s)
-	if fromEnd > 0 then
-		width *= math.sqrt(math.max(0, 1 - (fromEnd / taper) ^ 2))
-	end
-	return width
-end
-
--- Signed distance from the land's edge (negative inside an area, 0..Beach
--- on the beach, beyond that water).
-function MapGeometry.EdgeDistance(s: number, d: number): number
-	local side = if d >= 0 then 1 else -1
-	return math.max(math.abs(d) - MapGeometry.HalfWidth(s, side), s - MapGeometry.LandEnd, MapGeometry.LandStart - s)
-end
-
--- The road's center line --------------------------------------------------------
-
-local function catmullRom(p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2, t: number): Vector2
-	local t2, t3 = t * t, t * t * t
-	return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3)
-end
-
-local positions: { Vector3 } = {} -- road center at s = sMin + (i - 1) * STEP (y = 0)
-local tangents: { Vector3 } = {}
-local sMin = MapGeometry.LandStart - MapLayout.Beach - CELL
-do
-	-- Dense spline points, then resampled every STEP studs of arc length.
-	local points = ROAD.Points
-	local dense: { Vector2 } = {}
-	for i = 1, #points - 1 do
-		local p0 = points[math.max(i - 1, 1)]
-		local p1, p2 = points[i], points[i + 1]
-		local p3 = points[math.min(i + 2, #points)]
-		for k = 0, 59 do
-			table.insert(dense, catmullRom(p0, p1, p2, p3, k / 60))
-		end
-	end
-	table.insert(dense, points[#points])
-
-	local first = (dense[2] - dense[1]).Unit
-	-- Before the road start: a straight extension backward (land behind the house).
-	local back = math.ceil(-sMin / STEP)
-	for i = back, 1, -1 do
-		local p = dense[1] - first * i * STEP
-		table.insert(positions, Vector3.new(p.X, 0, p.Y))
-	end
-	local travelled, nextS = 0, 0
-	for i = 1, #dense - 1 do
-		local a, b = dense[i], dense[i + 1]
-		local length = (b - a).Magnitude
-		while nextS <= travelled + length do
-			local p = a:Lerp(b, (nextS - travelled) / length)
-			table.insert(positions, Vector3.new(p.X, 0, p.Y))
-			nextS += STEP
-		end
-		travelled += length
-	end
-	sMin = -back * STEP
-	assert(travelled >= MapGeometry.RoadEnd + 10, "[MowIt][Map] MapLayout.Road.Points is shorter than the areas + EndLand + BridgeLength")
-	for i = 1, #positions do
-		local a = positions[math.max(i - 1, 1)]
-		local b = positions[math.min(i + 1, #positions)]
-		tangents[i] = (b - a).Unit
-	end
-end
-
-local function sampleIndex(s: number): (number, number)
-	local f = (s - sMin) / STEP + 1
-	local i = math.clamp(math.floor(f), 1, #positions - 1)
-	return i, math.clamp(f - i, 0, 1)
-end
-
--- Ground point (y = 0) at road coordinates (s, d).
-function MapGeometry.Point(s: number, d: number): Vector3
-	local i, t = sampleIndex(s)
-	local center = positions[i]:Lerp(positions[i + 1], t)
-	local tangent = tangents[i]:Lerp(tangents[i + 1], t).Unit
-	return center + tangent:Cross(Vector3.yAxis) * d
-end
-
--- Frame on the road center at s: LookVector along the road (away from the
--- house), RightVector toward +d. Origin at y = 0.
-function MapGeometry.Frame(s: number): CFrame
-	local i, t = sampleIndex(s)
-	local center = positions[i]:Lerp(positions[i + 1], t)
-	local tangent = tangents[i]:Lerp(tangents[i + 1], t).Unit
-	return CFrame.lookAt(center, center + tangent)
-end
-
--- Road center points from s = a to s = b, every `step` studs.
-function MapGeometry.RoadPoints(a: number, b: number, step: number): { Vector3 }
-	local points = {}
-	local s = a
-	while s < b do
-		table.insert(points, MapGeometry.Point(s, 0))
-		s += step
-	end
-	table.insert(points, MapGeometry.Point(b, 0))
-	return points
-end
-
--- Raster: (ix, iz) cell -> nearest road coordinates ---------------------------------
-
-type CellInfo = { S: number, D: number }
-local raster: { [number]: { [number]: CellInfo } } = {}
-do
-	local beach = MapLayout.Beach
-	local sMax = MapGeometry.LandEnd + beach + CELL
-	local i = 1
-	while i <= #positions do
-		local s = sMin + (i - 1) * STEP
-		if s > sMax then
-			break
-		end
-		local center, right = positions[i], tangents[i]:Cross(Vector3.yAxis)
-		for _, side in { 1, -1 } do
-			local reach = MapGeometry.HalfWidth(s, side) + beach + CELL
-			local d = 0
-			while d <= reach do
-				local p = center + right * (d * side)
-				local ix, iz = math.floor(p.X / CELL), math.floor(p.Z / CELL)
-				local column = raster[ix]
-				if not column then
-					column = {}
-					raster[ix] = column
-				end
-				local info = column[iz]
-				if not info or math.abs(info.D) > d then
-					column[iz] = { S = s, D = d * side }
-				end
-				d += 2
-			end
-		end
-		i += 1
-	end
-end
-
--- Road coordinates of a ground point, or nil far out in the water.
-function MapGeometry.Locate(point: Vector3): (number?, number?)
-	local column = raster[math.floor(point.X / CELL)]
-	local info = column and column[math.floor(point.Z / CELL)]
-	if not info then
-		return nil, nil
-	end
-	return info.S, info.D
-end
-
--- "land" (inside an area), "beach", or nil (water).
-function MapGeometry.KindAt(point: Vector3): string?
-	local s, d = MapGeometry.Locate(point)
-	if not s then
-		return nil
-	end
-	local edge = MapGeometry.EdgeDistance(s, d :: number)
-	return if edge < 0 then "land" elseif edge < MapLayout.Beach then "beach" else nil
-end
-
--- Which area a point is in, or nil (beach, water).
+-- Which area a point is on (land or beach), or nil in the water.
 function MapGeometry.AreaAt(point: Vector3): string?
-	local s, d = MapGeometry.Locate(point)
-	if not s or MapGeometry.EdgeDistance(s, d :: number) >= 0 then
+	local island, edge = MapGeometry.Nearest(point)
+	return if edge < 0 then island.Id else nil
+end
+
+-- True when a circle around the point stays on the island, `margin` studs
+-- inland from the coast.
+function MapGeometry.FitsIn(point: Vector3, clearance: number, areaId: string, margin: number?): boolean
+	local island = MapGeometry.ById[areaId]
+	return island ~= nil and MapGeometry.EdgeDistance(island, point) < -(clearance + (margin or 0))
+end
+
+-- A random point on an island, at least `margin` studs inland.
+function MapGeometry.RandomPointOn(island: Island, margin: number, rng: Random): Vector3?
+	for _ = 1, 40 do
+		local angle = rng:NextNumber() * 360
+		local r = math.sqrt(rng:NextNumber()) * (coastRadius(island, angle) - margin)
+		if r > 0 then
+			return island.Center + MapGeometry.Direction(angle) * r
+		end
+	end
+	return nil
+end
+
+-- Bridges ---------------------------------------------------------------------------
+
+export type Bridge = {
+	From: Island,
+	To: Island,
+	Start: Vector3, -- on the coast of From
+	Finish: Vector3, -- on the coast of To
+	Direction: Vector3, -- From -> To
+	Gate: Vector3, -- middle of the bridge, where To's gate stands
+}
+
+-- The bridge that leads onto an island (nil for the first one).
+function MapGeometry.BridgeTo(island: Island): Bridge?
+	local from = MapGeometry.Islands[island.Index - 1]
+	if not from then
 		return nil
 	end
-	local stretch = MapGeometry.StretchAt(s)
-	return stretch and stretch.Id
+	local dir = (island.Center - from.Center).Unit
+	local angle = MapGeometry.AngleOf(dir)
+	local start = from.Center + dir * coastRadius(from, angle)
+	local finish = island.Center - dir * coastRadius(island, angle + 180)
+	return {
+		From = from,
+		To = island,
+		Start = start,
+		Finish = finish,
+		Direction = dir,
+		Gate = (start + finish) / 2,
+	}
 end
 
--- True when the whole circle (approximated by 8 points) is inside `areaId`.
-function MapGeometry.FitsIn(point: Vector3, clearance: number, areaId: string): boolean
-	if MapGeometry.AreaAt(point) ~= areaId then
-		return false
+-- Where a player steps off the bridge onto an island: the top of the beach
+-- (for the first island, the side facing the next one).
+function MapGeometry.Arrival(island: Island): (Vector3, Vector3)
+	local bridge = MapGeometry.BridgeTo(island)
+	if bridge then
+		return bridge.Finish + bridge.Direction * MapLayout.Beach, bridge.Direction
 	end
-	for k = 0, 7 do
-		local a = k * math.pi / 4
-		if MapGeometry.AreaAt(point + Vector3.new(math.cos(a), 0, math.sin(a)) * clearance) ~= areaId then
-			return false
-		end
-	end
-	return true
+	local nextIsland = MapGeometry.Islands[island.Index + 1]
+	local dir = if nextIsland then (island.Center - nextIsland.Center).Unit else Vector3.new(0, 0, 1)
+	return island.Center - dir * 0, -dir
 end
 
--- Every rastered cell: fn(ix, iz, center (y = 0), s, d).
-function MapGeometry.ForEachCell(fn: (number, number, Vector3, number, number) -> ())
-	for ix, column in raster do
-		for iz, info in column do
-			fn(ix, iz, Vector3.new(ix * CELL + CELL / 2, 0, iz * CELL + CELL / 2), info.S, info.D)
-		end
+-- Where the path leaves an island toward the next bridge (nil on the last).
+function MapGeometry.Departure(island: Island): Vector3?
+	local nextIsland = MapGeometry.Islands[island.Index + 1]
+	local bridge = nextIsland and MapGeometry.BridgeTo(nextIsland)
+	return bridge and bridge.Start - bridge.Direction * MapLayout.Beach
+end
+
+-- Smooth noise around an island's coast in [0, 1] (cliff placement).
+function MapGeometry.CoastNoise(island: Island, angle: number, salt: number): number
+	local a = math.rad(angle)
+	local p = island.Phases
+	local v = 0.6 * math.sin(2 * a + p[2] * salt) + 0.4 * math.sin(5 * a + p[3] + salt)
+	return (v + 1) / 2
+end
+
+-- Bounding box of all islands (min, max on the ground).
+function MapGeometry.Bounds(): (Vector3, Vector3)
+	local minV, maxV = Vector3.new(math.huge, 0, math.huge), Vector3.new(-math.huge, 0, -math.huge)
+	for _, island in MapGeometry.Islands do
+		local r = island.Def.Radius * 1.3
+		minV = minV:Min(island.Center - Vector3.new(r, 0, r))
+		maxV = maxV:Max(island.Center + Vector3.new(r, 0, r))
 	end
+	return minV, maxV
 end
 
 return MapGeometry
