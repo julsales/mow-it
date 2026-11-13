@@ -1,15 +1,12 @@
 --!strict
--- Backpack window, opened from the hotbar's + slot: every collectible the
--- player owns (tools, Crew, storage, carried grass) as cards, with filter
--- tabs. Clicking a tool or storage equips it; clicking Crew equips or
--- unequips it. The server validates everything (BuyTool / BuyBackpack
--- re-equip owned items, GameAction EquipCrew).
+-- Backpack window, opened from the hotbar's + slot: the tools and Crew the
+-- player owns as cards, with filter tabs. Clicking a tool equips it;
+-- clicking Crew equips or unequips it. The server validates everything
+-- (BuyTool re-equips owned tools, GameAction EquipCrew).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Tools = require(Shared.Config.Tools)
-local Backpacks = require(Shared.Config.Backpacks)
 local Interface = require(Shared.Config.Interface)
-local Weather = require(Shared.Config.Weather)
 local Rules = require(Shared.ProgressionRules)
 local Format = require(Shared.Format)
 local State = require(script.Parent:WaitForChild("ClientState"))
@@ -19,12 +16,12 @@ local remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 type Item = {
 	Kind: string, Key: string, Name: string, Detail: string, Equipped: boolean,
-	Tool: string?, Image: string?, Tint: Color3?, Accent: Color3?, Action: (() -> ())?,
+	Tool: string?, Image: string?, Accent: Color3?, Action: (() -> ())?,
 }
 
 local Backpack = {}
 local gui = Ui.LocalGui("BackpackGui", 8)
-local window = Ui.Window(gui, "Backpack", "BACKPACK", Images.Grass)
+local window = Ui.Window(gui, "Backpack", "BACKPACK", Images.Passes)
 local filter = "All"
 local tabs: { [string]: TextButton } = {}
 
@@ -54,20 +51,6 @@ local function collect(profile): { Item }
 				Action = function() fire("GameAction", "EquipCrew", uid) end })
 		end
 	end
-	for index = #Backpacks.List, 1, -1 do
-		local def = Backpacks.List[index]
-		if profile.OwnedBackpackIds[def.Id] then
-			table.insert(items, { Kind = "Storage", Key = def.Id, Name = def.DisplayName, Detail = "Holds " .. Format.Number(def.Capacity),
-				Equipped = profile.EquippedBackpackId == def.Id, Image = Images.Passes, Action = function() fire("BuyBackpack", def.Id) end })
-		end
-	end
-	for _, weather in Weather.List do
-		local count = profile.GrassByVariant[weather.VariantId] or 0
-		if count > 0 then
-			table.insert(items, { Kind = "Grass", Key = weather.VariantId, Name = B.GrassNames[weather.VariantId] or weather.VariantId,
-				Detail = Format.Number(count) .. " carried", Equipped = false, Image = Images.Grass, Tint = B.GrassTints[weather.VariantId] })
-		end
-	end
 	return items
 end
 
@@ -83,9 +66,7 @@ local function card(item: Item, order: number)
 	if item.Tool then
 		preview = Ui.ToolPreview(frame, item.Tool)
 	else
-		local icon = Ui.Icon(frame, item.Image or "", B.Preview)
-		icon.ImageColor3 = item.Tint or Color3.new(1, 1, 1)
-		preview = icon
+		preview = Ui.Icon(frame, item.Image or "", B.Preview)
 	end
 	preview.AnchorPoint = Vector2.new(0.5, 0)
 	preview.Position = UDim2.new(0.5, 0, 0, 10); preview.Size = UDim2.fromOffset(B.Preview, B.Preview)
@@ -124,7 +105,7 @@ local function render()
 	end
 	if count == 0 then
 		grid:Destroy()
-		local empty = Ui.Heading(window.Body, "Nothing here yet. Mow, buy and hire to fill your backpack.", 17, T.TextMuted)
+		local empty = Ui.Heading(window.Body, "Nothing here yet. Buy tools and hire Crew to fill your backpack.", 17, T.TextMuted)
 		empty.Name = "Empty"; empty.LayoutOrder = 1; empty.Size = UDim2.new(1, -4, 0, 60)
 	end
 end
