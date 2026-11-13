@@ -115,9 +115,8 @@ end
 
 -- Dirt paths as thin parts (crisp edges; terrain materials blur at this
 -- scale). Segments alternate a hair in height so overlaps never z-fight,
--- with round caps at the joints and a few edging stones.
+-- with round caps at the joints and a few small rocks along the edges.
 local PATH_COLOR = Color3.fromRGB(214, 176, 122)
-local STONE_COLOR = Color3.fromRGB(160, 150, 136)
 
 local function buildPath(folder: Instance, points: { Vector3 }, width: number)
 	local index = 0
@@ -145,15 +144,10 @@ local function buildPath(folder: Instance, points: { Vector3 }, width: number)
 			Material = Enum.Material.Ground,
 		}).CanQuery = false
 		if rng:NextNumber() < 0.3 and i > 3 and i < #points - 6 then
+			-- A small low-poly rock beside the path (library "Rock").
 			local side = if rng:NextNumber() < 0.5 then -1 else 1
-			local stone = Props.make("EdgeStone", folder, {
-				Size = Vector3.new(0.9 + rng:NextNumber() * 0.6, 0.5, 0.8 + rng:NextNumber() * 0.6),
-				CFrame = frame * CFrame.new(side * (width / 2 + 0.3), 0.15, 0) * CFrame.Angles(0, rng:NextNumber() * 3, 0),
-				Color = STONE_COLOR,
-				Material = Enum.Material.Slate,
-				Solid = false,
-			})
-			stone.CastShadow = true
+			local at = frame * CFrame.new(side * (width / 2 + 0.6), -0.1, 0) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0)
+			Props.place("Rock", folder, at, 0.25 + rng:NextNumber() * 0.2)
 		end
 	end
 end
@@ -788,7 +782,7 @@ function MapService.BuildIfMissing()
 			buildBridgeDeck(dock, flatY(a), flatY(b))
 		end
 		local side = dir:Cross(Vector3.yAxis)
-		Props.fromLibrary("Boat", dock, CFrame.lookAt(flatY(b - dir * 8 + side * 9), flatY(b + side * 9)) + Vector3.new(0, WATER_LEVEL - 0.6, 0), nil)
+		Props.fromLibrary("Boat", dock, CFrame.lookAt(flatY(b - dir * 8 + side * 12), flatY(b + side * 12)) + Vector3.new(0, WATER_LEVEL - 1, 0), nil)
 		table.insert(openings, { Point = coast, Direction = dir })
 		local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
 		local length = (b - coast).Magnitude + 4

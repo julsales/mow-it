@@ -493,6 +493,9 @@ local scatter: { [string]: (Instance, CFrame, number) -> () } = {
 	Bush = function(parent, cf, scale)
 		bush(parent, cf, 0, 0, scale)
 	end,
+	Rock = function(parent, cf, scale)
+		ball("Rock", model("Rock", parent), cf, 3 * scale, 0, 0.6 * scale, 0, COLORS.Curb, Enum.Material.Slate)
+	end,
 }
 function Props.place(name: string, parent: Instance, cf: CFrame, scale: number)
 	if not Props.fromLibrary(name, parent, cf, scale) then
@@ -589,8 +592,9 @@ function Props.gateArch(parent: Instance, frame: CFrame, width: number, height: 
 			Material = Enum.Material.Wood,
 		})
 	end
+	-- Deeper than the posts, so the posts never cover the ends of the name.
 	local beam = make("ArchBeam", m, {
-		Size = Vector3.new(width + 3.4, 2.2, 0.7),
+		Size = Vector3.new(width + 3.4, 2.2, 1.8),
 		CFrame = frame * CFrame.new(0, postH - 1.4, 0),
 		Color = COLORS.Wood,
 		Material = Enum.Material.WoodPlanks,
@@ -598,7 +602,7 @@ function Props.gateArch(parent: Instance, frame: CFrame, width: number, height: 
 	label(beam, Enum.NormalId.Front, title)
 	label(beam, Enum.NormalId.Back, title)
 	make("ArchStripe", m, {
-		Size = Vector3.new(width + 3.6, 0.35, 0.8),
+		Size = Vector3.new(width + 3.6, 0.35, 1.9),
 		CFrame = frame * CFrame.new(0, postH - 0.15, 0),
 		Color = accent,
 	})
