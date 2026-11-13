@@ -27,7 +27,8 @@ Read before working in this repo:
    place and edited by hand ([docs/EDITING.md](docs/EDITING.md)). Code
    finds map pieces only by contract names/attributes (never positions),
    only builds what is missing, and never overwrites hand-edited content
-   or lighting.
+   or lighting. Every island is one Model with each piece as its own
+   Model inside, so Julia can move islands and pieces by hand.
 5. **Keep it playable:** every change must leave the loop working —
    cut → sell → buy → unlock — in Play Solo.
 6. All player-facing text is **English**. Game name: **Mow It!**

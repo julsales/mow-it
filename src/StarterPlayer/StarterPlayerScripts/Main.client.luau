@@ -148,7 +148,7 @@ task.spawn(function()
 end);
 
 -- Server pushes ----------------------------------------------------------------
--- Zone gates (Workspace/Zones/<id>/ZoneGate) are solid on the server.
+-- Zone gates (a "ZoneGate" anywhere under Workspace/Zones/<id>) are solid on the server.
 -- Each client opens the gates of the expansions unlocked on the land of
 -- this session (the host's, LandState). The server still refuses cutting
 -- in locked expansions.
@@ -181,7 +181,7 @@ local function refreshGates()
 	end
 	for _, zone in Zones.List do
 		local folder = zonesFolder:FindFirstChild(zone.Id)
-		local gate = folder and folder:FindFirstChild("ZoneGate")
+		local gate = folder and folder:FindFirstChild("ZoneGate", true) -- anywhere in the island (its bridge)
 		if gate and gate:IsA("BasePart") then
 			local open = LandState.IsUnlocked(zone.Id)
 			paintGatePrompt(gate, zone, open)
@@ -197,7 +197,7 @@ local function refreshGates()
 		-- stop jumping in until the zone is unlocked.
 		if folder then
 			local open = LandState.IsUnlocked(zone.Id)
-			for _, child in folder:GetChildren() do
+			for _, child in folder:GetDescendants() do
 				if child.Name == "ZoneWall" and child:IsA("BasePart") then
 					child.CanCollide = not open
 				end

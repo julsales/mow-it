@@ -33,8 +33,8 @@ texture-less MaterialVariants in `MaterialService/MowItFlat`.
    ```lua
    require(game.ServerScriptService.Services.MapService).Bake()
    ```
-3. `Workspace/Land`, `Workspace/Zones`, the terrain and the lighting now
-   exist in Edit. **Ctrl+S right away.**
+3. `Workspace/Zones` (the islands), `Workspace/Sea`, the terrain and the
+   lighting now exist in Edit. **Ctrl+S right away.**
 
 Studio caches `require` in Edit mode: after the code changed, a plain
 `Bake()` may run the old version. Restart Studio first (or have an agent
@@ -42,19 +42,68 @@ bake with freshly cloned modules).
 
 When `Workspace/Zones` exists, the game never rebuilds the land; it just
 uses what is in the place. To start over: **save a dated backup first**
-(File → Save to File As…, or a copy of `Zones`/`Land` in ServerStorage),
-then delete `Workspace/Zones`, `Workspace/Land`, `Workspace/GameSpawn` and
-clear the terrain (Terrain Editor → Clear; this also removes the sea),
+(File → Save to File As…, or a copy of `Zones`/`Sea` in ServerStorage),
+then delete `Workspace/Zones` and `Workspace/Sea` and clear the terrain (Terrain Editor → Clear; this also removes the sea),
 then bake again.
+
+## Moving things
+
+Every island is **one Model**, `Workspace/Zones/<ZoneId>`, and everything
+on it is inside it, each piece its own Model:
+
+```
+Workspace
+├─ Zones (Folder)
+│  ├─ front_yard (Model: the home island)
+│  │  ├─ PlayerBase   the cabin; GameSpawn is inside it
+│  │  ├─ SellStation  SellPad + its stall
+│  │  ├─ FarmerStand  farmer (Npc) + stand + tools on sale
+│  │  ├─ Dock         jetty + rowboat
+│  │  ├─ Yard         planters, mailbox
+│  │  ├─ Path         dirt paths + edge rocks
+│  │  ├─ Trees        trees, bushes, flowers, boulders
+│  │  ├─ ShoreWalls   invisible walls just offshore
+│  │  └─ Lawns        GrassArea parts (where grass grows)
+│  ├─ backyard (Model) ... same, plus
+│  │  └─ Bridge       the bridge onto this island: ZoneGate, ZoneWall, arch, side walls
+│  └─ ... one Model per island (mega_fields also has the Pier)
+└─ Sea (Folder)       FarSea plates, islets, the far island
+```
+
+- **Move a whole island:** click it in the viewport (a click selects the
+  whole island Model), then move/rotate it. Its lawns, bridge, stand, pad
+  and props come along. The island's *ground is Terrain*, which Studio
+  can't drag, so afterwards run in the Command Bar:
+  ```lua
+  require(game.ServerScriptService.Services.MapService).Restamp()
+  ```
+  It redraws all the terrain (sea, every island's ground under its Model's
+  new place, rocks, islets) and paints lawn under every GrassArea. Then
+  Ctrl+S. Hand-painted terrain is redrawn too, so do terrain touch-ups
+  after your last Restamp.
+- **Move one piece** (a farmer stand, the base, a sell pad, a bridge, a
+  building): pick it in the Explorer under its island (or Alt+click a part
+  and select its parent Model), then move it. Nothing else needs to run.
+- **Bridges** belong to the island they lead onto. After moving an island,
+  move its bridge (and the next island's bridge) so their ends touch land.
+- The game never moves anything back: it only reads names, never
+  positions. Grass grows wherever the GrassArea parts are, selling works on
+  any `SellPad`, gates and their walls work wherever the Bridge is, the
+  shop and quest prompts follow the FarmerStand, players spawn on
+  `GameSpawn` (inside PlayerBase).
+- **Don't** rename or ungroup the island Models (`Zones/<ZoneId>`), and keep
+  these names: `GrassArea`, `SellPad`, `ZoneGate`, `ZoneWall`, `FarmerStand`
+  (with its `Npc`), `GameSpawn`, and the island's `BakedPivot` attribute
+  (Restamp uses it to know how far the island moved).
 
 ## What you can change freely
 
-- Anything in `Workspace/Land`: props, trees, paths, bridges and gate
-  arches, the pier, the player's base (`PlayerBase`), `FarSea` plates.
+- Anything inside the islands and `Workspace/Sea`: props, trees, paths,
+  bridges and gate arches, the pier, the player's base, `FarSea` plates.
   Move, recolor, delete, add Creator Store models (audit them first, see
-  `docs/ASSETS.md`). `Land/PerimeterWalls` holds the invisible walls just
-  offshore and along the bridges that keep players out of the water: if
-  you reshape a coast, move them with it.
+  `docs/ASSETS.md`). Each island's `ShoreWalls` (and the `BridgeWall`s in
+  its Bridge) keep players out of the water: if you reshape a coast, move
+  them with it.
 - Terrain: paint, sculpt, hills. Terrain colors live in Terrain →
   MaterialColors and are not overwritten by code after the bake.
 - Lighting, Atmosphere, ColorCorrection, Bloom, SunRays: tune them in
@@ -68,7 +117,7 @@ Code finds things by these names and attributes, never by position:
 
 | Name / attribute | Where | What it does |
 |---|---|---|
-| `Workspace/Zones/<ZoneId>` folders | ids from `Config/Zones.luau` | one folder per area |
+| `Workspace/Zones/<ZoneId>` Models | ids from `Config/Zones.luau` | one island Model per area; everything below can sit anywhere inside it |
 | `GrassArea` (Part, any size/rotation) | inside `Zones/<ZoneId>` | grass grows on every 4×4 cell inside it; its bottom is the lawn surface. Move/resize/duplicate to reshape lawns |
 | `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it sells grass (the stall behind it is decoration, no NPC) |
 | `FarmerStand` (Model) with an `Npc` | inside `Zones/<ZoneId>` | the island's tool seller; its farmer is the quest contact (`QuestWorld`) |

@@ -33,6 +33,7 @@ local ShopDisplay = require(script.Parent.Map.ShopDisplay)
 local ShopInterior = require(script.Parent.Map.ShopInterior)
 local FarmerStand = require(script.Parent.Map.FarmerStand)
 local Geo = require(script.Parent.Map.MapGeometry)
+local LawnCells = require(Shared.LawnCells)
 
 local MapService = {}
 
@@ -226,14 +227,6 @@ local function surfaceAt(edge: number, cliff: number): (number, Enum.Material)
 	return y, if cliff > 0.45 then MapService.Materials.Rock else MapService.Materials.Beach
 end
 
-local function fillColumn(center: Vector3, top: number, material: Enum.Material)
-	local bottom = -MapLayout.WaterDepth - 6
-	local height = top - SURFACE_LIFT - bottom
-	if height > 0 then
-		terrain:FillBlock(CFrame.new(center.X, bottom + height / 2, center.Z), Vector3.new(CELL, height, CELL), material)
-	end
-end
-
 -- Water over a sand floor, in tiles.
 local function fillSea(minX: number, maxX: number, minZ: number, maxZ: number)
 	local tile = 512
@@ -282,18 +275,204 @@ local function buildFarSea(parent: Instance, minX: number, maxX: number, minZ: n
 	folder.Parent = parent
 end
 
--- A small wooded islet: a grassy hill on a sand foot.
-local function islet(parent: Instance, center: Vector3, radius: number, trees: number)
+-- A small wooded islet: a grassy hill on a sand foot (terrain only).
+local function isletTerrain(center: Vector3, radius: number)
 	terrain:FillBall(Vector3.new(center.X, WATER_LEVEL - radius * 0.9, center.Z), radius * 1.15, MapService.Materials.Beach)
 	terrain:FillBall(Vector3.new(center.X, WATER_LEVEL - radius * 0.5, center.Z), radius * 0.85, MapService.Materials.Wild)
+end
+
+-- Trees on an islet's hilltop (Bake only; Restamp leaves them alone).
+local function isletTrees(parent: Instance, center: Vector3, radius: number, trees: number, r: Random)
 	for _ = 1, trees do
-		local a = rng:NextNumber() * math.pi * 2
-		local r = math.sqrt(rng:NextNumber()) * radius * 0.4
-		local x, z = center.X + math.cos(a) * r, center.Z + math.sin(a) * r
+		local a = r:NextNumber() * math.pi * 2
+		local d = math.sqrt(r:NextNumber()) * radius * 0.4
+		local x, z = center.X + math.cos(a) * d, center.Z + math.sin(a) * d
 		local rr = radius * 0.85
-		local y = WATER_LEVEL - radius * 0.5 + math.sqrt(math.max(rr * rr - r * r, 0)) - 0.3
+		local y = WATER_LEVEL - radius * 0.5 + math.sqrt(math.max(rr * rr - d * d, 0)) - 0.3
 		if y > WATER_LEVEL + 1 then
-			Props.place("Tree", parent, CFrame.new(x, y, z) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), 0.8 + rng:NextNumber() * 0.6)
+			Props.place("Tree", parent, CFrame.new(x, y, z) * CFrame.Angles(0, r:NextNumber() * 6.28, 0), 0.8 + r:NextNumber() * 0.6)
+		end
+	end
+end
+
+-- The coast plan, worked out from the layout alone (same every time):
+-- coast angles kept free of cliffs (bridges, docks, the pier), where docks
+-- and the pier point, the far island, and the openings in the shore walls.
+type Opening = { Point: Vector3, Direction: Vector3 }
+type Plan = {
+	KeepClear: { [string]: { number } },
+	DockDir: { [string]: Vector3 },
+	FarDir: Vector3,
+	FarCenter: Vector3,
+	Openings: { Opening },
+	Islets: { { Center: Vector3, Radius: number, Trees: number } },
+	SeaRocks: { { IslandId: string, Point: Vector3, Radius: number } },
+	Min: Vector3,
+	Max: Vector3,
+}
+
+local function coastPlan(): Plan
+	local keepClear: { [string]: { number } } = {}
+	local openings: { Opening } = {}
+	for _, island in Geo.Islands do
+		keepClear[island.Id] = keepClear[island.Id] or {}
+		local bridge = Geo.BridgeTo(island)
+		if bridge then
+			table.insert(keepClear[island.Id], Geo.AngleOf(-bridge.Direction))
+			table.insert(keepClear[bridge.From.Id], Geo.AngleOf(bridge.Direction))
+			table.insert(openings, { Point = bridge.Start, Direction = bridge.Direction })
+			table.insert(openings, { Point = bridge.Finish, Direction = bridge.Direction })
+		end
+	end
+	-- Docks point away from the first bridge, a bit to the side.
+	local dockDir: { [string]: Vector3 } = {}
+	for _, island in Geo.Islands do
+		if island.Def.Dock then
+			local departure = Geo.Departure(island)
+			local away = if departure then (island.Center - departure).Unit else Vector3.new(0, 0, 1)
+			local dir = CFrame.Angles(0, math.rad(65), 0) * away
+			dockDir[island.Id] = dir
+			table.insert(keepClear[island.Id], Geo.AngleOf(dir))
+			table.insert(openings, { Point = island.Center + dir * Geo.CoastRadius(island, Geo.AngleOf(dir)), Direction = dir })
+		end
+	end
+	local last = Geo.Islands[#Geo.Islands]
+	local lastBridge = Geo.BridgeTo(last)
+	local farDir = if lastBridge then (CFrame.Angles(0, math.rad(18), 0) * lastBridge.Direction) else Vector3.new(0, 0, -1)
+	table.insert(keepClear[last.Id], Geo.AngleOf(farDir))
+	local farCenter = last.Center + farDir * (last.Def.Radius + MapLayout.FarIsland.Distance + MapLayout.FarIsland.Radius)
+
+	local minV, maxV = Geo.Bounds()
+	minV = minV:Min(farCenter - Vector3.one * MapLayout.FarIsland.Radius)
+	maxV = maxV:Max(farCenter + Vector3.one * MapLayout.FarIsland.Radius)
+
+	-- Rocks in the shallows and wooded islets (own seeded Random, so the
+	-- same spots come back on every Restamp).
+	local r = Random.new(MapLayout.Seed + 7)
+	local rocks = {}
+	for _ = 1, MapLayout.SeaRocks do
+		local island = Geo.Islands[r:NextInteger(1, #Geo.Islands)]
+		local angle = r:NextNumber() * 360
+		local p = island.Center + Geo.Direction(angle) * (Geo.CoastRadius(island, angle) + 3 + r:NextNumber() * 30)
+		local radius = 2.5 + r:NextNumber() * 4
+		local _, edge = Geo.Nearest(p)
+		local nearOpening = false
+		for _, opening in openings do
+			if (p - opening.Point).Magnitude < 34 then
+				nearOpening = true
+			end
+		end
+		if edge > 2 and not nearOpening then
+			table.insert(rocks, { IslandId = island.Id, Point = p, Radius = radius })
+		end
+	end
+	local islets = {}
+	for _ = 1, MapLayout.Islets * 8 do
+		if #islets >= MapLayout.Islets then
+			break
+		end
+		local p = Vector3.new(minV.X - 150 + r:NextNumber() * (maxV.X - minV.X + 300), 0, minV.Z - 150 + r:NextNumber() * (maxV.Z - minV.Z + 300))
+		local radius, trees = 10 + r:NextNumber() * 16, r:NextInteger(1, 4)
+		local _, edge = Geo.Nearest(p)
+		local clear = edge > 60 and (p - farCenter).Magnitude > MapLayout.FarIsland.Radius + 60
+		for _, island in Geo.Islands do
+			local bridge = Geo.BridgeTo(island)
+			if bridge then
+				local rel = p - bridge.Start
+				local along = math.clamp(rel:Dot(bridge.Direction), 0, (bridge.Finish - bridge.Start).Magnitude)
+				if (rel - bridge.Direction * along).Magnitude < 50 then
+					clear = false
+				end
+			end
+		end
+		if clear then
+			table.insert(islets, { Center = p, Radius = radius, Trees = trees })
+		end
+	end
+	return {
+		KeepClear = keepClear,
+		DockDir = dockDir,
+		FarDir = farDir,
+		FarCenter = farCenter,
+		Openings = openings,
+		Islets = islets,
+		SeaRocks = rocks,
+		Min = minV,
+		Max = maxV,
+	}
+end
+
+-- All the terrain: sea, islands, rocks, islets, then the lawns painted in
+-- under every GrassArea. `moved[islandId]` = how far that island's Model
+-- was moved since the bake (a CFrame); its ground is stamped there.
+local function stampTerrain(moved: { [string]: CFrame })
+	local plan = coastPlan()
+	terrain:Clear()
+	local minV, maxV = plan.Min, plan.Max
+	for _, island in Geo.Islands do
+		local delta = moved[island.Id] or CFrame.identity
+		local r = island.Def.Radius * 1.3 + 40
+		local c = delta * island.Center
+		minV = minV:Min(c - Vector3.new(r, 0, r))
+		maxV = maxV:Max(c + Vector3.new(r, 0, r))
+	end
+	local margin = MapLayout.SeaMargin
+	fillSea(minV.X - margin, maxV.X + margin, minV.Z - margin, maxV.Z + margin)
+
+	-- Island columns. For every terrain cell around where the island now
+	-- is, look up the baked spot it came from (inverse of the move) and
+	-- copy that ground: grid-aligned, no gaps, works for turned islands.
+	local done: { [string]: boolean } = {}
+	local filled = 0
+	local bottom = -MapLayout.WaterDepth - 6
+	for _, island in Geo.Islands do
+		local delta = moved[island.Id] or CFrame.identity
+		local back = delta:Inverse()
+		local reach = island.Def.Radius * 1.3 + 30
+		local c = delta * island.Center
+		for ix = math.floor((c.X - reach) / CELL), math.floor((c.X + reach) / CELL) do
+			for iz = math.floor((c.Z - reach) / CELL), math.floor((c.Z + reach) / CELL) do
+				local k = ix .. "," .. iz
+				if done[k] then
+					continue
+				end
+				local center = Vector3.new(ix * CELL + CELL / 2, 0, iz * CELL + CELL / 2)
+				local source = back * center
+				local nearest, edge = Geo.Nearest(Vector3.new(source.X, 0, source.Z))
+				if nearest ~= island or edge > 34 then
+					continue
+				end
+				done[k] = true
+				local angle = Geo.AngleOf(source - nearest.Center)
+				local top, material = surfaceAt(edge, cliffAt(nearest, angle, plan.KeepClear[nearest.Id]))
+				top += delta.Position.Y
+				local height = top - SURFACE_LIFT - bottom
+				if height > 0 then
+					terrain:FillBlock(CFrame.new(center.X, bottom + height / 2, center.Z), Vector3.new(CELL, height, CELL), material)
+				end
+				filled += 1
+				if filled % 600 == 0 then
+					task.wait()
+				end
+			end
+		end
+	end
+	for _, rock in plan.SeaRocks do
+		local p = (moved[rock.IslandId] or CFrame.identity) * rock.Point
+		terrain:FillBall(Vector3.new(p.X, WATER_LEVEL - 1.5, p.Z), rock.Radius, MapService.Materials.Rock)
+	end
+	for _, spot in plan.Islets do
+		isletTerrain(spot.Center, spot.Radius)
+	end
+	isletTerrain(plan.FarCenter, MapLayout.FarIsland.Radius)
+
+	-- Lawns: wherever the GrassArea parts are now.
+	local painted = 0
+	for _, cell in LawnCells.Collect(Workspace:FindFirstChild("Zones")) do
+		terrain:ReplaceMaterial(columnRegion(cell.Center), CELL, MapService.Materials.Wild, MapService.Materials.Lawn)
+		painted += 1
+		if painted % 800 == 0 then
+			task.wait()
 		end
 	end
 end
@@ -353,14 +532,16 @@ end
 -- Every bridge: deck from beach to beach, invisible side walls (no jumping
 -- into the water), and the area's gate in the middle (contract ZoneGate;
 -- ZoneWall above it so nobody jumps over).
-local function buildBridges(land: Instance, zoneFolders: { [string]: Folder }, walls: Folder)
-	local folder = Props.model("Bridges", land)
+local function buildBridges(islandModels: { [string]: Model })
 	for _, island in Geo.Islands do
 		local bridge = Geo.BridgeTo(island)
 		if not bridge then
 			continue
 		end
 		local zone = Zones.ById[island.Id]
+		-- The bridge that leads ONTO this island belongs to it (with its gate).
+		local folder = Props.model("Bridge", islandModels[island.Id])
+		local walls = folder
 		local a = bridge.Start - bridge.Direction * (BEACH - 2)
 		local b = bridge.Finish + bridge.Direction * (BEACH - 2)
 		buildBridgeDeck(folder, a, b)
@@ -385,7 +566,7 @@ local function buildBridges(land: Instance, zoneFolders: { [string]: Folder }, w
 		-- The gate in the middle of the bridge, under an arch with the name.
 		local deckTop = bridge.Gate + Vector3.new(0, bridgeDeckY(0.5) + 0.3, 0)
 		local gateFrame = CFrame.lookAt(deckTop, deckTop + bridge.Direction)
-		local gate = Props.make("ZoneGate", zoneFolders[island.Id], {
+		local gate = Props.make("ZoneGate", folder, {
 			Size = Vector3.new(MapLayout.GateWidth, MapLayout.WallHeight, 0.6),
 			CFrame = gateFrame * CFrame.new(0, MapLayout.WallHeight / 2, 0),
 			Color = zone.ThemeColor,
@@ -395,7 +576,7 @@ local function buildBridges(land: Instance, zoneFolders: { [string]: Folder }, w
 		local text = ("LOCKED\n%s\n%s · Lv %d"):format(zone.DisplayName, Format.Coins(zone.UnlockPrice), zone.RequiredLevel)
 		Props.label(gate, Enum.NormalId.Front, text, Color3.new(1, 1, 1))
 		Props.label(gate, Enum.NormalId.Back, text, Color3.new(1, 1, 1))
-		local above = Props.make("ZoneWall", zoneFolders[island.Id], {
+		local above = Props.make("ZoneWall", folder, {
 			Size = Vector3.new(MapLayout.GateWidth + 2, MapLayout.ShoreWallHeight, 0.6),
 			CFrame = gateFrame * CFrame.new(0, MapLayout.WallHeight + MapLayout.ShoreWallHeight / 2, 0),
 			Color = zone.ThemeColor,
@@ -405,15 +586,17 @@ local function buildBridges(land: Instance, zoneFolders: { [string]: Folder }, w
 		above.CanQuery = false
 		above:SetAttribute("ZoneId", island.Id)
 		Props.gateArch(folder, gateFrame, MapLayout.Bridge.Width, MapLayout.WallHeight, zone.DisplayName, zone.ThemeColor)
+		folder.WorldPivot = gateFrame
 	end
 end
 
 -- Invisible walls just offshore around every island, open where bridges
 -- (and the last island's pier) leave the coast.
-local function buildShoreWalls(walls: Folder, openings: { { Point: Vector3, Direction: Vector3 } })
+local function buildShoreWalls(islandModels: { [string]: Model }, openings: { { Point: Vector3, Direction: Vector3 } })
 	local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
 	local halfLane = MapLayout.Bridge.Width / 2 + 1
 	for _, island in Geo.Islands do
+		local walls = Props.model("ShoreWalls", islandModels[island.Id])
 		local count = math.ceil(2 * math.pi * island.Def.Radius * 1.25 / 4)
 		local points = {}
 		for i = 0, count do
@@ -449,7 +632,7 @@ end
 
 -- Build ---------------------------------------------------------------------------
 
-local function buildSpawn(at: CFrame)
+local function buildSpawn(at: CFrame, parent: Instance)
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "GameSpawn"
 	spawn.Anchored = true
@@ -464,7 +647,7 @@ local function buildSpawn(at: CFrame)
 	if decal then
 		decal:Destroy()
 	end
-	spawn.Parent = Workspace
+	spawn.Parent = parent
 end
 
 function MapService.BuildIfMissing()
@@ -485,49 +668,41 @@ function MapService.BuildIfMissing()
 	rng = Random.new(MapLayout.Seed)
 	table.clear(placed)
 	table.clear(blocked)
-	local land = Props.model("Land", Workspace)
+	-- Hierarchy (docs/EDITING.md "Moving things"): Workspace/Zones/<id> is
+	-- one Model per island holding everything on it, each piece its own
+	-- Model; Workspace/Sea holds the water dressing around them.
+	local land = Instance.new("Folder")
+	land.Name = "Sea"
+	land.Parent = Workspace
 	local zonesFolder = Instance.new("Folder")
 	zonesFolder.Name = "Zones"
-	local zoneFolders: { [string]: Folder } = {}
+	local islandModels: { [string]: Model } = {}
+	local pathModels: { [string]: Model } = {}
+	local yardModels: { [string]: Model } = {}
+	local treeModels: { [string]: Model } = {}
 	for _, zone in Zones.List do
-		local folder = Instance.new("Folder")
-		folder.Name = zone.Id
-		folder.Parent = zonesFolder
-		zoneFolders[zone.Id] = folder
-		if not MapLayout.Areas[zone.Id] then
+		local island = Geo.ById[zone.Id]
+		if not island then
 			warn(("[MowIt][Map] No MapLayout row for zone %q."):format(zone.Id))
+			continue
 		end
+		local m = Instance.new("Model")
+		m.Name = zone.Id
+		local pivot = CFrame.new(island.Center.X, GROUND_TOP, island.Center.Z)
+		m.WorldPivot = pivot
+		-- Where the island was baked: Restamp() moves its terrain by how far
+		-- the Model has been moved since.
+		m:SetAttribute("BakedPivot", pivot)
+		m.Parent = zonesFolder
+		islandModels[zone.Id] = m
+		pathModels[zone.Id] = Props.model("Path", m)
+		yardModels[zone.Id] = Props.model(if island.Def.ShopAt == "House" then "Yard" else "Farmyard", m)
+		treeModels[zone.Id] = Props.model("Trees", m)
 	end
-	local paths = Props.model("Paths", land)
-	local dressing = Props.model("Dressing", land)
-	local walls = Instance.new("Folder")
-	walls.Name = "PerimeterWalls"
 
-	-- Coast angles kept free of cliffs (bridges, the pier).
-	local keepClear: { [string]: { number } } = {}
-	for _, island in Geo.Islands do
-		keepClear[island.Id] = keepClear[island.Id] or {}
-		local bridge = Geo.BridgeTo(island)
-		if bridge then
-			table.insert(keepClear[island.Id], Geo.AngleOf(-bridge.Direction))
-			table.insert(keepClear[bridge.From.Id], Geo.AngleOf(bridge.Direction))
-		end
-	end
-	-- Docks point away from the first bridge, a bit to the side.
-	local dockDir: { [string]: Vector3 } = {}
-	for _, island in Geo.Islands do
-		if island.Def.Dock then
-			local departure = Geo.Departure(island)
-			local away = if departure then (island.Center - departure).Unit else Vector3.new(0, 0, 1)
-			local dir = CFrame.Angles(0, math.rad(65), 0) * away
-			dockDir[island.Id] = dir
-			table.insert(keepClear[island.Id], Geo.AngleOf(dir))
-		end
-	end
+	local plan = coastPlan()
+	local keepClear, dockDir, farDir, farCenter = plan.KeepClear, plan.DockDir, plan.FarDir, plan.FarCenter
 	local last = Geo.Islands[#Geo.Islands]
-	local lastBridge = Geo.BridgeTo(last)
-	local farDir = if lastBridge then (CFrame.Angles(0, math.rad(18), 0) * lastBridge.Direction) else Vector3.new(0, 0, -1)
-	table.insert(keepClear[last.Id], Geo.AngleOf(farDir))
 
 	-- 1. Paths and stations: per island, a path from where you arrive to
 	-- where the next bridge leaves; the sell pad and the quick-travel spot
@@ -535,6 +710,7 @@ function MapService.BuildIfMissing()
 	-- coast, with a short path to it. The first island has the player's
 	-- base (the cabin) where you spawn.
 	local spawnAt = CFrame.new()
+	local baseModel: Model? = nil
 	local houseAt: { [string]: Vector3 } = {}
 	for _, island in Geo.Islands do
 		local zone = Zones.ById[island.Id]
@@ -544,7 +720,9 @@ function MapService.BuildIfMissing()
 			-- The base stands on the far side from the first bridge, facing it.
 			local toward = if departure then (departure - island.Center).Unit else Vector3.new(0, 0, -1)
 			local housePos = island.Center - toward * (island.Def.Radius * 0.42)
-			local base = ShopInterior.BuildHome(land, facing(housePos, housePos + toward), "My Base")
+			local base = ShopInterior.BuildHome(islandModels[island.Id], facing(housePos, housePos + toward), "My Base")
+			base.WorldPivot = facing(housePos, housePos + toward)
+			baseModel = base
 			claim(housePos, ShopInterior.Radius - 4)
 			houseAt[island.Id] = housePos
 			local entrance = base:GetAttribute("Entrance") :: Vector3?
@@ -560,7 +738,9 @@ function MapService.BuildIfMissing()
 			local st = MapLayout.Stations.Sell
 			local pos = arrival + forward * st.Forward + right * st.Side
 			local cf = facing(pos, arrival + forward * st.Forward)
-			Props.sellPad(zoneFolders[island.Id], cf, 0, 0)
+			local station = Props.model("SellStation", islandModels[island.Id])
+			Props.sellPad(station, cf, 0, 0)
+			station.WorldPivot = cf
 			claim(pos + cf.LookVector * 4, 10)
 		end
 		do
@@ -571,6 +751,7 @@ function MapService.BuildIfMissing()
 		local finish = departure or (last.Center + farDir * (Geo.CoastRadius(last, Geo.AngleOf(farDir)) - BEACH + 2))
 		local bend = island.Center + Vector3.new(rng:NextNumber() - 0.5, 0, rng:NextNumber() - 0.5) * island.Def.Radius * 0.5
 		local route = spline({ arrival - forward * 2, arrival + forward * 14, bend, finish - (finish - bend).Unit * 10, finish })
+		local paths = pathModels[island.Id]
 		buildPath(paths, route, MapLayout.PathWidth)
 		for _, point in route do
 			markDisc(blocked, point, MapLayout.PathWidth / 2 + 2)
@@ -611,7 +792,7 @@ function MapService.BuildIfMissing()
 			local cf = facing(pos, island.Center)
 			local contact = Quests.ByZone[island.Id]
 			local toolIds = ShopDisplay.ToolsForZone(Geo.Order[island.Id] or 1)
-			FarmerStand.Build(zoneFolders[island.Id], cf, toolIds, if contact then contact.NpcName else "Farmer", zone.ThemeColor)
+			FarmerStand.Build(islandModels[island.Id], cf, toolIds, if contact then contact.NpcName else "Farmer", zone.ThemeColor)
 			claim(pos, FarmerStand.Radius)
 			-- A short path from the stand's front to the nearest point of the main path.
 			local front = (pos :: Vector3) + cf.LookVector * -8
@@ -661,7 +842,7 @@ function MapService.BuildIfMissing()
 					cf = facing(spot, island.Center)
 				end
 				claim(spot, kind.Radius)
-				kind.Build(dressing, cf)
+				kind.Build(yardModels[island.Id], cf)
 			else
 				warn(("[MowIt][Map] No room for %s in %s."):format(name, island.Id))
 			end
@@ -672,7 +853,7 @@ function MapService.BuildIfMissing()
 				claim(spot, 3 + rng:NextNumber() * 4)
 				for i = 1, 1 + rng:NextInteger(0, 2) do
 					local offset = Vector3.new(rng:NextNumber() - 0.5, 0, rng:NextNumber() - 0.5) * 6
-					Props.place(if i == 1 then "Tree" else "Bush", dressing, CFrame.new(ground(spot + offset)) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), 0.9 + rng:NextNumber() * 0.4)
+					Props.place(if i == 1 then "Tree" else "Bush", treeModels[island.Id], CFrame.new(ground(spot + offset)) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), 0.9 + rng:NextNumber() * 0.4)
 				end
 			end
 		end
@@ -702,71 +883,25 @@ function MapService.BuildIfMissing()
 		end
 	end
 
-	-- 4. Terrain: the sea first, then every island column (with its
-	-- underwater slope), then lawns painted in.
-	local minV, maxV = Geo.Bounds()
-	local farCenter = last.Center + farDir * (last.Def.Radius + MapLayout.FarIsland.Distance + MapLayout.FarIsland.Radius)
-	minV = minV:Min(farCenter - Vector3.one * MapLayout.FarIsland.Radius)
-	maxV = maxV:Max(farCenter + Vector3.one * MapLayout.FarIsland.Radius)
-	local margin = MapLayout.SeaMargin
-	fillSea(minV.X - margin, maxV.X + margin, minV.Z - margin, maxV.Z + margin)
-	local inner = margin - MapLayout.FarSeaOverlap
-	buildFarSea(land, minV.X - inner, maxV.X + inner, minV.Z - inner, maxV.Z + inner)
-
-	local done: { [string]: boolean } = {}
-	local filled = 0
-	for _, island in Geo.Islands do
-		local reach = island.Def.Radius * 1.3 + 30
-		local c = island.Center
-		for ix = math.floor((c.X - reach) / CELL), math.floor((c.X + reach) / CELL) do
-			for iz = math.floor((c.Z - reach) / CELL), math.floor((c.Z + reach) / CELL) do
-				local k = ix .. "," .. iz
-				if done[k] then
-					continue
-				end
-				local center = Vector3.new(ix * CELL + CELL / 2, 0, iz * CELL + CELL / 2)
-				local nearest, edge = Geo.Nearest(center)
-				if edge > 34 then
-					continue
-				end
-				done[k] = true
-				local angle = Geo.AngleOf(center - nearest.Center)
-				local y, material = surfaceAt(edge, cliffAt(nearest, angle, keepClear[nearest.Id]))
-				fillColumn(center, y, material)
-				filled += 1
-				if filled % 600 == 0 then
-					task.wait()
-				end
-			end
-		end
-	end
-	for _, cells in lawnCells do
-		for _, c in cells do
-			local center = Vector3.new(c.Ix * CELL + CELL / 2, GROUND_TOP, c.Iz * CELL + CELL / 2)
-			terrain:ReplaceMaterial(columnRegion(center), CELL, MapService.Materials.Wild, MapService.Materials.Lawn)
-		end
-		task.wait()
+	-- 4. The far sea plates (the terrain itself is stamped at the end).
+	do
+		local inner = MapLayout.SeaMargin - MapLayout.FarSeaOverlap
+		local minV, maxV = plan.Min, plan.Max
+		buildFarSea(land, minV.X - inner, maxV.X + inner, minV.Z - inner, maxV.Z + inner)
 	end
 
 	-- 5. Bridges with their gates, the last island's pier, then the shore walls.
-	buildBridges(land, zoneFolders, walls)
-	local openings = {}
-	for _, island in Geo.Islands do
-		local bridge = Geo.BridgeTo(island)
-		if bridge then
-			table.insert(openings, { Point = bridge.Start, Direction = bridge.Direction })
-			table.insert(openings, { Point = bridge.Finish, Direction = bridge.Direction })
-		end
-	end
+	buildBridges(islandModels)
+	local openings = plan.Openings
 	do
 		-- A short pier toward the far island, closed for now (the shore wall
 		-- crosses it right past the sign).
 		local coast = last.Center + farDir * Geo.CoastRadius(last, Geo.AngleOf(farDir))
-		local pier = Props.model("Pier", land)
+		local pier = Props.model("Pier", islandModels[last.Id])
 		buildBridgeDeck(pier, flatY(coast - farDir * (BEACH - 2)), flatY(coast + farDir * 26))
 		local signAt = facing(coast + farDir * 2, coast - farDir * 10) + Vector3.new(0, 1.2, 0)
 		Props.sign(pier, signAt, 0, 0, "MORE ISLANDS\nComing soon", COLORS.BarnRed)
-		islet(land, farCenter, MapLayout.FarIsland.Radius, 18)
+		isletTrees(Props.model("FarIsland", land), farCenter, MapLayout.FarIsland.Radius, 18, Random.new(MapLayout.Seed + 9))
 	end
 	-- Docks: a wooden jetty with a moored rowboat, boxed in by invisible
 	-- walls (the shore wall opens where it leaves the beach).
@@ -777,13 +912,14 @@ function MapService.BuildIfMissing()
 		local b = coast + dir * MapLayout.DockLength
 		local mid = (a + b) / 2
 		local frame = CFrame.lookAt(Vector3.new(mid.X, GROUND_TOP + 0.3, mid.Z), Vector3.new(b.X, GROUND_TOP + 0.3, b.Z))
-		local dock = Props.model("Dock", land)
+		local dock = Props.model("Dock", islandModels[id])
+		dock.WorldPivot = frame
+		local walls = dock
 		if not Props.fromLibrary("Dock", dock, frame, nil) then
 			buildBridgeDeck(dock, flatY(a), flatY(b))
 		end
 		local side = dir:Cross(Vector3.yAxis)
 		Props.fromLibrary("Boat", dock, CFrame.lookAt(flatY(b - dir * 8 + side * 12), flatY(b + side * 12)) + Vector3.new(0, WATER_LEVEL - 1, 0), nil)
-		table.insert(openings, { Point = coast, Direction = dir })
 		local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
 		local length = (b - coast).Magnitude + 4
 		local box = CFrame.lookAt(coast + dir * (length / 2 - 2), b)
@@ -806,12 +942,10 @@ function MapService.BuildIfMissing()
 		cap.CastShadow = false
 		cap.CanQuery = false
 	end
-	buildShoreWalls(walls, openings)
-	walls.Parent = land
+	buildShoreWalls(islandModels, openings)
 
 	-- 6. Trees and bushes along every island's rim (in clusters), never on
 	-- lawns, paths or anything claimed.
-	local trees = Props.model("Trees", land)
 	local function tryPlant(kindName: string, point: Vector3, scale: number): boolean
 		local k = key(point.X, point.Z)
 		local island, edge = Geo.Nearest(point)
@@ -821,7 +955,7 @@ function MapService.BuildIfMissing()
 		local angle = Geo.AngleOf(point - island.Center)
 		local y = surfaceAt(edge, cliffAt(island, angle, keepClear[island.Id]))
 		table.insert(placed, { Position = flatY(point), Radius = 2.5 })
-		Props.place(kindName, trees, CFrame.new(point.X, y, point.Z) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), scale)
+		Props.place(kindName, treeModels[island.Id], CFrame.new(point.X, y, point.Z) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), scale)
 		return true
 	end
 	for _, island in Geo.Islands do
@@ -856,48 +990,16 @@ function MapService.BuildIfMissing()
 			if not nearBridge and isClear(p, 2) then
 				local y = surfaceAt(edge, cliffAt(island, angle, keepClear[island.Id]))
 				table.insert(placed, { Position = flatY(p), Radius = 2 })
-				Props.place("Rock", trees, CFrame.new(p.X, y - 0.6, p.Z) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), 0.8 + rng:NextNumber() * 1.2)
+				Props.place("Rock", treeModels[island.Id], CFrame.new(p.X, y - 0.6, p.Z) * CFrame.Angles(0, rng:NextNumber() * 6.28, 0), 0.8 + rng:NextNumber() * 1.2)
 			end
 		end
 	end
 
-	-- 7. The sea: rocks along the coasts, wooded islets further out.
-	for _ = 1, MapLayout.SeaRocks do
-		local island = Geo.Islands[rng:NextInteger(1, #Geo.Islands)]
-		local angle = rng:NextNumber() * 360
-		local p = island.Center + Geo.Direction(angle) * (Geo.CoastRadius(island, angle) + 3 + rng:NextNumber() * 30)
-		local _, edge = Geo.Nearest(p)
-		local nearBridge = false
-		for _, opening in openings do
-			if (p - opening.Point).Magnitude < 34 then
-				nearBridge = true
-			end
-		end
-		if edge > 2 and not nearBridge then
-			terrain:FillBall(Vector3.new(p.X, WATER_LEVEL - 1.5, p.Z), 2.5 + rng:NextNumber() * 4, MapService.Materials.Rock)
-		end
-	end
-	local placedIslets = 0
-	for _ = 1, MapLayout.Islets * 8 do
-		if placedIslets >= MapLayout.Islets then
-			break
-		end
-		local p = Vector3.new(minV.X - 150 + rng:NextNumber() * (maxV.X - minV.X + 300), 0, minV.Z - 150 + rng:NextNumber() * (maxV.Z - minV.Z + 300))
-		local _, edge = Geo.Nearest(p)
-		local clear = edge > 60 and (p - farCenter).Magnitude > MapLayout.FarIsland.Radius + 60
-		for _, island in Geo.Islands do
-			local bridge = Geo.BridgeTo(island)
-			if bridge then
-				local rel = p - bridge.Start
-				local along = math.clamp(rel:Dot(bridge.Direction), 0, (bridge.Finish - bridge.Start).Magnitude)
-				if (rel - bridge.Direction * along).Magnitude < 50 then
-					clear = false
-				end
-			end
-		end
-		if clear then
-			islet(trees, p, 10 + rng:NextNumber() * 16, rng:NextInteger(1, 4))
-			placedIslets += 1
+	-- 7. Trees on the wooded islets out in the water.
+	do
+		local r = Random.new(MapLayout.Seed + 9)
+		for _, spot in plan.Islets do
+			isletTrees(Props.model("Islet", land), spot.Center, spot.Radius, spot.Trees, r)
 		end
 	end
 
@@ -931,12 +1033,32 @@ function MapService.BuildIfMissing()
 				end
 			end
 		end
-		lawns.Parent = zoneFolders[zoneId]
+		lawns.Parent = islandModels[zoneId]
 	end
 
 	zonesFolder.Parent = Workspace
-	buildSpawn(spawnAt)
+	buildSpawn(spawnAt, baseModel or Workspace)
+	stampTerrain({})
 	print(("[MowIt][Map] Land built: %d lawn cells on %d islands."):format(count, #Geo.Islands))
+end
+
+-- After moving island Models by hand in Studio: rebuilds ALL the terrain
+-- (sea, every island's ground, rocks, islets) with each island's ground
+-- under its Model's new position, and paints lawn under every GrassArea.
+-- Run from the Command Bar in Edit mode, then Ctrl+S:
+--   require(game.ServerScriptService.Services.MapService).Restamp()
+-- Hand-painted terrain is lost (it is regenerated). Never runs in game.
+function MapService.Restamp()
+	local zones = Workspace:FindFirstChild("Zones")
+	local moved: { [string]: CFrame } = {}
+	for _, island in Geo.Islands do
+		local m = zones and zones:FindFirstChild(island.Id)
+		local baked = m and m:GetAttribute("BakedPivot")
+		if m and m:IsA("Model") and typeof(baked) == "CFrame" then
+			moved[island.Id] = m:GetPivot() * baked:Inverse()
+		end
+	end
+	stampTerrain(moved)
 end
 
 -- Edit-mode "bake": run from the Command Bar (or Studio MCP) to build the

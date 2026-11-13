@@ -122,7 +122,7 @@ local function action(player: Player, name: any, id: any)
 			confirmUntil[player] = nil
 			if Rules.Franchise(profile) then
 				Contracts.Abandon(player)
-				local spawn = workspace:FindFirstChild("GameSpawn")
+				local spawn = workspace:FindFirstChild("GameSpawn", true) -- inside the player's base model
 				if spawn and spawn:IsA("BasePart") and player.Character then player.Character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0)) end
 				message = "New franchise started! Your Crew and permanent upgrades are safe."
 			end

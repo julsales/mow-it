@@ -16,10 +16,15 @@ local PROMPT_HEIGHT = 4.5 -- studs above the gate's bottom edge (chest height)
 local unlock: ((Player, string) -> ())? = nil
 local wired: { [BasePart]: boolean } = setmetatable({}, { __mode = "k" }) :: any
 
+-- The zone a gate belongs to: the Zones/<ZoneId> ancestor it sits in
+-- (directly, or inside that island's Bridge model).
 local function zoneIdOf(gate: Instance): string?
 	local zones = Workspace:FindFirstChild("Zones")
-	local folder = gate.Parent
-	return if zones and folder and folder.Parent == zones then folder.Name else nil
+	local node = gate.Parent
+	while node and zones and node.Parent ~= zones do
+		node = node.Parent
+	end
+	return if zones and node then node.Name else nil
 end
 
 local function wire(gate: Instance)
