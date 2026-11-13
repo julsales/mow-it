@@ -1,5 +1,6 @@
 --!strict
--- Puts the equipped tool's 3D model on the player's character.
+-- Puts the equipped tool's 3D model on the player's character while the
+-- player holds its Roblox Tool (ToolBackpackService; default hotbar).
 --
 -- Hand kinds (clipper, scissors, sickle, trimmer) are welded to the right
 -- hand. Ground kinds (mowers, riders, tractors) are welded to the
@@ -132,6 +133,12 @@ local function refresh(player: Player)
 	if not profile or not character then
 		return
 	end
+	if not character:FindFirstChildOfClass("Tool") then
+		-- Put away from the hotbar: nothing in the hands.
+		shownToolId[player] = nil
+		clearTool(character)
+		return
+	end
 	if shownToolId[player] == profile.EquippedToolId and character:FindFirstChild("ToolModel") then
 		return
 	end
@@ -149,6 +156,8 @@ local function onCharacter(player: Player, character: Model)
 		refresh(player)
 	end
 end
+
+ToolVisualService.Refresh = refresh
 
 function ToolVisualService.Init()
 	local function watch(player: Player)

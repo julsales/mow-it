@@ -50,6 +50,10 @@ local function tryCut(player: Player)
 	if not profile or not root or not humanoid or humanoid.Health <= 0 then
 		return
 	end
+	-- Only with a tool in hand (default hotbar; ToolBackpackService).
+	if not (character :: Model):FindFirstChildOfClass("Tool") then
+		return
+	end
 	local tool, radius, critChance = EconomyService.GetSwingStats(profile)
 
 	-- Rate limit: one RemoteEvent can never swing faster than the tool.

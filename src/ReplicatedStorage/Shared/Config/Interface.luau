@@ -68,16 +68,10 @@ return {
 		Badge = Vector2.new(30, 52),
 		WindowInset = 16, HeaderHeight = 68, HeaderIcon = 90, ButtonHeight = 44,
 		RewardTile = Vector2.new(92, 142),
-		-- Owned-tool hotbar, bottom center: best tools first, keys 1-6.
-		HotbarSlots = 6, HotbarCell = 84, HotbarGap = 8,
+		-- Roblox's default tool hotbar owns the bottom center (screen px).
+		CoreHotbarHeight = 72,
 	},
 	Passes = { Upper = 3, UpperHeight = 264, LowerHeight = 208, Gap = 12, Icon = 110, WideIcon = 112, CompactWidth = 560 },
-	-- Backpack window (the hotbar's + button): owned tools and Crew, filtered.
-	Backpack = {
-		Filters = { "All", "Tools", "Crew" },
-		Card = Vector2.new(136, 168), Preview = 84,
-		Rarity = { Common = hex("A6CBD7"), Uncommon = hex("8DD737"), Rare = hex("35B6FF"), Epic = hex("C066FF"), Legendary = hex("FFB721") },
-	},
 	-- Uploaded from build/ui-upload (tools/prepare-ui-uploads.py). Never invent IDs.
 	Images = {
 		Window = "rbxassetid://93676969129473", Button = "rbxassetid://107710178245629",

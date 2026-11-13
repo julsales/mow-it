@@ -96,7 +96,7 @@ local function refresh()
 		return
 	end
 	local tool = Tools.ById[profile.EquippedToolId]
-	-- The hotbar (Hotbar.client.luau) shows the equipped tool now.
+	-- Roblox's default hotbar shows the held tool (ToolBackpackService).
 	toolLabel.Visible = false
 	toolLabel.Text = tool and tool.DisplayName or "?"
 

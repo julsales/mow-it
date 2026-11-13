@@ -111,6 +111,7 @@ if isLandPlace then
 	ProgressionService.Init(remotes, EconomyService)
 	WeatherService.Init(remotes)
 	ToolVisualService.Init()
+	require(Services.ToolBackpackService).Init()
 	require(Services.MovementService).Init()
 	ShopService.Init(remotes)
 	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool)

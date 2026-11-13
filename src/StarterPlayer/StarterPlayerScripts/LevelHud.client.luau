@@ -57,9 +57,8 @@ do
 		scale.Scale = math.clamp(gui.AbsoluteSize.X / 560, 0.7, 1)
 		local compact = UiKit.IsCompact(gui.AbsoluteSize)
 		holder.AnchorPoint = Vector2.new(0.5, if compact then 1 else 0)
-		-- On phones it rides above the tool hotbar.
-		local hotbar = (H.Edge + H.HotbarCell + 34) * UiKit.HudScale(gui.AbsoluteSize)
-		holder.Position = if compact then UDim2.new(0.5, 0, 1, -hotbar) else UDim2.new(0.5, 0, 0, 12)
+		-- On phones it rides above Roblox's tool hotbar.
+		holder.Position = if compact then UDim2.new(0.5, 0, 1, -H.CoreHotbarHeight) else UDim2.new(0.5, 0, 0, 12)
 	end
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 	fit()
