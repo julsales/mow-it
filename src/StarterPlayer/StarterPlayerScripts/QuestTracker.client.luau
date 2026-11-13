@@ -31,8 +31,9 @@ local icon = Ui.Icon(card, Images.Quests, 66)
 icon.Position = UDim2.fromOffset(1, -9)
 local title = Ui.Heading(header, "Local jobs", 17)
 title.Position = UDim2.fromOffset(64, 0); title.Size = UDim2.new(1, -96, 1, 0)
-title.TextWrapped = false
+-- One line like the board (TextScaled turns wrapping on, so undo it after).
 Ui.FitText(title, 11, 17)
+title.TextWrapped = false
 local alert = Ui.AlertBadge(card)
 alert.AnchorPoint = Vector2.new(1, 0); alert.Position = UDim2.new(1, -3, 0, -12)
 local objective = Ui.Heading(card, "", 17)
@@ -50,7 +51,11 @@ end, "Blue")
 action.AnchorPoint = Vector2.new(0, 1)
 action.Position = UDim2.new(0, 17, 1, -20); action.Size = UDim2.new(1, -34, 0, H.ButtonHeight)
 
+-- Phones: the card moves up under fuel and drops its description line so
+-- it clears the jump button.
 local function update()
+	local compact = Ui.IsCompact(gui.AbsoluteSize)
+	card.Position = UDim2.new(1, 0, 0, if compact then H.CompactTrackerTop else H.TrackerTop)
 	local profile = State.Get()
 	card.Visible = profile ~= nil and not Ui.MenuOpen
 	if not profile or Ui.MenuOpen then return end
@@ -64,11 +69,16 @@ local function update()
 		local target = workspace:GetAttribute("ContractTarget") or 1
 		local seconds = math.ceil((workspace:GetAttribute("ContractEndsAt") or 0) - workspace:GetServerTimeNow())
 		objective.Text = "Mow in " .. Zones.List[def.MinExpansion].DisplayName .. ": " .. Format.Number(progress) .. " / " .. Format.Number(target) .. " grass"
+		objective.Visible = not compact
 		bar.Frame.Visible = true; bar.Set(progress / math.max(1, target), false)
 		timer.Visible = true
-		timer.Text = if seconds > 0 then string.format("%d:%02d left", seconds // 60, seconds % 60) else "Late · reduced reward"
+		local left = if seconds > 0 then string.format("%d:%02d left", seconds // 60, seconds % 60) else "Late · reduced reward"
+		-- Phones: no objective line; the bar and one short line carry it.
+		timer.Text = if compact then Format.Number(progress) .. " / " .. Format.Number(target) .. " · " .. left else left
+		bar.Frame.Position = UDim2.fromOffset(20, if compact then 70 else 136)
+		timer.Position = UDim2.fromOffset(20, if compact then 94 else 164)
 		action.Visible = false; alert.Visible = false
-		card.Size = UDim2.fromOffset(H.Tracker.X, 200)
+		card.Size = UDim2.fromOffset(H.Tracker.X, if compact then 132 else 200)
 	else
 		local contactId = Client.Contact()
 		if not contactId then card.Visible = false; return end
@@ -79,7 +89,8 @@ local function update()
 		bar.Frame.Visible = false; timer.Visible = false
 		action.Visible = true; alert.Visible = true
 		Ui.Paint(action, "Blue", if Client.Tracked() == contactId then "FOLLOWING TRAIL" else "SHOW ROUTE")
-		card.Size = UDim2.fromOffset(H.Tracker.X, H.Tracker.Y)
+		objective.Visible = not compact
+		card.Size = UDim2.fromOffset(H.Tracker.X, if compact then H.TrackerHeader + 6 + H.ButtonHeight + 24 else H.Tracker.Y)
 	end
 end
 State.Changed:Connect(update)

@@ -34,19 +34,46 @@ local sky = statusPill("Weather", Images.Weather.clear, 0)
 local fuel = statusPill("Fuel", Images.Fuel, 1)
 
 -- Left rail: currencies sit under the 2x2 menu tiles (Operations).
-local rail = group("Currencies", Vector2.zero, UDim2.fromOffset(0, 0), Vector2.new(H.Pill.X + 40, H.RailTop + 2 * (H.Tile + H.TileGap) + 2 * (H.Pill.Y + H.PillGap)))
-local function currency(name: string, image: string, color: Color3, row: number): Ui.Pill
-	local pill = Ui.Pill(rail, name, image, H.Pill, H.PillIcon, H.PillText, color)
-	pill.Frame.Position = UDim2.fromOffset(H.Edge + 10, H.RailTop + 2 * (H.Tile + H.TileGap) + 19 + row * (H.Pill.Y + H.PillGap))
-	return pill
+-- Compact (phones): one row at the top center with the storage pill.
+local rail = group("Currencies", Vector2.zero, UDim2.fromOffset(0, 0), Vector2.new(0, 0))
+local function currency(name: string, image: string, color: Color3): Ui.Pill
+	return Ui.Pill(rail, name, image, H.Pill, H.PillIcon, H.PillText, color)
 end
-local coins = currency("Coins", Images.Coin, T.Coins, 0)
-local clovers = currency("Clovers", Images.Clover, T.Clovers, 1)
+local coins = currency("Coins", Images.Coin, T.Coins)
+local clovers = currency("Clovers", Images.Clover, T.Clovers)
 
 -- Bottom left: grass in storage / capacity.
 local bottom = group("Storage", Vector2.new(0, 1), UDim2.new(0, 0, 1, -H.Edge), Vector2.new(H.Storage.X + 40, H.Storage.Y))
 local grass = Ui.Pill(bottom, "Storage", Images.Grass, H.Storage, H.StorageIcon, H.StorageText)
-grass.Frame.Position = UDim2.fromOffset(H.Edge + 10, 0)
+
+local function arrange()
+	local compact = Ui.IsCompact(gui.AbsoluteSize)
+	local overhang = math.round((H.PillIcon - H.Pill.Y) * 0.75) + 6
+	if compact then
+		local slot = H.CompactPillWidth + overhang + 8
+		rail.AnchorPoint = Vector2.new(0.5, 0); rail.Position = UDim2.fromScale(0.5, 0)
+		rail.Size = UDim2.fromOffset(slot * 3, H.Pill.Y + 8)
+		for index, pill in { coins, clovers, grass } do
+			pill.Frame.Parent = rail
+			pill.Frame.Size = UDim2.fromOffset(H.CompactPillWidth, H.Pill.Y)
+			pill.Frame.Position = UDim2.fromOffset(overhang + (index - 1) * slot, 4)
+		end
+		bottom.Visible = false
+	else
+		rail.AnchorPoint = Vector2.zero; rail.Position = UDim2.fromOffset(0, 0)
+		rail.Size = UDim2.fromOffset(H.Pill.X + 40, H.RailTop + 2 * (H.Tile + H.TileGap) + 2 * (H.Pill.Y + H.PillGap))
+		for index, pill in { coins, clovers } do
+			pill.Frame.Size = UDim2.fromOffset(H.Pill.X, H.Pill.Y)
+			pill.Frame.Position = UDim2.fromOffset(H.Edge + 10, H.RailTop + 2 * (H.Tile + H.TileGap) + 19 + (index - 1) * (H.Pill.Y + H.PillGap))
+		end
+		grass.Frame.Parent = bottom
+		grass.Frame.Size = UDim2.fromOffset(H.Storage.X, H.Storage.Y)
+		grass.Frame.Position = UDim2.fromOffset(H.Edge + 10, 0)
+		bottom.Visible = true
+	end
+end
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(arrange)
+arrange()
 
 local weatherName = Ui.OutlinedText(status, "", 15)
 weatherName.Name = "WeatherName"; weatherName.Visible = false

@@ -55,7 +55,11 @@ return {
 	PanelMaxSize = Vector2.new(860, 780),
 	MinTarget = 44,
 	Hud = {
-		DesignHeight = 900, MinScale = 0.55, Edge = 16, Top = 24,
+		DesignHeight = 900, MinScale = 0.7, Edge = 16, Top = 24,
+		-- Short screens (phones in landscape): tiles go to the top-left corner,
+		-- currencies and storage to a row at the top center (the thumbstick and
+		-- jump button own the bottom corners), the quest card sits under fuel.
+		CompactHeight = 500, CompactRailTop = 4, CompactTrackerTop = 172, CompactPillWidth = 170,
 		Tile = 108, TileGap = 4, TileIcon = 84, TilePlate = Vector2.new(94, 27),
 		RailTop = 222, PillGap = 13, Pill = Vector2.new(222, 62), PillIcon = 78, PillText = 34,
 		Status = Vector2.new(216, 58), StatusIcon = 64, StatusText = 26, StatusGap = 12,

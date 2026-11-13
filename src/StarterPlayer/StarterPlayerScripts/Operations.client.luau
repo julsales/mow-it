@@ -158,13 +158,23 @@ for index, def in Interface.Navigation do
 		GuiService.SelectedObject = if UserInputService.PreferredInput == Enum.PreferredInput.Gamepad then window.Close else nil
 	end)
 	tile.LayoutOrder = index
-	tile.Position = UDim2.fromOffset(H.Edge + 4 + ((index - 1) % 2) * (H.Tile + H.TileGap), H.RailTop + (index - 1) // 2 * (H.Tile + H.TileGap))
 	if def.Page == "Jobs" then
 		questAlert = Ui.AlertBadge(tile)
 		questAlert.AnchorPoint = Vector2.new(1, 0)
 		questAlert.Position = UDim2.new(1, -2, 0, -10)
 	end
 end
+
+-- Board position on big screens; tucked under the top bar on phones.
+local function placeTiles()
+	local top = if Ui.IsCompact(gui.AbsoluteSize) then H.CompactRailTop else H.RailTop
+	for index, def in Interface.Navigation do
+		local tile = navigation:FindFirstChild(def.Page) :: GuiObject
+		tile.Position = UDim2.fromOffset(H.Edge + 4 + ((index - 1) % 2) * (H.Tile + H.TileGap), top + (index - 1) // 2 * (H.Tile + H.TileGap))
+	end
+end
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeTiles)
+placeTiles()
 
 local dirty = false
 State.Changed:Connect(function(data) profile = data; table.clear(pending); dirty = true end);

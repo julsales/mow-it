@@ -296,6 +296,11 @@ function UiKit.HudScale(viewport: Vector2): number
 	return math.clamp(viewport.Y / H.DesignHeight, H.MinScale, 1)
 end
 
+-- Phones in landscape: the HUD switches to its compact arrangement.
+function UiKit.IsCompact(viewport: Vector2): boolean
+	return viewport.Y < H.CompactHeight
+end
+
 -- Width in board pixels: AbsoluteSize without the UIScales above it.
 function UiKit.LocalWidth(object: GuiObject): number
 	local width = object.AbsoluteSize.X
