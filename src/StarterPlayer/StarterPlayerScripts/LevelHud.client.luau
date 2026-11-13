@@ -30,6 +30,8 @@ gui.ResetOnSpawn = false
 gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.DisplayOrder = 2
 gui.Parent = playerGui
+-- Menus cover the HUD; the level bar would peek out under the window.
+UiKit.MenuChanged:Connect(function(open) gui.Enabled = not open end)
 
 -- Level badge + XP bar ------------------------------------------------------------
 

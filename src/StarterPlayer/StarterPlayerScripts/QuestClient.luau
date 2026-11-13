@@ -8,7 +8,6 @@ local State = require(script.Parent:WaitForChild("ClientState"))
 local Land = require(script.Parent:WaitForChild("LandState"))
 local Guide = require(script.Parent:WaitForChild("WorldGuide"))
 local Ui = require(script.Parent:WaitForChild("UiKit"))
-local Interface = require(Shared.Config.Interface)
 local Client = {}
 local event = Instance.new("BindableEvent")
 Client.Offered = event.Event
@@ -25,6 +24,10 @@ function Client.Contact(): string?
 	if focus and Client.Eligible(focus) then return focus end
 	for _, def in Quests.List do if Client.Eligible(def.Id) then return def.Id end end
 	return nil
+end
+-- A job can be taken now: no contract running and a neighbor to visit.
+function Client.Available(): boolean
+	return (workspace:GetAttribute("ContractId") or "") == "" and Client.Contact() ~= nil
 end
 function Client.Near(id: string): boolean
 	local npc = World.Find(id)
@@ -68,8 +71,9 @@ task.spawn(function()
 				marker.AlwaysOnTop = true
 				marker.MaxDistance = Quests.MarkerDistance
 				marker.Adornee = npc
-				local icon = Ui.Icon(marker, Interface.Images.Quests, 42)
-				icon.Position = UDim2.new(0.5, -21, 0, 0)
+				local alert = Ui.AlertBadge(marker)
+				alert.AnchorPoint = Vector2.new(0.5, 0)
+				alert.Position = UDim2.new(0.5, 0, 0, -4)
 				local label = Ui.OutlinedText(marker, Quests.ById[focus].NpcName, 15)
 				label.AutomaticSize = Enum.AutomaticSize.None
 				label.Position = UDim2.fromOffset(0, 42); label.Size = UDim2.new(1, 0, 0, 28)

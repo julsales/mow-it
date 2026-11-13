@@ -33,12 +33,11 @@ local function makeLabel(name: string, position: UDim2, size: UDim2): TextLabel
 	label.Name = name
 	label.Position = position
 	label.Size = size
-	label.BackgroundColor3 = require(Shared.Config.Interface).Colors.Ink
 	label.BackgroundTransparency = 1
-	label.TextColor3 = Ui.Colors.Cream
-	label.FontFace = Ui.FontBold
+	label.TextColor3 = Ui.Theme.Text
+	label.FontFace = Ui.Font
 	Ui.FitText(label, 14, 18)
-	Ui.Stroke(label, 2)
+	Ui.Stroke(label, 2, Ui.Theme.TextDark)
 	label.Text = name
 	label.Parent = gui
 	return label

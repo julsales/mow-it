@@ -15,3 +15,6 @@ sourcemap.json
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# Upload-ready UI art (tools/prepare-ui-uploads.py)
+/build/

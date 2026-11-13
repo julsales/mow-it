@@ -1,15 +1,17 @@
 --!strict
--- Reference-driven farm HUD extension. Real prices/rewards come from configs;
--- the reference's illustrated Robux offers are not the game's catalog.
+-- Menu tiles (Crew / Shop / Quests / Rewards) and the one window they open.
+-- Layout from board 1 (tiles) and boards 1-4 (window pages). Real prices and
+-- rewards come from configs; page content is rendered by PassShop,
+-- RewardsPanel and QuestJournal, the rest by UiKit.Row.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GuiService = game:GetService("GuiService")
+local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Tuning = require(Shared.Config.Progression)
 local Interface = require(Shared.Config.Interface)
 local Zones = require(Shared.Config.Zones)
 local Seeds = require(Shared.Config.Seeds)
-local Contracts = require(Shared.Config.Contracts)
 local Franchise = require(Shared.Config.Franchise)
 local Journal = require(script.Parent:WaitForChild("QuestJournal"))
 local RewardsPanel = require(script.Parent:WaitForChild("RewardsPanel"))
@@ -21,155 +23,64 @@ local State = require(script.Parent:WaitForChild("ClientState"))
 local Ui = require(script.Parent:WaitForChild("UiKit"))
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local H, Images = Ui.Hud, Ui.Images
 local profile = State.Get()
 local page = "Crew"
 local pending: { [string]: number } = {}
 local offer = 0
-local C = Ui.Colors
-local gui = Instance.new("ScreenGui")
-gui.Name = "Operations"
-gui.ResetOnSpawn = false
-gui.DisplayOrder = 8
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
-gui.Parent = player:WaitForChild("PlayerGui")
 
-local text = Ui.Text
-local button = Ui.Button
-local panel: Frame
-local function openPage(name: string)
-	page = name; offer = 0; Ui.OpenPanel(panel)
-	local shop = player.PlayerGui:FindFirstChild("ShopGui")
-	local shopPanel = shop and shop:FindFirstChild("Shop")
-	if shopPanel and shopPanel:IsA("GuiObject") then shopPanel.Visible = false end
-end
+-- Title, icon, subtitle and tab group of every page.
+local PAGES = {
+	Crew = { Title = "CREW", Icon = "Crew", Tabs = { "Crew", "Market" } },
+	Market = { Title = "CREW", Icon = "Crew", Tabs = { "Crew", "Market" } },
+	Shop = { Title = "PASSES", Icon = "Passes", Subtitle = "Make room for a bigger harvest." },
+	Jobs = { Title = "QUESTS", Icon = "Quests", Subtitle = "Discover your neighbors, talk, then mow their lawns." },
+	Rewards = { Title = "DAILY REWARDS", Icon = "Rewards", Tabs = { "Rewards", "Garden", "Franchise" } },
+	Garden = { Title = "GARDEN", Icon = "Grass", Tabs = { "Rewards", "Garden", "Franchise" } },
+	Franchise = { Title = "FRANCHISE", Icon = "Coins", Tabs = { "Rewards", "Garden", "Franchise" } },
+}
+
+local gui = Ui.LocalGui("Operations", 8)
+local window = Ui.Window(gui, "Panel", "CREW", Images.Crew)
+local panel, list = window.Panel, window.Body
+
 local function send(action: string, id: string?)
 	local key = action .. (id or "")
 	if (pending[key] or 0) > os.clock() then return end
 	pending[key] = os.clock() + 0.5
 	(remotes.GameAction :: RemoteEvent):FireServer(action, id or "")
 end
-local navigation = Instance.new("Frame")
-navigation.Name = "Navigation"
-navigation.BackgroundTransparency = 1
-navigation.Position = UDim2.new(0, 12, Interface.Hud.NavigationTop, 0)
-navigation.Size = UDim2.fromOffset(Interface.NavigationWidth, 168)
-navigation.Parent = gui
-local stack = Instance.new("UIGridLayout")
-stack.CellSize = UDim2.fromOffset(84, 76)
-stack.CellPadding = UDim2.fromOffset(8, 8)
-stack.SortOrder = Enum.SortOrder.LayoutOrder
-stack.Parent = navigation
-panel = Ui.Card(gui)
-panel.Name = "Panel"
-Ui.Chrome(panel, "Panel", true)
-panel.AnchorPoint = Vector2.new(0.5, 0.5)
-panel.Position = UDim2.fromScale(0.5, 0.5)
-panel.Size = UDim2.fromScale(0.94, 0.94)
-panel.Visible = false
-Ui.ManagePanel(panel)
-local limit = Instance.new("UISizeConstraint")
-limit.MaxSize = Interface.PanelMaxSize; limit.Parent = panel
-local header = Instance.new("Frame")
-header.BackgroundColor3 = C.Gold
-header.Position = UDim2.fromOffset(12, 12)
-header.Size = UDim2.new(1, -24, 0, Interface.Hud.PanelHeaderHeight)
-header.Parent = panel
-Ui.Corner(header, 12); Ui.Stroke(header, 2)
-local title = text(header, "CREW", 25)
-title.FontFace = Ui.Font
-title.Position = UDim2.fromOffset(72, 0); title.Size = UDim2.new(1, -128, 1, 0)
-local headerIcon = Ui.Icon(header, Interface.Images.Crew, 58)
-headerIcon.Position = UDim2.fromOffset(6, 3)
-local close = button(header, "Close", "X", function()
-	panel.Visible = false; offer = 0; GuiService.SelectedObject = nil
-end)
-close.BackgroundColor3 = C.Coral
-close.TextColor3 = C.Cream
-close.TextSize = 23
-Ui.Corner(close, 999)
-close.AnchorPoint = Vector2.new(1, 0.5)
-close.Position = UDim2.new(1, -2, 0.5, 0)
-close.Size = UDim2.fromOffset(44, 44)
-local tabBar = Instance.new("ScrollingFrame")
-tabBar.BorderSizePixel = 0
-tabBar.AutomaticCanvasSize = Enum.AutomaticSize.X
-tabBar.CanvasSize = UDim2.new()
-tabBar.ScrollBarThickness = 3
-tabBar.ScrollingDirection = Enum.ScrollingDirection.X
-local tabLayout = Instance.new("UIListLayout")
-tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-tabLayout.Padding = UDim.new(0, 6)
-tabLayout.Parent = tabBar
-tabBar.BackgroundTransparency = 1
-tabBar.Position = UDim2.fromOffset(20, 86)
-tabBar.Size = UDim2.new(1, -24, 0, 44)
-tabBar.Parent = panel
-local list = Instance.new("ScrollingFrame")
-list.Name = "Rows"
-list.BackgroundTransparency = 1
-list.BorderSizePixel = 0
-list.Position = UDim2.fromOffset(12, 124)
-list.Size = UDim2.new(1, -24, 1, -136)
-list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-list.CanvasSize = UDim2.new()
-list.ScrollBarThickness = 5
-list.Parent = panel
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 10); layout.SortOrder = Enum.SortOrder.LayoutOrder; layout.Parent = list
-local padding = Instance.new("UIPadding")
-padding.PaddingLeft = UDim.new(0, 3); padding.PaddingRight = UDim.new(0, 8)
-padding.PaddingTop = UDim.new(0, 3); padding.PaddingBottom = UDim.new(0, 3); padding.Parent = list
-local sequence = 0
-local function row(name: string, detail: string, actionText: string?, callback, enabled: boolean?)
-	sequence += 1
-	local frame = Instance.new("Frame")
-	frame.Name = "Row" .. sequence
-	frame.LayoutOrder = sequence
-	frame.Size = UDim2.new(1, 0, 0, if actionText then 126 else 76)
-	frame.BackgroundColor3 = C.Track
-	frame.Parent = list
-	Ui.Corner(frame, 10)
-	local label = text(frame, name, 18)
-	label.Position = UDim2.fromOffset(10, 6); label.Size = UDim2.new(1, -20, 0, 28)
-	local description = text(frame, detail, 14)
-	description.Position = UDim2.fromOffset(10, 36); description.Size = UDim2.new(1, -20, 0, 34)
-	if actionText then
-		local action = button(frame, "Action", actionText, callback)
-		action.Position = UDim2.new(0, 10, 1, -48); action.Size = UDim2.new(1, -20, 0, 40)
-		if enabled == false then action.BackgroundColor3 = C.CreamShade; action.Active = false; action.Selectable = false; action.AutoButtonColor = false end
-	end
-end
-local render
+local function leave() panel.Visible = false; GuiService.SelectedObject = nil end
+
+local render: () -> ()
 local renderedPage = ""
-local tabs = { "Crew", "Market", "Jobs", "Garden", "Rewards", "Franchise" }
-for index, name in tabs do
-	local item = button(tabBar, name, name, function() page = name; offer = 0; render() end)
-	item.LayoutOrder = index
-	item.Size = UDim2.new(0, 142, 1, -4)
-	item.BackgroundTransparency = 1
-	(item:FindFirstChildOfClass("UIStroke") :: UIStroke).Enabled = false
-	item.TextSize = 15
+local tabs: { [string]: TextButton } = {}
+for index, name in { "Crew", "Market", "Rewards", "Garden", "Franchise" } do
+	tabs[name] = Ui.Tab(window.Tabs, name, index, function() page = name; offer = 0; render() end)
 end
+
+local sequence = 0
+local function row(title: string, detail: string, action: string?, callback: (() -> ())?, enabled: boolean?)
+	sequence += 1
+	local frame = Ui.Row(list, sequence, title, detail, action, callback)
+	if action and enabled == false then Ui.Paint(frame:FindFirstChild("Action") :: TextButton, "Disabled") end
+end
+
 render = function()
 	if not panel.Visible then return end
 	for _, child in list:GetChildren() do if child:IsA("GuiObject") then child:Destroy() end end
-	sequence = 0; title.Text = if page == "Jobs" then "LOCAL JOBS" elseif page == "Shop" then "PASSES" else string.upper(page)
-	local group = if page == "Crew" or page == "Market" then { "Crew", "Market" } elseif page == "Jobs" or page == "Shop" then {} else { "Rewards", "Garden", "Franchise" }
-	for _, child in tabBar:GetChildren() do
-		if child:IsA("TextButton") then
-			child.Visible = table.find(group, child.Name) ~= nil
-			child.BackgroundTransparency = if child.Name == page then 0 else 1
-			child.BackgroundColor3 = C.Track
-		end
+	sequence = 0
+	local def = PAGES[page]
+	window.Title.Text = def.Title
+	window.Icon.Image = Images[def.Icon]
+	window.SetSubtitle(def.Subtitle or "")
+	local group = def.Tabs or {}
+	for name, tab in tabs do
+		tab.Visible = table.find(group, name) ~= nil
+		Ui.Paint(tab, if name == page then "Blue" else "Muted")
 	end
-	tabBar.Visible = #group > 0
-	local contentTop = if #group == 0 then 94 else 138
-	list.Position = UDim2.fromOffset(20, contentTop)
-	list.Size = UDim2.new(1, -40, 1, -contentTop - 16)
+	window.SetTabs(#group > 0)
 	if renderedPage ~= page then list.CanvasPosition = Vector2.zero; renderedPage = page end
-	headerIcon.Image = Interface.Images[if page == "Shop" then "Pack" elseif page == "Jobs" then "Quests" elseif page == "Crew" or page == "Market" then "Crew" else "Rewards"]
 	if not profile then row("Loading", "Your saved company is loading. Please wait."); return end
 	if page == "Shop" then
 		PassShop.Render(list, profile)
@@ -181,25 +92,25 @@ render = function()
 		if #ids == 0 then row("A little help on the lawn", "Earn Clovers from mowing, rewards and jobs, then visit Market.") end
 		for _, uid in ids do
 			local entry = profile.Crew[uid]
-			local def = Rules.CrewDef(entry.Id)
-			if not def then continue end
+			local crew = Rules.CrewDef(entry.Id)
+			if not crew then continue end
 			local equipped = table.find(profile.EquippedCrew, uid) ~= nil
-			row(def.DisplayName .. " • " .. def.Rarity, "Evolution " .. entry.Evolution .. " / " .. entry.Mode,
+			row(crew.DisplayName .. " • " .. crew.Rarity, "Evolution " .. entry.Evolution .. " / " .. entry.Mode,
 				if equipped then "Unequip" else "Equip", function() send("EquipCrew", uid) end)
 			if equipped then row("Work mode", "Stand in an unlocked lawn to station this Crew here.", if entry.Mode == "Station" then "Follow me" else "Station here", function() send("CrewMode", uid) end) end
-			row("Evolve " .. def.DisplayName, "Consumes 3 matching copies. Keeps one stronger Crew.", "Merge copies", function() send("MergeCrew", uid) end, entry.Evolution < Tuning.MaxEvolution)
+			row("Evolve " .. crew.DisplayName, "Consumes 3 matching copies. Keeps one stronger Crew.", "Merge copies", function() send("MergeCrew", uid) end, entry.Evolution < Tuning.MaxEvolution)
 		end
 	elseif page == "Market" then
 		local epoch, shelf = Rules.Shelf(os.time())
 		row("Crew Market", "Next restock in " .. (Tuning.RestockSeconds - os.time() % Tuning.RestockSeconds) .. "s. Stock is personal; earn Clovers in play.")
 		for _, item in shelf do
-			local def = Rules.CrewDef(item.Id)
-			if not profile.UnlockedZoneIds[def.Expansion] then continue end
+			local crew = Rules.CrewDef(item.Id)
+			if not profile.UnlockedZoneIds[crew.Expansion] then continue end
 			local bought = if profile.MarketEpoch == epoch then profile.MarketBought[item.Id] or 0 else 0
-			row(def.DisplayName .. " • " .. def.Rarity, (item.Stock - bought) .. " left · " .. item.Price .. " Clovers", "Hire Crew", function() send("BuyCrew", item.Id) end, bought < item.Stock and profile.Clovers >= item.Price)
+			row(crew.DisplayName .. " • " .. crew.Rarity, (item.Stock - bought) .. " left · " .. item.Price .. " Clovers", "Hire Crew", function() send("BuyCrew", item.Id) end, bought < item.Stock and profile.Clovers >= item.Price)
 		end
 	elseif page == "Jobs" then
-		Journal.Render(list, profile, send, function() panel.Visible = false; GuiService.SelectedObject = nil end)
+		Journal.Render(list, profile, send, leave)
 	elseif page == "Garden" then
 		row("Planting beds", "Two beds near each lawn's edge. Walk to the beds, plant, then cut mature grass. Growth continues offline.")
 		for _, plot in profile.Plots do
@@ -225,28 +136,39 @@ render = function()
 		end
 	end
 end
-for index, name in { "Crew", "Shop", "Jobs", "Rewards" } do
-	local item = button(navigation, name, if name == "Jobs" then "Quests" else name, function()
-		openPage(name); render()
-		GuiService.SelectedObject = if game:GetService("UserInputService").PreferredInput == Enum.PreferredInput.Gamepad then close else nil
-	end)
-	item.LayoutOrder = index
-	item.TextYAlignment = Enum.TextYAlignment.Bottom
-	item.TextColor3 = C.Cream
-	item.TextStrokeColor3 = C.Ink
-	item.TextStrokeTransparency = 0
-	item.BackgroundColor3 = C[Interface.NavigationColors[name]]
-	Ui.Shade(item, item.BackgroundColor3)
-	local stroke = item:FindFirstChildOfClass("UIStroke")
-	if stroke then (stroke :: UIStroke).Thickness = 3 end
-	Ui.Chrome(item, name)
-	local icon = Ui.Icon(item, Interface.Images[if name == "Shop" then "Pack" elseif name == "Jobs" then "Quests" else name], Interface.Hud.NavigationIcon)
-	icon.AnchorPoint = Vector2.new(0.5, 0)
-	icon.Position = UDim2.new(0.5, 0, 0, 3)
+
+local function openPage(name: string)
+	page = name; offer = 0; Ui.OpenPanel(panel)
+	local shop = player.PlayerGui:FindFirstChild("ShopGui")
+	local shopPanel = shop and shop:FindFirstChild("Shop")
+	if shopPanel and shopPanel:IsA("GuiObject") then shopPanel.Visible = false end
+	render()
 end
+
+-- Menu tiles: a 2x2 grid on the left rail (board 1 at 20,222).
+local navigation = Instance.new("Frame")
+navigation.Name = "Navigation"; navigation.BackgroundTransparency = 1
+navigation.Size = UDim2.fromOffset(H.Edge + 4 + 2 * H.Tile + H.TileGap, H.RailTop + 2 * H.Tile + H.TileGap)
+navigation.Parent = gui
+Ui.AutoScale(gui, navigation)
+local questAlert: ImageLabel
+for index, def in Interface.Navigation do
+	local tile = Ui.NavTile(navigation, def, function()
+		openPage(def.Page)
+		GuiService.SelectedObject = if UserInputService.PreferredInput == Enum.PreferredInput.Gamepad then window.Close else nil
+	end)
+	tile.LayoutOrder = index
+	tile.Position = UDim2.fromOffset(H.Edge + 4 + ((index - 1) % 2) * (H.Tile + H.TileGap), H.RailTop + (index - 1) // 2 * (H.Tile + H.TileGap))
+	if def.Page == "Jobs" then
+		questAlert = Ui.AlertBadge(tile)
+		questAlert.AnchorPoint = Vector2.new(1, 0)
+		questAlert.Position = UDim2.new(1, -2, 0, -10)
+	end
+end
+
 local dirty = false
 State.Changed:Connect(function(data) profile = data; table.clear(pending); dirty = true end);
-(remotes.FranchiseOffer :: RemoteEvent).OnClientEvent:Connect(function(points) offer = points; page = "Franchise"; Ui.OpenPanel(panel); render() end)
+(remotes.FranchiseOffer :: RemoteEvent).OnClientEvent:Connect(function(points) offer = points; openPage("Franchise") end)
 task.spawn(function()
 	local lastEpoch = -1
 	while gui.Parent do
@@ -255,32 +177,13 @@ task.spawn(function()
 		lastEpoch = epoch
 		if dirty then dirty = false; render() end
 		if panel.Visible and page == "Jobs" then Journal.UpdateTimers(list) end
+		questAlert.Visible = profile ~= nil and QuestClient.Available()
 		task.wait(1)
 	end
 end)
-
-local function arrangeNavigation()
-	local H = Interface.Hud
-	local compact = gui.AbsoluteSize.Y < H.CompactHeight
-	local position, size, cell = Ui.NavigationLayout(gui.AbsoluteSize)
-	stack.CellSize = UDim2.fromOffset(cell.X, cell.Y)
-	stack.CellPadding = UDim2.fromOffset(H.NavigationGap, H.NavigationGap)
-	navigation.Size = UDim2.fromOffset(size.X, size.Y)
-	navigation.Position = position
-	for _, child in navigation:GetChildren() do
-		if child:IsA("TextButton") then
-			child.TextSize = if compact then 12 else 16
-			local icon = child:FindFirstChild("Icon") :: ImageLabel
-			local size = if compact then H.CompactNavigationIcon else H.NavigationIcon
-			icon.Size = UDim2.fromOffset(size, size)
-		end
-	end
-end
-arrangeNavigation()
-gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(arrangeNavigation)
 Ui.MenuChanged:Connect(function(open) navigation.Visible = not open end)
 QuestClient.Offered:Connect(function(id)
-	openPage("Jobs"); render(); GuiService.SelectedObject = nil
+	openPage("Jobs"); GuiService.SelectedObject = nil
 	task.defer(function()
 		local contact = list:FindFirstChild(id)
 		if panel.Visible and page == "Jobs" and contact and contact:IsA("GuiObject") then
