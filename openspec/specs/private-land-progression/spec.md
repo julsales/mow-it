@@ -15,18 +15,26 @@ Each player SHALL own a persistent land that is loaded as their own property in 
 - **THEN** their land presents those three expansions joined together, with later expansions still closed off
 
 ### Requirement: Open, organic land layout
-The land SHALL be laid out as an open, organic map: a home base at its center and expansions opening outward from it, with irregular lawn shapes, winding paths and irregularly placed props, never a grid or maze. Areas SHALL be separated by fences backed by invisible walls with one gate each, and locked areas SHALL remain visible beyond their fence.
+The land SHALL be laid out as a farm road: one winding road that starts at the home base (the house) and runs through every expansion in unlock order, never a grid or maze. Each expansion SHALL straddle the road and be larger than the one before, with large, irregularly shaped lawn fields on both sides of the road covering most of its area. Expansions SHALL be separated only by a fence line across the land with one gate on the road, backed by invisible walls; the next gate SHALL always be ahead on the same road, and locked expansions SHALL remain visible beyond their fence. Each expansion SHALL have its sell pad and shop next to the road just past its gate. The edge of the world SHALL never be visible: the land is surrounded by water and haze to the horizon, with invisible walls along the shore.
 
 #### Scenario: Next goal in sight
 - **WHEN** a player stands at the edge of their last unlocked area
 - **THEN** they can see the next locked area past its fence but cannot walk into it
 
+#### Scenario: Following the road
+- **WHEN** a player unlocks an expansion and walks through its gate
+- **THEN** the road leads on through it, with its sell pad and shop beside the road, toward the next gate
+
+#### Scenario: No visible map edge
+- **WHEN** a player looks away from the land, from the ground or from the zoomed-out camera, anywhere on the land
+- **THEN** they see water fading into the horizon, and the shore walls stop them from leaving
+
 ### Requirement: Grass type per area with lucky patches
-Each area SHALL grow its own grass type with higher health and value than the previous area and a distinct look, and rarer grass types from later areas SHALL spawn sparsely, by chance, in earlier areas.
+Each area SHALL grow its own grass type with higher health and value than the previous area and a distinct look (color, height and blade shape), and rarer grass types (lucky, golden, or the next area's grass) SHALL spawn sparsely, by chance, as small noticeable patches in earlier areas.
 
 #### Scenario: Lucky patch
 - **WHEN** grass regrows in an early area
-- **THEN** a small fraction of cells may regrow as a rarer, more valuable grass type
+- **THEN** a small fraction of cells may regrow as a small patch of a rarer, more valuable grass type that looks different from the area's own grass
 
 ### Requirement: Physical selling at stalls
 Players SHALL sell carried grass by stepping onto a sell stall's pad in an unlocked area; remote selling SHALL only be available through Auto-Sell or a dedicated pass.

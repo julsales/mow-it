@@ -55,16 +55,24 @@ Read before working in this repo:
 
 ## Map rules (direction from the project owner)
 
-11. The map is **open and organic, never grid-like or maze-like**: a home
-    base the player always returns to, and areas that keep expanding
-    outward so the world feels endless. Shapes, paths, terrain, trees and
-    props are placed irregularly (curves, clusters, varied spacing).
-12. Areas are separated by **fences with invisible walls** and a gate;
-    locked areas stay visible beyond the fence (the next goal is always in
-    sight).
+11. The map is a **farm road, never grid-like or maze-like**: one winding
+    road starts at the house (home base) and runs through every area in
+    unlock order; each area straddles the road and is bigger than the one
+    before. Lawns are a few big fields on both sides of the road covering
+    most of each area (grass is the game). Shapes, edges, trees and props
+    are irregular (curves, clusters, varied spacing). The land is an island:
+    tree lines, beaches, then water to the horizon; the player must never
+    see the end of the world (invisible shore walls stop swimming).
+12. Areas are separated only by **one fence line across the land with a
+    gate on the road** (plus invisible walls); no fences around whole
+    areas. The next gate is always ahead on the road and in sight. Each
+    area's sell pad and shop stand by the road right after its gate (with
+    room kept for a future quick-travel pad). Layout = data in
+    `Config/MapLayout.luau` (a new area is a config row).
 13. **Each area has its own, better grass types** (higher value/health,
-    different look). Rare better grass also appears **sparsely, by luck,
-    in earlier areas**.
+    different look: color, height, blade shape in `Config/GrassTypes.luau`).
+    Rare better grass (lucky, golden, the next area's) also appears
+    **sparsely, by luck, as small patches in earlier areas**.
 14. Selling is **physical**: walk onto a sell stall's pad (stall + buyer
     NPC). No free on-screen sell button; remote selling is only for
     Auto-Sell / a future "Sell Anywhere" pass.

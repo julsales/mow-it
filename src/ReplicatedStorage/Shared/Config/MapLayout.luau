@@ -1,110 +1,137 @@
 --!strict
--- Land layout, as data (MapService builds it, Area/MapGeometry read it).
+-- Land layout, as data (MapService builds it, Map/MapGeometry reads it).
 --
--- The land is round and grows outward from the home base:
---   * Ring 0: the home base (a wobbly disc).
---   * Ring 1 and Ring 2: rings split into sectors, one sector per area.
---   * Past the last ring: forest and hills to the horizon, so the world
---     feels endless.
--- Ring and sector borders wobble (sine noise), so nothing is a straight
--- grid line. Angles are degrees clockwise from north (-Z); radii in studs.
--- To add an area: add a Zones.luau row, then a row here. No code changes.
-
-export type GateDef = { Angle: number, Radius: number }
+-- The land is a farm road: one winding dirt road that starts at the house
+-- (Front Yard) and runs through every area in Zones.luau order. Each area
+-- straddles the road and is a stretch of it (`Length` studs along the road,
+-- `HalfWidth` studs to each side), wider than the one before. Lawns are big
+-- fields on both sides of the road. Between two areas there is only a fence
+-- line across the land with one gate on the road, so the next gate is
+-- always ahead and in sight. The land is an island: past the area edges a
+-- tree line, a beach and then water to the horizon (shore walls stop
+-- swimming); past the last area the road leaves over a closed bridge.
+--
+-- To add an area: add a Zones.luau row, then a row here (it goes after the
+-- previous area on the road). No code changes. Distances are in studs.
 
 export type AreaDef = {
-	Ring: number, -- 0 = base disc, 1.. = outer rings
-	From: number?, -- sector start angle (rings >= 1)
-	To: number?, -- sector end angle
-	Gate: GateDef?, -- where its gate sits (on the border with an earlier area)
-	Lawns: { Count: number, MinRadius: number, MaxRadius: number },
-	Props: { string }, -- Props.Kinds names, placed irregularly
-	ShopAt: string?, -- "House": the area's tool shop is the house's front wall (else a stall)
-	Trees: number,
-	LuckyChance: number, -- chance a regrown cell is Lucky grass
-	GoldenChance: number, -- chance it is Golden grass (rarer, worth more)
+	Length: number, -- how far the area runs along the road
+	HalfWidth: number, -- land on each side of the road's center line
+	Lawns: {
+		Verge: number, -- grass-free strip between the road edge and the lawns
+		Rim: number, -- strip at the area edge kept for the tree line
+		Holes: number, -- small organic clearings inside the fields
+	},
+	Props: { string }, -- Props.Kinds names, placed irregularly next to the road
+	ShopAt: string?, -- "House": the area's shop is the house at the road start (else a stall)
+	Trees: number, -- tree line along the area's sides
+	Patches: { [string]: number }, -- chance a regrown cell starts a patch of that grass (GrassTypes)
 }
 
 local MapLayout = {
-	Seed = 20261111, -- same seed = same map every server
-	-- Outer radius of each ring (index = ring number).
-	RingRadius = { [0] = 84, [1] = 176, [2] = 276 },
-	-- Border wobble: radius and angle noise amplitudes.
-	RingWobble = 6, -- studs
-	SectorWobble = 5, -- degrees
-	GateWidth = 14,
+	Seed = 20261113, -- same seed = same map every server
+
+	Road = {
+		Width = 12,
+		-- Control points (X, Z) of the road's center line, a smooth spline
+		-- through them. Starts at the house porch and heads north (-Z) in
+		-- gentle S curves; it must be longer than all areas together plus
+		-- `EndLand` and `BridgeLength`.
+		Points = {
+			Vector2.new(0, 0),
+			Vector2.new(4, -120),
+			Vector2.new(44, -260),
+			Vector2.new(84, -430),
+			Vector2.new(58, -610),
+			Vector2.new(-16, -780),
+			Vector2.new(-62, -960),
+			Vector2.new(-36, -1140),
+			Vector2.new(30, -1310),
+			Vector2.new(70, -1490),
+			Vector2.new(46, -1670),
+			Vector2.new(4, -1840),
+			Vector2.new(-30, -1990),
+		},
+		StartLand = 84, -- land behind the road start (the house stands there)
+		EndLand = 40, -- land past the last area before the shore
+		BridgeLength = 90, -- the road goes on over the water, closed for now
+	},
+
+	Beach = 26, -- sand from the area edge down into the water
+	ShoreWallHeight = 40, -- invisible wall along the waterline
+	WaterDepth = 14,
+	SeaMargin = 700, -- terrain water past the land on every side
+	FarSea = 30000, -- then flat water plates this far out, to the horizon
+	FarSeaOverlap = 300, -- plates start this far inside the terrain water's edge
+	FarSeaColor = Color3.fromRGB(98, 226, 232),
+	Islets = 14, -- small wooded islands out in the water (within SeaMargin)
+	FarLandDistance = 420, -- a wooded coast beyond the bridge, in the haze
+
+	GateWidth = 16,
 	FencePostSpacing = 8,
 	WallHeight = 16, -- invisible wall above the fence (no jumping over)
-	ForestOuterRadius = 450,
-	ForestTrees = 170,
-	Hills = 12,
-	PathWidth = 6,
-	LawnMargin = 8, -- studs kept clear between lawns and borders/paths
+	ShoreRocks = 60,
+
+	-- What stands next to the road just past each gate (`After` studs past
+	-- it, Side 1 = right, -1 = left, `Gap` studs from the road edge). The
+	-- Front Yard counts from the road start; its shop is the house.
+	Stations = {
+		Sell = { After = 18, Side = 1, Gap = 2 },
+		Shop = { After = 34, Side = -1, Gap = 12 },
+		-- Kept free for a future quick-travel pad (not built yet).
+		Travel = { After = 10, Side = -1, Gap = 1, Radius = 7 },
+		Sign = { After = -12, Side = 1, Gap = 6 }, -- the area's name, before its gate
+	},
 
 	Areas = {
 		front_yard = {
-			Ring = 0,
-			Lawns = { Count = 6, MinRadius = 10, MaxRadius = 17 },
-			Props = { "Shed", "Planters" }, -- the House is placed first (ShopAt)
+			Length = 170,
+			HalfWidth = 62,
+			Lawns = { Verge = 6, Rim = 10, Holes = 2 },
+			Props = { "Shed", "Planters" }, -- the house is placed at the road start (ShopAt)
 			ShopAt = "House",
-			Trees = 6,
-			LuckyChance = 0.02,
-			GoldenChance = 0.003,
+			Trees = 26,
+			Patches = { lucky = 0.002, golden = 0.0006, next = 0.0024 },
 		},
 		backyard = {
-			Ring = 1,
-			From = -60,
-			To = 60,
-			Gate = { Angle = 8, Radius = 84 },
-			Lawns = { Count = 7, MinRadius = 12, MaxRadius = 20 },
+			Length = 200,
+			HalfWidth = 72,
+			Lawns = { Verge = 6, Rim = 11, Holes = 3 },
 			Props = { "Pond", "Planters", "Shed" },
-			Trees = 12,
-			LuckyChance = 0.025,
-			GoldenChance = 0.004,
+			Trees = 30,
+			Patches = { lucky = 0.0025, golden = 0.0008, next = 0.0024 },
 		},
 		sunny_farm = {
-			Ring = 1,
-			From = 60,
-			To = 180,
-			Gate = { Angle = 60, Radius = 130 },
-			Lawns = { Count = 7, MinRadius = 13, MaxRadius = 22 },
+			Length = 240,
+			HalfWidth = 86,
+			Lawns = { Verge = 7, Rim = 12, Holes = 3 },
 			Props = { "Barn", "Silo", "Hay" },
-			Trees = 10,
-			LuckyChance = 0.025,
-			GoldenChance = 0.004,
+			Trees = 34,
+			Patches = { lucky = 0.0025, golden = 0.0008, next = 0.0021 },
 		},
 		big_ranch = {
-			Ring = 1,
-			From = 180,
-			To = 300,
-			Gate = { Angle = 180, Radius = 126 },
-			Lawns = { Count = 7, MinRadius = 14, MaxRadius = 24 },
+			Length = 270,
+			HalfWidth = 100,
+			Lawns = { Verge = 7, Rim = 12, Holes = 4 },
 			Props = { "RanchHouse", "WaterTower", "Hay" },
-			Trees = 12,
-			LuckyChance = 0.03,
-			GoldenChance = 0.005,
+			Trees = 38,
+			Patches = { lucky = 0.003, golden = 0.001, next = 0.0018 },
 		},
 		golf_estate = {
-			Ring = 2,
-			From = -90,
-			To = 90,
-			Gate = { Angle = 24, Radius = 176 },
-			Lawns = { Count = 9, MinRadius = 15, MaxRadius = 26 },
+			Length = 300,
+			HalfWidth = 112,
+			Lawns = { Verge = 8, Rim = 13, Holes = 4 },
 			Props = { "Mansion", "PuttingGreen", "Bunker", "Bunker" },
-			Trees = 16,
-			LuckyChance = 0.03,
-			GoldenChance = 0.006,
+			Trees = 42,
+			Patches = { lucky = 0.003, golden = 0.0012, next = 0.0018 },
 		},
 		mega_fields = {
-			Ring = 2,
-			From = 90,
-			To = 270,
-			Gate = { Angle = 90, Radius = 226 },
-			Lawns = { Count = 9, MinRadius = 16, MaxRadius = 28 },
+			Length = 360,
+			HalfWidth = 126,
+			Lawns = { Verge = 8, Rim = 14, Holes = 5 },
 			Props = { "Hangar", "TallSilo", "TallSilo", "Turbine", "Turbine" },
-			Trees = 14,
-			LuckyChance = 0.035,
-			GoldenChance = 0.008,
+			Trees = 46,
+			Patches = { lucky = 0.0035, golden = 0.0015 },
 		},
 	} :: { [string]: AreaDef },
 }

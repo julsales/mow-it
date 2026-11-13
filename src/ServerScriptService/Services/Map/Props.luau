@@ -534,12 +534,13 @@ function Props.BuildAmbience()
 	end)
 
 	local atmosphere = effect("Atmosphere", "Atmosphere") :: Atmosphere
-	atmosphere.Density = 0.32
-	atmosphere.Offset = 0.2
+	-- Thick enough that the far sea melts into the sky (no visible map edge).
+	atmosphere.Density = 0.45
+	atmosphere.Offset = 0.12
 	atmosphere.Color = Color3.fromRGB(255, 214, 172)
 	atmosphere.Decay = Color3.fromRGB(176, 120, 96)
 	atmosphere.Glare = 0.35
-	atmosphere.Haze = 1.4
+	atmosphere.Haze = 2.2
 
 	local grading = effect("ColorCorrectionEffect", "WarmGrade") :: ColorCorrectionEffect
 	grading.Saturation = 0.15
