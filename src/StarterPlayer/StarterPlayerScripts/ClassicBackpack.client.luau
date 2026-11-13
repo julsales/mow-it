@@ -73,7 +73,7 @@ filterRow.Name = "Filters"; filterRow.BackgroundTransparency = 1
 filterRow.Position = UDim2.fromOffset(10, 10); filterRow.Size = UDim2.new(0, B.FilterWidth, 1, -20)
 filterRow.Parent = inventory
 local filterLayout = Instance.new("UIListLayout")
-filterLayout.FillDirection = Enum.FillDirection.Vertical; filterLayout.Padding = UDim.new(0, 8)
+filterLayout.FillDirection = Enum.FillDirection.Vertical; filterLayout.Padding = UDim.new(0, 6)
 filterLayout.SortOrder = Enum.SortOrder.LayoutOrder; filterLayout.Parent = filterRow
 local grid = Instance.new("ScrollingFrame")
 grid.Name = "Grid"; grid.BackgroundTransparency = 1; grid.BorderSizePixel = 0
@@ -82,7 +82,10 @@ grid.AutomaticCanvasSize = Enum.AutomaticSize.Y; grid.CanvasSize = UDim2.new()
 grid.ScrollBarThickness = 4; grid.ScrollBarImageColor3 = B.Selected
 grid.Parent = inventory
 local gridLayout = Instance.new("UIGridLayout")
-gridLayout.CellSize = UDim2.fromOffset(B.Slot, B.Slot); gridLayout.CellPadding = UDim2.fromOffset(B.Gap, B.Gap)
+gridLayout.CellSize = UDim2.fromOffset(B.Card.X, B.Card.Y); gridLayout.CellPadding = UDim2.fromOffset(B.Gap + 3, B.Gap + 3)
+local gridPad = Instance.new("UIPadding") -- room for the 3 px selected rim
+gridPad.PaddingLeft = UDim.new(0, 4); gridPad.PaddingTop = UDim.new(0, 4); gridPad.PaddingRight = UDim.new(0, 4)
+gridPad.Parent = grid
 gridLayout.SortOrder = Enum.SortOrder.LayoutOrder; gridLayout.Parent = grid
 
 local tooltip = Ui.OutlinedText(root, "", 14)
@@ -106,17 +109,27 @@ end
 
 -- One classic slot: dark rounded square, number in the corner, the icon,
 -- a cyan rim when held/equipped.
-local function slot(parent: Instance, item: Item, number: number?, order: number): TextButton
+-- Backpack cells (labeled) are taller and show the name under the icon.
+local function slot(parent: Instance, item: Item, number: number?, order: number, labeled: boolean?): TextButton
 	local button = Instance.new("TextButton")
 	button.Name = item.Key; button.Text = ""; button.LayoutOrder = order; button.AutoButtonColor = true
 	button.BackgroundColor3 = B.Fill; button.BackgroundTransparency = B.FillTransparency
-	button.Size = UDim2.fromOffset(B.Slot, B.Slot)
+	button.Size = if labeled then UDim2.fromOffset(B.Card.X, B.Card.Y) else UDim2.fromOffset(B.Slot, B.Slot)
+	button.ClipsDescendants = true
 	button.Parent = parent
 	Ui.Corner(button, B.Radius)
 	local rim = Ui.Stroke(button, 1.5, if item.Selected then B.Selected elseif item.Rarity then B.Rarity[item.Rarity] else B.SlotStroke)
 	rim.Thickness = if item.Selected then 3 else 1.5
 	local icon: GuiObject = if item.ToolId then Ui.ToolPreview(button, item.ToolId) else Ui.Icon(button, Images.Crew, 0)
-	icon.Position = UDim2.fromOffset(4, 4); icon.Size = UDim2.new(1, -8, 1, -8)
+	icon.Position = UDim2.fromOffset(4, 4)
+	icon.Size = if labeled then UDim2.new(1, -8, 0, B.Card.X - 8) else UDim2.new(1, -8, 1, -8)
+	if labeled then
+		local name = Ui.Heading(button, item.Name, 12)
+		name.Name = "Label"; name.TextXAlignment = Enum.TextXAlignment.Center
+		name.TextYAlignment = Enum.TextYAlignment.Center
+		name.Position = UDim2.fromOffset(3, B.Card.X - 4); name.Size = UDim2.new(1, -6, 1, -B.Card.X + 2)
+		Ui.FitText(name, 8, 12)
+	end
 	if number then
 		local key = Ui.Heading(button, tostring(number), 13)
 		key.Name = "Key"; key.Position = UDim2.fromOffset(5, 2); key.Size = UDim2.fromOffset(14, 16)
@@ -170,7 +183,9 @@ local filterButtons: { [string]: TextButton } = {}
 for index, name in B.Filters do
 	local button = Ui.Button(filterRow, name, string.upper(name), function() filter = name; refresh() end, "Muted")
 	button.LayoutOrder = index
-	button.Size = UDim2.new(1, 0, 0, 40)
+	button.Size = UDim2.new(1, 0, 0, B.FilterHeight)
+	local text = button:FindFirstChildOfClass("UITextSizeConstraint")
+	if text then text.MaxTextSize = 12 end
 	filterButtons[name] = button
 end
 
@@ -204,7 +219,7 @@ refresh = function()
 	if filter ~= "Tools" then for _, item in crewItems(profile) do table.insert(items, item) end end
 	local query = string.lower(search.Text)
 	for index, item in items do
-		if query == "" or string.find(string.lower(item.Name), query, 1, true) then slot(grid, item, nil, index) end
+		if query == "" or string.find(string.lower(item.Name), query, 1, true) then slot(grid, item, nil, index, true) end
 	end
 end
 

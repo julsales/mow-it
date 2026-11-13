@@ -75,7 +75,8 @@ return {
 	Backpack = {
 		Slot = 60, Gap = 5, HotbarSlots = 9, Bottom = 8, Radius = 8,
 		Fill = hex("0B2E3D"), FillTransparency = 0.12, PanelTransparency = 0.06, Selected = hex("35DDF4"),
-		SlotStroke = hex("2C8097"), FilterWidth = 96,
+		SlotStroke = hex("2C8097"), FilterWidth = 70, FilterHeight = 30,
+		Card = Vector2.new(76, 98), -- backpack cells: icon with the name under it
 		Inventory = Vector2.new(9 * 65 + 15, 300), Filters = { "All", "Tools", "Crew" },
 		Rarity = { Common = hex("A6CBD7"), Uncommon = hex("8DD737"), Rare = hex("35B6FF"), Epic = hex("C066FF"), Legendary = hex("FFB721") },
 	},
