@@ -50,8 +50,13 @@ do
 	-- Phones: keep the widget inside narrow screens.
 	local scale = Instance.new("UIScale")
 	scale.Parent = holder
+	-- Big screens: top center. Phones: bottom center, the top row holds
+	-- Coins/Clovers/storage there.
 	local function fit()
 		scale.Scale = math.clamp(gui.AbsoluteSize.X / 560, 0.7, 1)
+		local compact = UiKit.IsCompact(gui.AbsoluteSize)
+		holder.AnchorPoint = Vector2.new(0.5, if compact then 1 else 0)
+		holder.Position = if compact then UDim2.new(0.5, 0, 1, -12) else UDim2.new(0.5, 0, 0, 12)
 	end
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 	fit()

@@ -1,6 +1,6 @@
 --!strict
 -- HUD readouts from board 1: weather timer and fuel top right, Coins and
--- Clovers under the menu tiles, grass storage bottom left. Positions are
+-- Clovers under the menu tiles, grass storage bottom center. Positions are
 -- board pixels; UiKit.AutoScale shrinks each group on short screens.
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Weather = require(Shared.Config.Weather)
@@ -42,8 +42,8 @@ end
 local coins = currency("Coins", Images.Coin, T.Coins)
 local clovers = currency("Clovers", Images.Clover, T.Clovers)
 
--- Bottom left: grass in storage / capacity.
-local bottom = group("Storage", Vector2.new(0, 1), UDim2.new(0, 0, 1, -H.Edge), Vector2.new(H.Storage.X + 40, H.Storage.Y))
+-- Bottom center: grass in storage / capacity.
+local bottom = group("Storage", Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -H.Edge), Vector2.new(H.Storage.X + 40, H.Storage.Y))
 local grass = Ui.Pill(bottom, "Storage", Images.Grass, H.Storage, H.StorageIcon, H.StorageText)
 
 local function arrange()
@@ -68,7 +68,7 @@ local function arrange()
 		end
 		grass.Frame.Parent = bottom
 		grass.Frame.Size = UDim2.fromOffset(H.Storage.X, H.Storage.Y)
-		grass.Frame.Position = UDim2.fromOffset(H.Edge + 10, 0)
+		grass.Frame.Position = UDim2.fromOffset(24, 0)
 		bottom.Visible = true
 	end
 end
