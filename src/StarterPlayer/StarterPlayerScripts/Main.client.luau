@@ -49,7 +49,8 @@ toolLabel.Position = UDim2.new(1, -12, 1, -58)
 local notifyLabel = makeLabel("", UDim2.new(0.5, -250, 0, 10), UDim2.new(0, 500, 0, 40))
 notifyLabel.BackgroundTransparency = 1
 notifyLabel.AnchorPoint = Vector2.new(0.5, 0)
-notifyLabel.Position = UDim2.new(0.5, 0, 0, 10)
+-- Under the Company Level bar (top center) and the phone pill row.
+notifyLabel.Position = UDim2.new(0.5, 0, 0, 84)
 notifyLabel.Size = UDim2.new(0.7, 0, 0, 44)
 local notificationLimit = Instance.new("UISizeConstraint")
 notificationLimit.MaxSize = Vector2.new(500, 60)
@@ -95,8 +96,8 @@ local function refresh()
 		return
 	end
 	local tool = Tools.ById[profile.EquippedToolId]
-	local compact = gui.AbsoluteSize.Y < 500
-	toolLabel.Visible = not compact
+	-- The hotbar (Hotbar.client.luau) shows the equipped tool now.
+	toolLabel.Visible = false
 	toolLabel.Text = tool and tool.DisplayName or "?"
 
 	local nextTool = nextUnowned(Tools.List, profile.OwnedToolIds)

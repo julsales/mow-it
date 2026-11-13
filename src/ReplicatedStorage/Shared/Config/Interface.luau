@@ -68,6 +68,8 @@ return {
 		Badge = Vector2.new(30, 52),
 		WindowInset = 16, HeaderHeight = 68, HeaderIcon = 90, ButtonHeight = 44,
 		RewardTile = Vector2.new(92, 142),
+		-- Owned-tool hotbar, bottom center: best tools first, keys 1-6.
+		HotbarSlots = 6, HotbarCell = 84, HotbarGap = 8,
 	},
 	Passes = { Upper = 3, UpperHeight = 264, LowerHeight = 208, Gap = 12, Icon = 110, WideIcon = 112, CompactWidth = 560 },
 	-- Uploaded from build/ui-upload (tools/prepare-ui-uploads.py). Never invent IDs.
