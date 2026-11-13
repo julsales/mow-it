@@ -291,6 +291,26 @@ function UiKit.NavTile(parent: Instance, def, callback: () -> ()): TextButton
 	return tile
 end
 
+-- 3D thumbnail of a tool (ToolModels), framed on its longest side so long
+-- handles and wide mowers both fill the slot (hotbar, backpack).
+function UiKit.ToolPreview(parent: Instance, toolId: string): ViewportFrame
+	local ToolModels = require(game:GetService("ReplicatedStorage").Shared.ToolModels)
+	local view = Instance.new("ViewportFrame")
+	view.Name = "Preview"; view.BackgroundTransparency = 1
+	view.Ambient = Color3.fromRGB(200, 200, 200); view.LightDirection = Vector3.new(-1, -1, -1)
+	view.Parent = parent
+	local model = ToolModels.Build(toolId)
+	model.Parent = view
+	local camera = Instance.new("Camera")
+	local cf, size = model:GetBoundingBox()
+	local radius = math.max(size.X, size.Y, size.Z) / 2
+	camera.FieldOfView = 40
+	camera.CFrame = CFrame.lookAt(cf.Position + Vector3.new(1, 0.7, 1).Unit * radius * 2.7, cf.Position)
+	camera.Parent = view
+	view.CurrentCamera = camera
+	return view
+end
+
 -- Screen-height scale for HUD pieces sized in board pixels.
 function UiKit.HudScale(viewport: Vector2): number
 	return math.clamp(viewport.Y / H.DesignHeight, H.MinScale, 1)

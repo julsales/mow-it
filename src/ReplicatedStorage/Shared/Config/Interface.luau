@@ -72,6 +72,14 @@ return {
 		HotbarSlots = 6, HotbarCell = 84, HotbarGap = 8,
 	},
 	Passes = { Upper = 3, UpperHeight = 264, LowerHeight = 208, Gap = 12, Icon = 110, WideIcon = 112, CompactWidth = 560 },
+	-- Backpack window (the hotbar's + button): every collectible, filtered.
+	Backpack = {
+		Filters = { "All", "Tools", "Crew", "Storage", "Grass" },
+		Card = Vector2.new(136, 168), Preview = 84,
+		GrassNames = { normal = "Grass", wet = "Wet Grass", golden = "Golden Grass", lunar = "Lunar Grass", rainbow = "Rainbow Grass" },
+		GrassTints = { normal = hex("FFFFFF"), wet = hex("8FD3FF"), golden = hex("FFD45C"), lunar = hex("B9A7FF"), rainbow = hex("FF9AD5") },
+		Rarity = { Common = hex("A6CBD7"), Uncommon = hex("8DD737"), Rare = hex("35B6FF"), Epic = hex("C066FF"), Legendary = hex("FFB721") },
+	},
 	-- Uploaded from build/ui-upload (tools/prepare-ui-uploads.py). Never invent IDs.
 	Images = {
 		Window = "rbxassetid://93676969129473", Button = "rbxassetid://107710178245629",
