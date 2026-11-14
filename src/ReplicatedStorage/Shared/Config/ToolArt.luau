@@ -68,7 +68,7 @@ local Models: { [string]: ModelDef } = {
 	void = { AssetId = 139076317027769, Center = Vector3.new(0.325, 2.805, -1.714), Size = Vector3.new(6.521, 5.291, 9.011), RideLift = 2.2 },
 	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 6.325, 0.298), Size = Vector3.new(4.6, 11.75, 10.396), RideLift = 2.2 },
 	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.31, -1.8), Size = Vector3.new(5.815, 4.619, 9.6), RideLift = 3.15 },
-	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 2.953, -1.059), Size = Vector3.new(7.115, 6.107, 9.756), RideLift = 3.9 },
+	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 2.953, -1.059), Size = Vector3.new(7.295, 6.105, 9.756), RideLift = 3.9 },
 }
 
 -- Fixed colours/materials of the shared pieces (by mesh name).
