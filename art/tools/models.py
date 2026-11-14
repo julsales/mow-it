@@ -11,6 +11,12 @@ from lib import arc_pts, ball, box, cyl, prism, rig, ring, wedge, wheel, xform
 MODELS = {}
 
 
+def handrail(deck, z=-1.25, width=0.6):
+    """Bar to hold for standing rides: at hand height, in front of the legs."""
+    cyl("Dark", (0, deck, z - 0.15), (0, deck + 2.45, z), 0.08, verts=6)
+    cyl("SteeringWheel", (-width, deck + 2.5, z), (width, deck + 2.5, z), 0.1, verts=8)
+
+
 def model(fn):
     MODELS[fn.__name__] = fn
     return fn
@@ -219,8 +225,8 @@ def rider():
         cyl("Light", (x, 2.2, -3.62), (x, 2.2, -3.78), 0.2, verts=10)
     box("Accent2", (0, 2.47, -2.55), (0.4, 0.05, 2.0), bevel=0.02)
     # seat
-    box("Seat", (0, 2.225, 0.6), (1.6, 0.35, 1.2), bevel=0.15)  # the player sits here (Config/ToolArt Seat)
-    box("Seat", (0, 3.05, 1.08), (1.6, 1.3, 0.25), bevel=0.12)  # backrest on the cushion's back edge
+    box("Seat", (0, 2.225, 0.66), (1.6, 0.35, 1.32), bevel=0.15)  # the player sits here (Config/ToolArt Seat)
+    box("Seat", (0, 2.875, 1.445), (1.6, 1.65, 0.25), bevel=0.12)  # backrest behind the player's back
     box("Dark", (0, 1.7, 0.6), (1.0, 0.7, 0.8), bevel=0.06)
     # column + wheel
     cyl("Dark", (0, 1.9, -1.55), (0, 3.15, -1.05), 0.1, verts=8)
@@ -243,8 +249,8 @@ def zeroturn():
     box("Dark", (0, 0.9, -0.2), (2.4, 0.5, 4.0), bevel=0.12)
     box("Accent", (0, 1.4, 1.08), (2.8, 0.9, 2.0), bevel=0.25)  # engine cover, the seat sits on it
     box("Accent2", (0, 1.88, 1.6), (1.8, 0.08, 0.9), bevel=0.03)
-    box("Seat", (0, 2.0, 0.4), (1.5, 0.3, 1.0), bevel=0.12)
-    box("Seat", (0, 2.7, 0.78), (1.5, 1.1, 0.25), bevel=0.12)
+    box("Seat", (0, 2.0, 0.5), (1.5, 0.3, 1.2), bevel=0.12)
+    box("Seat", (0, 2.55, 1.225), (1.5, 1.4, 0.25), bevel=0.12)
     box("Dark", (0, 0.95, -1.2), (2.0, 0.15, 1.6), bevel=0.04)
     for x in (-0.7, 0.7):
         cyl("Dark", (x * 1.55, 1.2, -0.3), (x * 1.55, 3.0, -0.7), 0.07, verts=6)
@@ -284,8 +290,8 @@ def tractor():
     for x in (-1.45, 1.45):
         box("Accent", (x, 3.0, 0.9), (0.9, 0.25, 2.6), bevel=0.1)
         box("Accent", (x, 2.5, 2.05), (0.9, 1.0, 0.25), bevel=0.08)
-    box("Seat", (0, 2.9, 0.6), (1.5, 0.35, 1.1), bevel=0.14)
-    box("Seat", (0, 3.775, 1.03), (1.5, 1.4, 0.25), bevel=0.12)
+    box("Seat", (0, 2.9, 0.66), (1.5, 0.35, 1.22), bevel=0.14)
+    box("Seat", (0, 3.6, 1.395), (1.5, 1.75, 0.25), bevel=0.12)
     box("Dark", (0, 2.4, 0.6), (1.0, 0.7, 0.8), bevel=0.06)  # seat post
     cyl("Dark", (0, 2.3, -1.4), (0, 4.0, -0.95), 0.11, verts=8)
     ring("SteeringWheel", (0, 4.05, -0.92), (0, 0.9, 0.42), 0.6, 0.08, seg=14, minor_seg=6)
@@ -329,8 +335,8 @@ def combine():
     box("Accent2", (0, 4.75, 3.0), (3.2, 0.12, 4.0), bevel=0.03)
     box("Dark", (0, 1.9, -0.5), (3.0, 0.5, 3.0), bevel=0.1)
     # cab: the player sits inside (Seat), tall enough for the head
-    box("Seat", (0, 3.025, -0.2), (1.5, 0.35, 1.1), bevel=0.14)
-    box("Seat", (0, 3.9, 0.23), (1.5, 1.4, 0.25), bevel=0.12)
+    box("Seat", (0, 3.025, -0.14), (1.5, 0.35, 1.22), bevel=0.14)
+    box("Seat", (0, 3.725, 0.595), (1.5, 1.75, 0.25), bevel=0.12)
     box("Dark", (0, 2.5, -0.2), (1.0, 0.7, 0.8), bevel=0.06)
     for x in (-1.3, 1.3):
         cyl("Dark", (x, 2.2, -1.9), (x, 7.1, -1.9), 0.09, verts=6)
@@ -397,8 +403,7 @@ def drone():
         cyl("Dark", (x, 0.15, -1.2), (x * 0.8, 1.5, -1.0), 0.07, verts=6)
         cyl("Dark", (x, 0.15, 0.4), (x * 0.8, 1.5, 0.2), 0.07, verts=6)
     # hand rail in front
-    cyl("Dark", (0, 2.2, -1.6), (0, 3.4, -1.3), 0.08, verts=6)
-    cyl("SteeringWheel", (-0.6, 3.4, -1.3), (0.6, 3.4, -1.3), 0.1, verts=8)
+    handrail(2.28)
 
 
 @model
@@ -439,9 +444,10 @@ def mowzilla():
         cyl("Chrome", (x, 3.3, 1.8), (x, 5.2, 2.1), 0.25, verts=10)
         cyl("Light", (x, 5.2, 2.1), (x, 6.0, 2.3), 0.22, verts=8, r2=0.04)
     # monster horns growing out of the head
-    for side in (-1, 1):
-        cyl("Teeth", (side * 1.7, 3.4, -3.4), (side * 2.4, 4.9, -3.6), 0.38, verts=8, r2=0.22)
-        cyl("Teeth", (side * 2.4, 4.9, -3.6), (side * 2.3, 6.0, -3.2), 0.22, verts=8, r2=0.02)
+    for side in (-1, 1):  # ram horns: out of the head's sides, curling down
+        cyl("Teeth", (side * 2.2, 3.6, -3.4), (side * 3.0, 4.1, -3.3), 0.4, verts=8, r2=0.32)
+        cyl("Teeth", (side * 3.0, 4.1, -3.3), (side * 3.5, 3.4, -3.6), 0.32, verts=8, r2=0.22)
+        cyl("Teeth", (side * 3.5, 3.4, -3.6), (side * 3.3, 2.6, -4.1), 0.22, verts=8, r2=0.03)
     # front cutter drum
     for x in (-2.2, 2.2):  # arms holding the drum
         cyl("Dark", (x, 0.55, -5.3), (x, 1.6, -4.3), 0.16, verts=6)
@@ -450,8 +456,7 @@ def mowzilla():
         for i in range(10):
             box("Chrome", (-2.3 + i * 0.5, 0.55, -5.3), (0.1, 1.3, 0.12), bevel=0, rot=[("x", i * 36)])
     # rails to hold
-    cyl("Dark", (0, 3.9, -1.6), (0, 5.0, -1.3), 0.1, verts=6)
-    cyl("SteeringWheel", (-0.7, 5.0, -1.3), (0.7, 5.0, -1.3), 0.12, verts=8)
+    handrail(3.9, width=0.7)
 
 
 # ------------------------------------------------- the special late tools
@@ -461,13 +466,14 @@ def mowzilla():
 def mega_push():
     # Comically giant push mower: the classic mower blown up 2.6x, the
     # player stands on a little back step and steers with a tiny wheel.
-    with xform(2.6, (0, 0, -0.2)):
+    with xform(2.6, (0, 0, 2.7)):  # the grass bag ends right in front of the step
         push()
-    box("Dark", (0, 2.05, 0.2), (2.6, 0.3, 2.0), bevel=0.08)  # back step (RideLift 2.2)
+    box("Dark", (0, 2.05, 0.1), (2.6, 0.3, 2.2), bevel=0.08)  # back step (RideLift 2.2)
     for x in (-1.1, 1.1):
-        cyl("Chrome", (x, 2.0, -0.7), (x, 0.0, -0.7), 0.12, verts=8)
-    cyl("Dark", (0, 2.2, -0.9), (0, 4.1, -0.75), 0.1, verts=8)
-    ring("SteeringWheel", (0, 4.15, -0.72), (0, 0.9, 0.42), 0.4, 0.07, seg=12, minor_seg=6)
+        cyl("Chrome", (x, 2.0, -0.85), (x, 0.0, -0.85), 0.12, verts=8)
+        cyl("Chrome", (x, 2.0, 1.0), (x, 0.0, 1.0), 0.12, verts=8)
+    cyl("Dark", (0, 2.2, -1.05), (0, 4.6, -0.95), 0.1, verts=8)
+    ring("SteeringWheel", (0, 4.65, -0.93), (0, 0.9, 0.42), 0.4, 0.07, seg=12, minor_seg=6)
 
 
 @model
@@ -518,8 +524,7 @@ def void():
     for x in (-1.6, 1.6):
         cyl("Crystal", (x, 2.2, 0.8), (x * 1.1, 5.4, 1.0), 0.45, verts=5, r2=0.04)
         cyl("Crystal", (x * 0.6, 2.2, 1.3), (x * 0.7, 4.2, 1.5), 0.3, verts=5, r2=0.03)
-    cyl("Dark", (0, 2.2, -1.6), (0, 3.5, -1.3), 0.08, verts=6)
-    cyl("SteeringWheel", (-0.6, 3.5, -1.3), (0.6, 3.5, -1.3), 0.1, verts=8)
+    handrail(2.2)
     with rig("Orbit"):  # shards circle the player
         for i in range(5):
             a = math.radians(i * 72)
@@ -552,8 +557,8 @@ def airship():
         cyl("Metal", (0, 0.45, -0.6), (0, 0.55, -0.6), 1.8, verts=16, bevel=0.02)
         for k in range(6):
             box("Chrome", (0, 0.5, -0.6), (3.8, 0.05, 0.25), bevel=0, rot=[("y", k * 30)])
-    cyl("Dark", (0, 2.2, -1.9), (0, 3.4, -1.7), 0.08, verts=6)
-    ring("SteeringWheel", (0, 3.45, -1.68), (0, 0.9, 0.42), 0.45, 0.07, seg=12, minor_seg=6)
+    cyl("Dark", (0, 2.2, -1.6), (0, 4.6, -1.4), 0.08, verts=6)
+    ring("SteeringWheel", (0, 4.65, -1.38), (0, 0.9, 0.42), 0.45, 0.07, seg=12, minor_seg=6)
 
 
 @model
@@ -581,5 +586,4 @@ def drill():
     for x in (-1.2, 1.2):
         cyl("Light", (x, 2.7, -3.4), (x, 2.7, -3.5), 0.22, verts=8)
     cyl("Chrome", (1.4, 3.0, 2.0), (1.4, 4.6, 2.2), 0.2, verts=8)
-    cyl("Dark", (0, 3.15, -0.9), (0, 4.4, -0.7), 0.08, verts=6)
-    cyl("SteeringWheel", (-0.6, 4.4, -0.7), (0.6, 4.4, -0.7), 0.1, verts=8)
+    handrail(3.15)
