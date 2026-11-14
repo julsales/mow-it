@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import build  # noqa: E402  (builds nothing when imported with no-op args)
 import lib  # noqa: E402
-from models import MODELS  # noqa: E402
+from models import HAND, MODELS  # noqa: E402
 
 CONFIG = os.path.join(HERE, "../../src/ReplicatedStorage/Shared/Config/ToolArt.luau")
 ROW = re.compile(r'^\s*(\w+) = \{ Model = "(\w+)", Color = rgb\((\d+), (\d+), (\d+)\), Color2 = rgb\((\d+), (\d+), (\d+)\)(?:, Extras = \{ ([^}]*) \})?', re.M)
@@ -24,7 +24,7 @@ for tool, model, r, g, b, r2, g2, b2, extras in rows:
     keep = set(re.findall(r'"(\w+)"', extras or ""))
     build.reset()
     MODELS[model]()
-    lib.finish(model)
+    lib.finish(model, ground=model not in HAND)
     for o in list(bpy.context.scene.objects):
         name = o.name.split("#")[0]
         if "." in name and name.split(".", 1)[1] not in keep:

@@ -48,49 +48,59 @@ export type Finish = {
 local rgb = Color3.fromRGB
 
 local Models: { [string]: ModelDef } = {
-	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3, Snip = { Pivot = Vector3.new(0, 0.25, -1.55), Axis = Vector3.xAxis, Angle = 10 }, Pivots = { Lever = Vector3.new(-0, 0.42, -0.75) } },
+	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.072, -0.718), Size = Vector3.new(0.62, 1.084, 2.785), HoldLength = 1.3, Snip = { Pivot = Vector3.new(0, 0.36, -1.55), Axis = Vector3.xAxis, Angle = 8 }, Pivots = { Lever = Vector3.new(-0, 0.42, -0.75) } },
 	scissors_safety = { AssetId = 120638250934550, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8, Snip = { Pivot = Vector3.new(0, 0, -0.48), Axis = Vector3.yAxis, Angle = 18 }, Pivots = { SnipL = Vector3.new(-0.32, 0, 0.25), SnipR = Vector3.new(0.32, 0, 0.25) } },
 	scissors_kitchen = { AssetId = 124984095097638, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1, Snip = { Pivot = Vector3.new(0, 0, -0.45), Axis = Vector3.yAxis, Angle = 16 }, Pivots = { SnipL = Vector3.new(-0.3, 0, 0.3), SnipR = Vector3.new(0.3, 0, 0.3) } },
 	shears = { AssetId = 111659672280353, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6, Snip = { Pivot = Vector3.new(0, 0, -0.8), Axis = Vector3.yAxis, Angle = 14 }, Pivots = { SnipL = Vector3.new(-0.235, 0, 0.075), SnipR = Vector3.new(0.235, 0, 0.075) } },
 	sickle = { AssetId = 93802071925746, Center = Vector3.new(0, 0.866, -0.925), Size = Vector3.new(0.329, 2.062, 3.05), HoldLength = 2.3 },
 	grass_whip = { AssetId = 123278661581067, Center = Vector3.new(0, 0.207, -1.6), Size = Vector3.new(0.269, 0.813, 4.3), HoldLength = 3.2 },
 	hedge = { AssetId = 72879795646218, Center = Vector3.new(0, 0.218, -1.55), Size = Vector3.new(0.9, 1.585, 4), HoldLength = 3.4, Pivots = { Buzz = Vector3.new(0, 0, -2.4) } },
-	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0, -0.083, -1.55), Size = Vector3.new(1.2, 1.834, 5.8), HoldLength = 4.8, Pivots = { Head = Vector3.new(0, -0.91, -3.85) } },
-	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2), Pivots = { Reel = Vector3.new(0, 0.6, -3) } },
-	push = { AssetId = 127384897680211, Center = Vector3.new(0, 1.25, -3.687), Size = Vector3.new(3.55, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -2.4) },
-	rider = { AssetId = 133849751211282, Center = Vector3.new(0, 1.793, -0.776), Size = Vector3.new(4.455, 3.814, 6.007), RideLift = 1.35, Seat = Vector3.new(0, 2.4, 0.6) },
-	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3, Seat = Vector3.new(0, 2.15, 0.4) },
-	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.491, -2.23), Size = Vector3.new(6.05, 7.418, 10.14), RideLift = 2.25, Seat = Vector3.new(0, 3.075, 0.6) },
-	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 3.595, 0.24), Size = Vector3.new(9.054, 7.611, 10.12), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2), Pivots = { Drum = Vector3.new(0, 1.7, -3.9) } },
-	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 2.502, -0.4), Size = Vector3.new(6.058, 4.865, 6.058), RideLift = 2.3, Pivots = { Rotor0 = Vector3.new(0, 0.9, -0.4), Rotor1 = Vector3.new(2.121, 2.6, 1.721), Rotor2 = Vector3.new(-2.121, 2.6, 1.721), Rotor3 = Vector3.new(-2.121, 2.6, -2.521), Rotor4 = Vector3.new(2.121, 2.6, -2.521) } },
-	mega_push = { AssetId = 121793856419832, Center = Vector3.new(0, 3.25, -5.622), Size = Vector3.new(9.23, 6.5, 13.645), RideLift = 2.2 },
-	fortress = { AssetId = 77627639646586, Center = Vector3.new(-0.602, 4.395, 0.556), Size = Vector3.new(9.054, 9.211, 10.752), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2), Pivots = { Drum = Vector3.new(0, 1.7, -3.9) } },
-	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.623, -1.678), Size = Vector3.new(9.906, 5.106, 8.838), RideLift = 2.3, Pivots = { Orbit = Vector3.new(3.984, 4.224, 1.772), Rotor0 = Vector3.new(0, 0.9, -0.4), Rotor1 = Vector3.new(2.121, 2.6, 1.721), Rotor2 = Vector3.new(-2.121, 2.6, 1.721), Rotor3 = Vector3.new(-2.121, 2.6, -2.521), Rotor4 = Vector3.new(2.121, 2.6, -2.521) } },
+	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0, -0.083, -1.5), Size = Vector3.new(1.2, 1.834, 5.7), HoldLength = 4.8, Pivots = { Head = Vector3.new(0, -0.86, -3.75) } },
+	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.815, -2.834), Size = Vector3.new(3.02, 1.63, 1.932), Handle = Vector3.new(1.0, 1.0, -2.2), Pivots = { Reel = Vector3.new(0, 0.6, -3) } },
+	push = { AssetId = 127384897680211, Center = Vector3.new(0, 1.25, -3.687), Size = Vector3.new(4.23, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -2.4) },
+	rider = { AssetId = 133849751211282, Center = Vector3.new(0.117, 1.867, -0.699), Size = Vector3.new(4.794, 3.962, 6.162), RideLift = 1.35, Seat = Vector3.new(0, 2.4, 0.6) },
+	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(0.249, 2.95, -1.173), Size = Vector3.new(5.568, 6.169, 6.655), RideLift = 1.3, Seat = Vector3.new(0, 2.15, 0.4) },
+	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.491, -2.566), Size = Vector3.new(6.05, 7.418, 11.168), RideLift = 2.25, Seat = Vector3.new(0, 3.075, 0.6) },
+	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 3.57, 0.02), Size = Vector3.new(9.054, 7.561, 10.84), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2), Pivots = { Drum = Vector3.new(-0, 1.75, -4.55) } },
+	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 2.502, -0.4), Size = Vector3.new(6.058, 4.865, 6.058), RideLift = 2.3, Pivots = { Rotor0 = Vector3.new(-0, 0.9, -0.4), Rotor1 = Vector3.new(2.121, 2.6, 1.721), Rotor2 = Vector3.new(-2.121, 2.6, 1.721), Rotor3 = Vector3.new(-2.121, 2.6, -2.521), Rotor4 = Vector3.new(2.121, 2.6, -2.521) } },
+	mega_push = { AssetId = 121793856419832, Center = Vector3.new(0, 3.25, -5.572), Size = Vector3.new(10.998, 6.5, 13.745), RideLift = 2.23 },
+	fortress = { AssetId = 77627639646586, Center = Vector3.new(-0.602, 4.795, 0.316), Size = Vector3.new(9.054, 10.011, 11.432), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2), Pivots = { Drum = Vector3.new(-0, 1.75, -4.55) } },
+	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.623, -1.678), Size = Vector3.new(9.906, 5.106, 8.838), RideLift = 2.3, Pivots = { Orbit = Vector3.new(3.984, 4.224, 1.772), Rotor0 = Vector3.new(-0, 0.9, -0.4), Rotor1 = Vector3.new(2.121, 2.6, 1.721), Rotor2 = Vector3.new(-2.121, 2.6, 1.721), Rotor3 = Vector3.new(-2.121, 2.6, -2.521), Rotor4 = Vector3.new(2.121, 2.6, -2.521) } },
 	void = { AssetId = 139076317027769, Center = Vector3.new(0.325, 2.805, -1.714), Size = Vector3.new(6.521, 5.291, 9.011), RideLift = 2.2, Pivots = { Orbit = Vector3.new(3.4, 4.2, -0.619), Portal = Vector3.new(0, 0.35, -4.2) } },
-	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 6.325, 0.298), Size = Vector3.new(4.6, 11.75, 10.396), RideLift = 2.2, Pivots = { Prop = Vector3.new(0, 10.2, 5), Rotor0 = Vector3.new(0, 0.5, -0.6) } },
-	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.902, -2.05), Size = Vector3.new(5.815, 5.805, 9.1), RideLift = 3.15, Pivots = { Drill = Vector3.new(-0, 1.9, -5) } },
-	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 3.1, -1.215), Size = Vector3.new(7.412, 6.91, 10.069), RideLift = 3.9, Pivots = { Drum = Vector3.new(0, 0.55, -5.3), JawBottom = Vector3.new(-1.58, 1.335, -4.753), JawTop = Vector3.new(-1.8, 1.915, -4.752) } },
+	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 6.325, 0.525), Size = Vector3.new(4.6, 11.75, 10.85), RideLift = 2.2, Pivots = { Prop = Vector3.new(-0, 10.2, 5.8), Rotor0 = Vector3.new(0, 0.5, -0.6) } },
+	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.902, -2.1), Size = Vector3.new(6.339, 5.805, 9.2), RideLift = 3.15, Pivots = { Drill = Vector3.new(-0, 1.9, -5.1) } },
+	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 3.249, -1.85), Size = Vector3.new(7.412, 6.712, 9.5), RideLift = 3.95, Pivots = { Drum = Vector3.new(0, 0.75, -5.7), JawBottom = Vector3.new(-1.58, 1.335, -4.753), JawTop = Vector3.new(-1.8, 1.915, -4.752) } },
 }
 
--- Fixed colours/materials of the shared pieces (by mesh name).
-local Pieces: { [string]: { Color: Color3, Material: Enum.Material, Transparency: number? } } = {
-	Metal = { Color = rgb(186, 192, 202), Material = Enum.Material.Metal },
-	Chrome = { Color = rgb(232, 236, 242), Material = Enum.Material.Metal },
-	Dark = { Color = rgb(46, 46, 52), Material = Enum.Material.SmoothPlastic },
-	Rubber = { Color = rgb(30, 30, 33), Material = Enum.Material.SmoothPlastic },
-	Wood = { Color = rgb(156, 98, 56), Material = Enum.Material.Wood },
-	Glass = { Color = rgb(170, 220, 240), Material = Enum.Material.Glass, Transparency = 0.45 },
-	Light = { Color = rgb(255, 236, 140), Material = Enum.Material.Neon },
-	Seat = { Color = rgb(70, 46, 34), Material = Enum.Material.SmoothPlastic },
-	Eye = { Color = rgb(255, 255, 255), Material = Enum.Material.SmoothPlastic },
-	Teeth = { Color = rgb(250, 244, 222), Material = Enum.Material.SmoothPlastic },
-	Gold = { Color = rgb(255, 196, 50), Material = Enum.Material.Metal },
-	Fabric = { Color = rgb(92, 104, 70), Material = Enum.Material.Fabric },
+-- Fixed colours/materials of the shared pieces (by mesh name). Warm greys
+-- and browns, to sit in the map's late-afternoon light. The meshes carry
+-- their own baked shading (vertex colours, art/tools/lib.py shade()),
+-- which Roblox multiplies with these colours.
+export type Piece = { Color: Color3, Material: Enum.Material, Transparency: number?, Reflectance: number? }
+
+local Pieces: { [string]: Piece } = {
+	Metal = { Color = rgb(196, 194, 188), Material = Enum.Material.Metal },
+	Chrome = { Color = rgb(240, 238, 232), Material = Enum.Material.Metal, Reflectance = 0.3 },
+	Dark = { Color = rgb(62, 56, 52), Material = Enum.Material.Metal },
+	Rubber = { Color = rgb(40, 37, 35), Material = Enum.Material.Rubber },
+	Tread = { Color = rgb(96, 92, 88), Material = Enum.Material.DiamondPlate }, -- foot plates and decks to stand on
+	Wood = { Color = rgb(168, 106, 60), Material = Enum.Material.Wood },
+	Glass = { Color = rgb(190, 226, 236), Material = Enum.Material.Glass, Transparency = 0.45 },
+	Light = { Color = rgb(255, 232, 150), Material = Enum.Material.Neon },
+	Tail = { Color = rgb(255, 70, 50), Material = Enum.Material.Neon },
+	Seat = { Color = rgb(128, 78, 46), Material = Enum.Material.Leather },
+	Eye = { Color = rgb(255, 252, 244), Material = Enum.Material.SmoothPlastic },
+	Teeth = { Color = rgb(250, 242, 220), Material = Enum.Material.SmoothPlastic },
+	Gold = { Color = rgb(255, 196, 50), Material = Enum.Material.Metal, Reflectance = 0.25 },
+	Fabric = { Color = rgb(112, 118, 76), Material = Enum.Material.Fabric },
 	Battery = { Color = rgb(60, 200, 110), Material = Enum.Material.SmoothPlastic },
-	Stone = { Color = rgb(150, 150, 160), Material = Enum.Material.Slate },
-	HandleGrip = { Color = rgb(36, 36, 40), Material = Enum.Material.SmoothPlastic },
-	SteeringWheel = { Color = rgb(30, 30, 34), Material = Enum.Material.SmoothPlastic },
+	Stone = { Color = rgb(170, 164, 156), Material = Enum.Material.Cobblestone },
+	HandleGrip = { Color = rgb(44, 40, 38), Material = Enum.Material.Rubber },
+	SteeringWheel = { Color = rgb(40, 36, 34), Material = Enum.Material.Rubber },
 }
+
+-- The two paint colours of each tool (Accent / Accent2 pieces).
+local Paint = Enum.Material.SmoothPlastic
 
 local Tools: { [string]: ToolLook } = {
 	-- Front Yard: hand tools
@@ -178,4 +188,4 @@ local Finishes: { [string]: Finish } = {
 	},
 }
 
-return { Models = Models, Pieces = Pieces, Tools = Tools, Finishes = Finishes }
+return { Models = Models, Pieces = Pieces, Paint = Paint, Tools = Tools, Finishes = Finishes }

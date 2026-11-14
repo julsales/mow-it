@@ -431,10 +431,10 @@ end
 local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	if piece.Name == "Accent" then
 		piece.Color = look.Color
-		piece.Material = Enum.Material.SmoothPlastic
+		piece.Material = ToolArt.Paint
 	elseif piece.Name == "Accent2" then
 		piece.Color = look.Color2
-		piece.Material = Enum.Material.SmoothPlastic
+		piece.Material = ToolArt.Paint
 	elseif piece.Name == "Glow" then
 		piece.Color = look.Color2
 		piece.Material = Enum.Material.Neon
@@ -448,6 +448,7 @@ local function paint(piece: BasePart, look: ToolArt.ToolLook)
 			piece.Color = spec.Color
 			piece.Material = spec.Material
 			piece.Transparency = spec.Transparency or 0
+			piece.Reflectance = spec.Reflectance or 0
 		end
 	end
 	if piece:IsA("MeshPart") then

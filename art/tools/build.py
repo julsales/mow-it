@@ -18,7 +18,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import lib  # noqa: E402
-from models import MODELS  # noqa: E402
+from models import HAND, MODELS  # noqa: E402
 
 OUT = os.path.join(HERE, "out")
 PREVIEW = os.path.join(OUT, "preview")
@@ -46,6 +46,8 @@ COLORS = {
     "Crystal": (0.75, 0.55, 1.0),
     "HandleGrip": (0.12, 0.12, 0.13),
     "SteeringWheel": (0.1, 0.1, 0.1),
+    "Tread": (0.3, 0.3, 0.32),
+    "Tail": (0.9, 0.12, 0.1),
 }
 
 
@@ -73,6 +75,7 @@ def export(name):
         axis_up="Y",
         apply_scale_options="FBX_SCALE_ALL",
         mesh_smooth_type="FACE",
+        colors_type="SRGB",
         use_mesh_modifiers=True,
         add_leaf_bones=False,
         bake_anim=False,
@@ -82,42 +85,62 @@ def export(name):
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=False)
 
 
-def preview(name):
+def shoot(path, direction=(-0.75, 1.0, 0.6), res=640, ortho=False):
+    """Render the scene to `path`, looking from `direction` (Blender axes:
+    -Y is roblox +Z, so roblox front -Z is Blender +Y)."""
     scene = bpy.context.scene
+    shaded = True
     for o in scene.objects:
-        base = o.name.split("#")[0].split(".")[0]
-        c = COLORS.get(base, (1, 0, 1))
+        if o.type != "MESH":
+            continue
+        base = o.get("grp") or o.name.split("#")[0].split(".")[0]
+        c = COLORS.get(base.split(".")[0], (1, 0, 1))
         o.color = (*c, 1)
+        baked = o.data.color_attributes.get("Col")
+        if not baked:
+            shaded = False
+            continue
+        # paint x baked shading, roughly as the game shows it
+        look = o.data.color_attributes.get("Look") or o.data.color_attributes.new("Look", "FLOAT_COLOR", "CORNER")
+        for i, d in enumerate(baked.data):
+            look.data[i].color = (c[0] * d.color[0], c[1] * d.color[1], c[2] * d.color[2], 1)
+        o.data.color_attributes.active_color = look
     pts = [o.matrix_world @ Vector(c) for o in scene.objects if o.type == "MESH" for c in o.bound_box]
     lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     center, size = (lo + hi) / 2, (hi - lo).length
     cam_data = bpy.data.cameras.new("cam")
     cam_data.lens = 50
+    if ortho:
+        cam_data.type = "ORTHO"
+        cam_data.ortho_scale = size * 0.95
     cam = bpy.data.objects.new("cam", cam_data)
     scene.collection.objects.link(cam)
-    # 3/4 view from the front-left, a bit above (Blender: -Y is roblox +Z,
-    # so roblox front -Z is Blender +Y).
-    direction = Vector((-0.75, 1.0, 0.6)).normalized()
-    cam.location = center + direction * size * 1.55
+    cam.location = center + Vector(direction).normalized() * size * 1.55
     cam.rotation_euler = (center - cam.location).to_track_quat("-Z", "Y").to_euler()
     scene.camera = cam
     scene.render.engine = "BLENDER_WORKBENCH"
+    scene.view_settings.view_transform = "Standard"  # colours as painted, not film-toned
     shading = scene.display.shading
     shading.light = "STUDIO"
-    shading.color_type = "OBJECT"
+    shading.color_type = "VERTEX" if shaded else "OBJECT"
     shading.show_shadows = True
     shading.show_cavity = True
     shading.cavity_type = "BOTH"
     shading.show_object_outline = True
     scene.display.render_aa = "8"
-    scene.render.resolution_x = scene.render.resolution_y = 520
+    scene.render.resolution_x = scene.render.resolution_y = res
     scene.render.film_transparent = False
-    world = bpy.data.worlds.new("w")
-    world.color = (0.93, 0.9, 0.82)
-    scene.world = world
-    scene.render.filepath = PREVIEW_OVERRIDE or os.path.join(PREVIEW, f"{name}.png")
+    if not scene.world:
+        scene.world = bpy.data.worlds.new("w")
+    scene.world.color = (0.93, 0.9, 0.82)
+    scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
+    bpy.data.objects.remove(cam)
+
+
+def preview(name):
+    shoot(PREVIEW_OVERRIDE or os.path.join(PREVIEW, f"{name}.png"))
 
 
 def bounds():
@@ -138,15 +161,15 @@ RIDERS = {
     "tractor": ("sit", (0, 3.075, 0.6)),
     "combine": ("sit", (0, 3.2, -0.2)),
     "fortress": ("sit", (0, 3.2, -0.2)),
-    "mega_push": ("stand", 2.2),
+    "mega_push": ("stand", 2.23),
     "drone": ("stand", 2.28),
     "swarm": ("stand", 2.28),
     "void": ("stand", 2.2),
     "airship": ("stand", 2.2),
     "drill": ("stand", 3.15),
-    "mowzilla": ("stand", 3.9),
+    "mowzilla": ("stand", 3.95),
 }
-ALLOWED = {"SteeringWheel", "Seat"}
+ALLOWED = {"SteeringWheel", "Seat", "Tread"}  # what the rider holds, sits and stands on
 
 
 def _box_tree(lo, hi):
@@ -175,7 +198,7 @@ def clearance(name):
         }
     hits = []
     for o in bpy.context.scene.objects:
-        if o.type != "MESH" or o.name.split("#")[0].split(".")[0] in ALLOWED:
+        if o.type != "MESH" or o.get("grp", o.name).split("#")[0].split(".")[0] in ALLOWED:
             continue
         world = [o.matrix_world @ v.co for v in o.data.vertices]
         tree = BVHTree.FromPolygons(world, [tuple(p.vertices) for p in o.data.polygons])
@@ -183,7 +206,7 @@ def clearance(name):
             box = _box_tree(lo, hi)
             inside = any(all(lo[i] - 1e-3 <= (v.x, v.z, -v.y)[i] <= hi[i] + 1e-3 for i in range(3)) for v in world)
             if inside or tree.overlap(box):
-                hits.append(f"{o.name}->{part}")
+                hits.append(f"{o.get('grp', o.name)}->{part}")
     return hits
 
 
@@ -194,7 +217,7 @@ def main():
     for name in names or list(MODELS):
         reset()
         MODELS[name]()
-        lib.finish(name)
+        lib.finish(name, ground=name not in HAND)
         meta[name] = bounds()
         meta[name]["pivots"] = {k: v for k, v in lib.PIVOTS.items() if not k.startswith("Spin")}
         hits = clearance(name)
