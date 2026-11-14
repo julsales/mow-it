@@ -407,11 +407,13 @@ def mowzilla():
     # back spikes and flame exhausts. The player stands on top.
     box("Accent", (0, 2.6, -1.0), (5.0, 2.6, 7.4), bevel=0.6)
     box("Dark", (0, 2.2, 0.2), (2.6, 0.2, 2.6), bevel=0.05)
-    # treads
-    for x in (-2.9, 2.9):
-        box("Rubber", (x, 1.05, -1.0), (1.1, 2.1, 7.6), bevel=0.55)
-        for i in range(8):
-            wheel((x, 1.05, -4.0 + i * 0.86), 0.9, 1.15, hub="Dark")
+    # treads: a rubber belt with big road wheels on its outer side, so you
+    # see them turn
+    for x in (-2.8, 2.8):
+        box("Rubber", (x, 1.05, -1.0), (0.9, 2.1, 7.6), bevel=0.5)
+        side = 1 if x > 0 else -1
+        for i in range(5):
+            wheel((x + side * 0.6, 1.05, -3.9 + i * 1.45), 1.5, 0.3, hub="Accent2", spokes=4)
     # mouth + teeth
     box("Dark", (0, 1.65, -4.68), (4.0, 1.1, 0.2), bevel=0.1)
     for i in range(9):
@@ -427,11 +429,17 @@ def mowzilla():
     for i in range(5):
         z = 1.3 + i * 0.55
         cyl("Accent2", (0, 3.85, z), (0, 4.9 - i * 0.12, z + 0.3), 0.35, verts=5, r2=0.03)
-    # exhausts with flames
-    for x in (-1.9, 1.9):
-        cyl("Chrome", (x, 3.5, 1.6), (x, 5.2, 2.0), 0.25, verts=10)
-        cyl("Light", (x, 5.2, 2.0), (x, 6.0, 2.25), 0.22, verts=8, r2=0.04)
+    # exhausts with flames, rooted in the back deck
+    for x in (-1.2, 1.2):
+        cyl("Chrome", (x, 3.3, 1.8), (x, 5.2, 2.1), 0.25, verts=10)
+        cyl("Light", (x, 5.2, 2.1), (x, 6.0, 2.3), 0.22, verts=8, r2=0.04)
+    # monster horns growing out of the head
+    for side in (-1, 1):
+        cyl("Teeth", (side * 1.7, 3.4, -3.4), (side * 2.4, 4.9, -3.6), 0.38, verts=8, r2=0.22)
+        cyl("Teeth", (side * 2.4, 4.9, -3.6), (side * 2.3, 6.0, -3.2), 0.22, verts=8, r2=0.02)
     # front cutter drum
+    for x in (-2.2, 2.2):  # arms holding the drum
+        cyl("Dark", (x, 0.55, -5.3), (x, 1.6, -4.3), 0.16, verts=6)
     with rig("Reel"):
         cyl("Metal", (-2.6, 0.55, -5.3), (2.6, 0.55, -5.3), 0.5, verts=12)
         for i in range(10):
