@@ -40,24 +40,25 @@ window.SetSubtitle("Test tools: everything here changes only your save. F2 opens
 window.SetTabs(true)
 
 -- Toggle button, bottom-right above the hotbar.
-local toggle = Ui.Button(gui, "AdminToggle", "ADMIN", function()
+local current = "Tools"
+local show: (string) -> ()
+local function open()
 	if window.Panel.Visible then
 		window.Panel.Visible = false
 	else
 		Ui.OpenPanel(window.Panel)
+		show(current) -- rebuilt on open: tool previews use the art loaded by then
 	end
-end, "Muted")
+end
+
+local toggle = Ui.Button(gui, "AdminToggle", "ADMIN", open, "Muted")
 toggle.AnchorPoint = Vector2.new(1, 1)
 toggle.Position = UDim2.new(1, -12, 1, -96)
 toggle.Size = UDim2.fromOffset(92, 40)
 
 UserInputService.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.F2 then
-		if window.Panel.Visible then
-			window.Panel.Visible = false
-		else
-			Ui.OpenPanel(window.Panel)
-		end
+		open()
 	end
 end)
 
@@ -94,6 +95,11 @@ end
 local pages: { [string]: () -> () } = {}
 
 pages.Tools = function()
+	-- Wait for the tool meshes (ToolArtService) so previews aren't empty.
+	local art = ReplicatedStorage:FindFirstChild("ToolArt")
+	if art then
+		game:GetService("ContentProvider"):PreloadAsync({ art })
+	end
 	local search = Instance.new("TextBox")
 	search.Name = "Search"; search.LayoutOrder = 1
 	search.PlaceholderText = "Search tools..."; search.Text = ""
@@ -153,7 +159,8 @@ end
 
 local order = { "Tools", "Economy", "Teleport", "Player" }
 local tabs: { [string]: TextButton } = {}
-local function show(name: string)
+function show(name: string)
+	current = name
 	clear()
 	for tabName, tab in tabs do
 		Ui.Paint(tab, if tabName == name then "Blue" else "Muted")
@@ -163,4 +170,3 @@ end
 for i, name in order do
 	tabs[name] = Ui.Tab(window.Tabs, name, i, function() show(name) end)
 end
-show("Tools")
