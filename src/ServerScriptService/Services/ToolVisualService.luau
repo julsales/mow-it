@@ -101,11 +101,17 @@ local function attach(character: Model, toolId: string)
 			-- Seated ride-on: the hips rest on the seat (ToolPoses plays the
 			-- sit animation), so HipHeight is the seat's height whatever
 			-- the avatar's leg length. R6 legs count as 2 studs.
+			-- The machine sits GROUND_LIFT higher, and seated thighs fold
+			-- forward under the hips: lift by both so the avatar sits ON the
+			-- cushion instead of sinking into it (measured in Play).
+			local thigh = character:FindFirstChild("RightUpperLeg") :: BasePart?
+			local rest = GROUND_LIFT + (if thigh then thigh.Size.Z / 2 else 0.45)
 			baseHipHeight[humanoid] = humanoid.HipHeight
-			humanoid.HipHeight = if isR6 then math.max(0, seat - 2) else seat
+			humanoid.HipHeight = if isR6 then math.max(0, seat - 2 + rest) else seat + rest
 		elseif lift > 0 then
+			-- Standing on a deck: + GROUND_LIFT, or the feet sink into it.
 			baseHipHeight[humanoid] = humanoid.HipHeight
-			humanoid.HipHeight += lift
+			humanoid.HipHeight += lift + GROUND_LIFT
 		end
 		-- R6 rigs report HipHeight 0; their legs (2 studs) hold the HRP up.
 		local legs = if isR6 then 2 else 0

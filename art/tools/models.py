@@ -13,8 +13,10 @@ MODELS = {}
 
 def handrail(deck, z=-1.25, width=0.6):
     """Bar to hold for standing rides: at hand height, in front of the legs."""
-    cyl("Dark", (0, deck, z - 0.15), (0, deck + 2.45, z), 0.08, verts=6)
-    cyl("SteeringWheel", (-width, deck + 2.5, z), (width, deck + 2.5, z), 0.1, verts=8)
+    cyl("Dark", (0, deck, z - 0.15), (0, deck + 2.45, z), 0.12, verts=8)
+    cyl("SteeringWheel", (-width, deck + 2.5, z), (width, deck + 2.5, z), 0.13, verts=8)
+    for side in (-1, 1):  # bright grips where the hands go (ToolModels GripL/GripR)
+        cyl("Accent2", (side * width * 0.55, deck + 2.5, z), (side * (width + 0.05), deck + 2.5, z), 0.17, verts=8)
 
 
 def model(fn):

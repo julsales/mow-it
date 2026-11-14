@@ -61,14 +61,14 @@ local Models: { [string]: ModelDef } = {
 	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3, Seat = Vector3.new(0, 2.15, 0.4) },
 	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.491, -2.23), Size = Vector3.new(6.05, 7.418, 10.14), RideLift = 2.25, Seat = Vector3.new(0, 3.075, 0.6) },
 	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 3.595, 0.24), Size = Vector3.new(9.054, 7.611, 10.12), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2) },
-	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 2.468, -0.4), Size = Vector3.new(6.058, 4.795, 6.058), RideLift = 2.3 },
+	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 2.502, -0.4), Size = Vector3.new(6.058, 4.865, 6.058), RideLift = 2.3 },
 	mega_push = { AssetId = 121793856419832, Center = Vector3.new(0, 3.25, -5.622), Size = Vector3.new(9.23, 6.5, 13.645), RideLift = 2.2 },
 	fortress = { AssetId = 77627639646586, Center = Vector3.new(-0.602, 4.395, 0.556), Size = Vector3.new(9.054, 9.211, 10.752), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2) },
-	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.613, -1.678), Size = Vector3.new(9.906, 5.087, 8.838), RideLift = 2.3 },
+	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.623, -1.678), Size = Vector3.new(9.906, 5.106, 8.838), RideLift = 2.3 },
 	void = { AssetId = 139076317027769, Center = Vector3.new(0.325, 2.805, -1.714), Size = Vector3.new(6.521, 5.291, 9.011), RideLift = 2.2 },
 	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 6.325, 0.298), Size = Vector3.new(4.6, 11.75, 10.396), RideLift = 2.2 },
-	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.868, -1.8), Size = Vector3.new(5.815, 5.735, 9.6), RideLift = 3.15 },
-	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 3.193, -1.059), Size = Vector3.new(7.412, 6.585, 9.756), RideLift = 3.9 },
+	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.902, -1.8), Size = Vector3.new(5.815, 5.805, 9.6), RideLift = 3.15 },
+	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 3.227, -1.059), Size = Vector3.new(7.412, 6.655, 9.756), RideLift = 3.9 },
 }
 
 -- Fixed colours/materials of the shared pieces (by mesh name).
