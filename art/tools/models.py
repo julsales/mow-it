@@ -349,7 +349,7 @@ def combine():
     box("Accent", (3.8, 1.2, -3.3), (0.25, 1.6, 2.0), bevel=0.08)
     for i in range(14):
         box("Chrome", (-3.4 + i * 0.52, 0.4, -4.3), (0.12, 0.12, 0.5), bevel=0.0)
-    with rig("Reel"):
+    with rig("Drum"):  # the header reel turns all the time
         cyl("Accent2", (-3.6, 1.7, -3.9), (3.6, 1.7, -3.9), 0.1, verts=8)
         for i in range(6):
             a = math.radians(i * 60)
@@ -440,7 +440,7 @@ def mowzilla():
     # front cutter drum
     for x in (-2.2, 2.2):  # arms holding the drum
         cyl("Dark", (x, 0.55, -5.3), (x, 1.6, -4.3), 0.16, verts=6)
-    with rig("Reel"):
+    with rig("Drum"):  # the cutter drum spins all the time
         cyl("Metal", (-2.6, 0.55, -5.3), (2.6, 0.55, -5.3), 0.5, verts=12)
         for i in range(10):
             box("Chrome", (-2.3 + i * 0.5, 0.55, -5.3), (0.1, 1.3, 0.12), bevel=0, rot=[("x", i * 36)])

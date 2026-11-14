@@ -2,7 +2,8 @@
 -- Moves the animated pieces of every held tool (any player's), on this
 -- client only. Pieces carry a "Rig" attribute (ToolModels, from the Blender
 -- mesh names "…#Rig", see Config/ToolArt):
---   Spin*/Reel  roll with the ground speed (wheels, reel blades, drums)
+--   Spin*/Reel  roll with the ground speed (wheels, reel-mower blades)
+--   Drum        turns all the time (MOWZILLA cutter, combine header reel)
 --   Rotor*/Head spin fast around their own Y (propellers, trimmer string)
 --   Portal      turns slowly around its own Y (VOID portal)
 --   Prop/Drill  spin around their own Z (blimp propeller, drill nose)
@@ -70,6 +71,11 @@ local function animate(entry: Entry, hrp: BasePart?, now: number, dt: number)
 		if startsWith(name, "Spin") or name == "Reel" then
 			-- Rolling forward (-Z): the top of the wheel moves forward.
 			rig.Angle -= speed / rig.Radius * dt
+			each(function(p)
+				return p.Base * CFrame.Angles(rig.Angle, 0, 0)
+			end)
+		elseif name == "Drum" then
+			rig.Angle -= 7 * dt
 			each(function(p)
 				return p.Base * CFrame.Angles(rig.Angle, 0, 0)
 			end)
