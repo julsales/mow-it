@@ -41,6 +41,9 @@ COLORS = {
     "Gold": (1.0, 0.78, 0.2),
     "Fabric": (0.3, 0.35, 0.25),
     "Battery": (0.2, 0.75, 0.35),
+    "Stone": (0.5, 0.5, 0.55),
+    "Glow": (0.9, 0.4, 1.0),
+    "Crystal": (0.75, 0.55, 1.0),
     "HandleGrip": (0.12, 0.12, 0.13),
     "SteeringWheel": (0.1, 0.1, 0.1),
 }
@@ -51,6 +54,7 @@ PREVIEW_OVERRIDE = None
 
 def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    lib.reset_state()
 
 
 def export(name):
@@ -81,7 +85,7 @@ def export(name):
 def preview(name):
     scene = bpy.context.scene
     for o in scene.objects:
-        base = o.name.split(".")[0]
+        base = o.name.split("#")[0].split(".")[0]
         c = COLORS.get(base, (1, 0, 1))
         o.color = (*c, 1)
     pts = [o.matrix_world @ Vector(c) for o in scene.objects if o.type == "MESH" for c in o.bound_box]

@@ -18,6 +18,7 @@
 --     of in the hand), Engine (bool: plays the engine loop), RideLift
 --     (studs the player is raised to stand on it).
 
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -426,7 +427,7 @@ local function artTemplate(toolId: string): (Model?, ToolArt.ToolLook?, ToolArt.
 	return nil, nil, nil
 end
 
--- Paint one mesh piece by its name ("Group" or "Group.Extra").
+-- Paint one mesh piece by its group name (extra and rig already split off).
 local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	if piece.Name == "Accent" then
 		piece.Color = look.Color
@@ -434,6 +435,13 @@ local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	elseif piece.Name == "Accent2" then
 		piece.Color = look.Color2
 		piece.Material = Enum.Material.SmoothPlastic
+	elseif piece.Name == "Glow" then
+		piece.Color = look.Color2
+		piece.Material = Enum.Material.Neon
+	elseif piece.Name == "Crystal" then
+		piece.Color = look.Color2
+		piece.Material = Enum.Material.Glass
+		piece.Transparency = 0.25
 	else
 		local spec = ToolArt.Pieces[piece.Name]
 		if spec then
@@ -449,6 +457,58 @@ local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	if appearance then
 		appearance:Destroy() -- the importer's material would hide the paint
 	end
+end
+
+-- Golden / Rainbow / Void: special paint, a glow and particles on the
+-- biggest Accent piece. Rainbow pieces are tagged "RainbowPiece" and
+-- recoloured every frame by ToolAnimations.client.
+local function applyFinish(model: Model, look: ToolArt.ToolLook)
+	local finish = look.Finish and ToolArt.Finishes[look.Finish]
+	if not finish then
+		return
+	end
+	local host: BasePart? = nil
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			if d.Name == "Accent" then
+				d.Color = finish.Color
+				d.Material = finish.Material
+				if finish.Rainbow then
+					CollectionService:AddTag(d, "RainbowPiece")
+				end
+				if not host or d.Size.Magnitude > host.Size.Magnitude then
+					host = d
+				end
+			elseif d.Name == "Accent2" or d.Name == "Glow" then
+				d.Color = finish.Color2
+				d.Material = Enum.Material.Neon
+			end
+		end
+	end
+	if not host then
+		return
+	end
+	local p = finish.Particle
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "FinishParticles"
+	emitter.Texture = p.Texture
+	emitter.Color = p.Color
+	emitter.Rate = p.Rate
+	emitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.2, p.Size), NumberSequenceKeypoint.new(1, 0) })
+	emitter.LightEmission = p.LightEmission
+	emitter.Lifetime = NumberRange.new(0.8, 1.6)
+	emitter.Speed = NumberRange.new(0.5, 2)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Rotation = NumberRange.new(0, 360)
+	emitter.RotSpeed = NumberRange.new(-90, 90)
+	emitter.Acceleration = Vector3.new(0, 1.5, 0)
+	emitter.Parent = host
+	local light = Instance.new("PointLight")
+	light.Name = "FinishLight"
+	light.Color = finish.Light
+	light.Range = 10
+	light.Brightness = 1.2
+	light.Parent = host
 end
 
 local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.ModelDef, toolId: string, kind: string, fit: Fit?): (Model, BasePart, number)
@@ -470,6 +530,12 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 		if d:IsA("Script") or d:IsA("LocalScript") or d:IsA("ModuleScript") then
 			d:Destroy()
 		elseif d:IsA("BasePart") then
+			-- "Group.Extra#Rig": the rig is what ToolAnimations moves.
+			local name, rigName = string.match(d.Name, "^([^#]+)#(.+)$")
+			if name and rigName then
+				d.Name = name
+				d:SetAttribute("Rig", rigName)
+			end
 			local group, extra = string.match(d.Name, "^([^%.]+)%.(.+)$")
 			if group and extra then
 				if keep[extra] then
@@ -492,6 +558,13 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 	model.WorldPivot = CFrame.identity
 	if math.abs(scale - 1) > 1e-3 then
 		model:ScaleTo(scale)
+	end
+	applyFinish(model, look)
+	-- Hinge of the blades / lever, for the open-close animation.
+	if def.Snip then
+		model:SetAttribute("SnipPivot", def.Snip.Pivot * scale)
+		model:SetAttribute("SnipAxis", def.Snip.Axis)
+		model:SetAttribute("SnipAngle", def.Snip.Angle)
 	end
 	-- 4. Push mowers: the handle is built to fit the player's arms.
 	if def.Handle then

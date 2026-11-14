@@ -9,6 +9,11 @@
 -- Center/Size: the model's bounding box as authored in Blender, in studs
 -- (art/tools/out/meta.json); used to put the imported mesh back exactly
 -- where it was authored, whatever unit scale the importer picked.
+--
+-- Moving pieces (ToolAnimations.client) are meshes named "…#Rig": SpinN /
+-- Reel turn with the ground speed, Rotor*/Head/Prop/Drill/Portal spin all
+-- the time, Orbit circles the player, Buzz shakes and SnipL/SnipR/Lever
+-- open and close around `Snip.Pivot` (authored coordinates) on each cut.
 
 export type ModelDef = {
 	AssetId: number,
@@ -17,6 +22,7 @@ export type ModelDef = {
 	HoldLength: number?, -- hand tools: longest side in the hand (studs)
 	RideLift: number?, -- riders: height of the deck the player stands on
 	Handle: Vector3?, -- push/reel mowers: the game adds the fitted handle from (±X, Y, Z)
+	Snip: { Pivot: Vector3, Axis: Vector3, Angle: number }?, -- blades/lever: hinge and how far they open (degrees)
 }
 
 export type ToolLook = {
@@ -25,19 +31,29 @@ export type ToolLook = {
 	Color2: Color3, -- "Accent2" pieces (stripes, rims, trim)
 	Extras: { string }?, -- optional pieces to keep ("Turbo", "Crown"…)
 	Scale: number?, -- ground tools: size multiplier (default from the ladder)
+	Finish: string?, -- "Golden" | "Rainbow" | "Void": special paint + effects (Finishes)
+}
+
+export type Finish = {
+	Color: Color3, -- replaces the Accent paint
+	Color2: Color3, -- Accent2 / Glow, always neon
+	Material: Enum.Material,
+	Rainbow: boolean?, -- Accent cycles through the rainbow (ToolAnimations.client)
+	Particle: { Texture: string, Color: ColorSequence, Rate: number, Size: number, LightEmission: number },
+	Light: Color3,
 }
 
 local rgb = Color3.fromRGB
 
 local Models: { [string]: ModelDef } = {
-	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3 },
-	scissors_safety = { AssetId = 120638250934550, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8 },
-	scissors_kitchen = { AssetId = 124984095097638, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1 },
-	shears = { AssetId = 111659672280353, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6 },
+	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3, Snip = { Pivot = Vector3.new(0, 0.25, -1.55), Axis = Vector3.xAxis, Angle = 10 } },
+	scissors_safety = { AssetId = 120638250934550, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8, Snip = { Pivot = Vector3.new(0, 0, -0.48), Axis = Vector3.yAxis, Angle = 18 } },
+	scissors_kitchen = { AssetId = 124984095097638, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1, Snip = { Pivot = Vector3.new(0, 0, -0.45), Axis = Vector3.yAxis, Angle = 16 } },
+	shears = { AssetId = 111659672280353, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6, Snip = { Pivot = Vector3.new(0, 0, -0.8), Axis = Vector3.yAxis, Angle = 14 } },
 	sickle = { AssetId = 93802071925746, Center = Vector3.new(0, 0.866, -0.925), Size = Vector3.new(0.329, 2.062, 3.05), HoldLength = 2.3 },
 	grass_whip = { AssetId = 123278661581067, Center = Vector3.new(0, 0.207, -1.6), Size = Vector3.new(0.269, 0.813, 4.3), HoldLength = 3.2 },
 	hedge = { AssetId = 72879795646218, Center = Vector3.new(0, 0.218, -1.55), Size = Vector3.new(0.9, 1.585, 4), HoldLength = 3.4 },
-	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0.025, -0.083, -1.515), Size = Vector3.new(1.15, 1.834, 5.73), HoldLength = 4.8 },
+	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0, -0.083, -1.55), Size = Vector3.new(1.2, 1.834, 5.8), HoldLength = 4.8 },
 	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2) },
 	push = { AssetId = 127384897680211, Center = Vector3.new(0, 1.25, -3.687), Size = Vector3.new(3.55, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -2.4) },
 	rider = { AssetId = 133849751211282, Center = Vector3.new(0, 1.696, -0.776), Size = Vector3.new(4.455, 3.62, 6.007), RideLift = 1.35 },
@@ -45,6 +61,12 @@ local Models: { [string]: ModelDef } = {
 	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.141, -2.23), Size = Vector3.new(6.05, 6.718, 10.14), RideLift = 2.25 },
 	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 2.895, 0.179), Size = Vector3.new(9.054, 6.211, 9.998), RideLift = 2.2 },
 	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 1.778, -0.4), Size = Vector3.new(6.058, 3.415, 6.058), RideLift = 2.3 },
+	mega_push = { AssetId = 121793856419832, Center = Vector3.new(0, 3.25, -7.072), Size = Vector3.new(9.23, 6.5, 16.545), RideLift = 2.2 },
+	fortress = { AssetId = 77627639646586, Center = Vector3.new(-0.602, 4.395, 0.256), Size = Vector3.new(9.054, 9.211, 10.152), RideLift = 2.2 },
+	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.393, -1.678), Size = Vector3.new(9.906, 4.645, 8.838), RideLift = 2.3 },
+	void = { AssetId = 139076317027769, Center = Vector3.new(0.325, 2.805, -1.714), Size = Vector3.new(6.521, 5.291, 9.011), RideLift = 2.2 },
+	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 5.325, 0.298), Size = Vector3.new(4.6, 9.75, 10.396), RideLift = 2.2 },
+	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.31, -1.8), Size = Vector3.new(5.815, 4.619, 9.6), RideLift = 3.15 },
 	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 2.953, -1.209), Size = Vector3.new(7.115, 6.107, 9.456), RideLift = 3.9 },
 }
 
@@ -63,6 +85,7 @@ local Pieces: { [string]: { Color: Color3, Material: Enum.Material, Transparency
 	Gold = { Color = rgb(255, 196, 50), Material = Enum.Material.Metal },
 	Fabric = { Color = rgb(92, 104, 70), Material = Enum.Material.Fabric },
 	Battery = { Color = rgb(60, 200, 110), Material = Enum.Material.SmoothPlastic },
+	Stone = { Color = rgb(150, 150, 160), Material = Enum.Material.Slate },
 	HandleGrip = { Color = rgb(36, 36, 40), Material = Enum.Material.SmoothPlastic },
 	SteeringWheel = { Color = rgb(30, 30, 34), Material = Enum.Material.SmoothPlastic },
 }
@@ -111,17 +134,46 @@ local Tools: { [string]: ToolLook } = {
 	estate_comb = { Model = "combine", Color = rgb(60, 170, 90), Color2 = rgb(255, 230, 120) },
 	greenkeeper = { Model = "tractor", Color = rgb(30, 110, 60), Color2 = rgb(255, 255, 255), Extras = { "Canopy" } },
 	mansion_mower = { Model = "rider", Color = rgb(30, 40, 70), Color2 = rgb(255, 196, 50) },
-	royal_tractor = { Model = "tractor", Color = rgb(120, 40, 170), Color2 = rgb(255, 196, 50), Extras = { "Canopy", "Crown" } },
-	fairway_titan = { Model = "tractor", Color = rgb(240, 240, 240), Color2 = rgb(30, 130, 70), Extras = { "Canopy" } },
-	-- Mega Fields
+	royal_tractor = { Model = "tractor", Color = rgb(120, 40, 170), Color2 = rgb(255, 196, 50), Extras = { "Canopy", "Crown" }, Finish = "Golden" },
+	fairway_titan = { Model = "tractor", Color = rgb(240, 240, 240), Color2 = rgb(30, 130, 70), Extras = { "Canopy" }, Finish = "Golden" },
+	-- Mega Fields: the special ones (themed, comically big, VOID)
 	combine_harvester = { Model = "combine", Color = rgb(220, 50, 40), Color2 = rgb(255, 214, 70) },
-	mega_mower = { Model = "combine", Color = rgb(250, 200, 30), Color2 = rgb(40, 40, 46) },
-	field_fortress = { Model = "combine", Color = rgb(80, 90, 110), Color2 = rgb(250, 140, 30) },
-	drone_swarm = { Model = "drone", Color = rgb(40, 180, 230), Color2 = rgb(255, 255, 255) },
-	titan_harvester = { Model = "combine", Color = rgb(30, 30, 36), Color2 = rgb(255, 196, 50) },
-	sky_mower = { Model = "drone", Color = rgb(150, 70, 230), Color2 = rgb(120, 230, 255) },
-	terra_mower = { Model = "mowzilla", Color = rgb(70, 140, 60), Color2 = rgb(255, 230, 90) },
-	mowzilla = { Model = "mowzilla", Color = rgb(200, 30, 40), Color2 = rgb(255, 200, 40) },
+	mega_mower = { Model = "mega_push", Color = rgb(230, 40, 40), Color2 = rgb(255, 214, 60), Extras = { "Bag", "Deluxe" }, Finish = "Rainbow" },
+	field_fortress = { Model = "fortress", Color = rgb(70, 90, 170), Color2 = rgb(255, 210, 60), Finish = "Golden" },
+	drone_swarm = { Model = "swarm", Color = rgb(40, 180, 230), Color2 = rgb(255, 255, 255), Finish = "Rainbow" },
+	titan_harvester = { Model = "void", Color = rgb(36, 22, 58), Color2 = rgb(190, 90, 255), Scale = 1.3, Finish = "Void" },
+	sky_mower = { Model = "airship", Color = rgb(70, 140, 230), Color2 = rgb(250, 248, 240), Finish = "Rainbow" },
+	terra_mower = { Model = "drill", Color = rgb(150, 90, 50), Color2 = rgb(255, 130, 30) },
+	mowzilla = { Model = "mowzilla", Color = rgb(200, 30, 40), Color2 = rgb(255, 200, 40), Scale = 1.35, Finish = "Void" },
 }
 
-return { Models = Models, Pieces = Pieces, Tools = Tools }
+-- Special finishes for the top tools. Particle textures are free Creator
+-- Store images (docs/ASSETS.md): "star sparkle particle" by Vupatu (decal
+-- 6490035158), "Rainbow Sparkle Particle" by Rokelium (9289210132),
+-- "Dream Particle Void Outline" by redgodnior (4508781782).
+local Finishes: { [string]: Finish } = {
+	Golden = {
+		Color = rgb(255, 190, 40),
+		Color2 = rgb(255, 244, 180),
+		Material = Enum.Material.Foil,
+		Particle = { Texture = "rbxassetid://6490035152", Color = ColorSequence.new(rgb(255, 230, 120)), Rate = 10, Size = 0.6, LightEmission = 1 },
+		Light = rgb(255, 210, 90),
+	},
+	Rainbow = {
+		Color = rgb(255, 80, 80),
+		Color2 = rgb(255, 255, 255),
+		Material = Enum.Material.SmoothPlastic,
+		Rainbow = true,
+		Particle = { Texture = "rbxassetid://9289210113", Color = ColorSequence.new(rgb(255, 255, 255)), Rate = 12, Size = 0.7, LightEmission = 0.6 },
+		Light = rgb(200, 200, 255),
+	},
+	Void = {
+		Color = rgb(24, 12, 40),
+		Color2 = rgb(180, 80, 255),
+		Material = Enum.Material.SmoothPlastic,
+		Particle = { Texture = "rbxassetid://4508781776", Color = ColorSequence.new(rgb(190, 100, 255), rgb(60, 0, 120)), Rate = 14, Size = 1.1, LightEmission = 0.8 },
+		Light = rgb(170, 70, 255),
+	},
+}
+
+return { Models = Models, Pieces = Pieces, Tools = Tools, Finishes = Finishes }

@@ -178,6 +178,18 @@ function ToolVisualService.Init()
 	ProfileService.OnChanged(function(player)
 		task.spawn(refresh, player)
 	end)
+	-- Each cut request stamps the held model, so every client plays the
+	-- blades' open-close (ToolAnimations.client). Visual only: the cut
+	-- itself is validated by EconomyService.
+	local remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes")
+	local cutRequest = remotes:WaitForChild("CutRequest") :: RemoteEvent
+	cutRequest.OnServerEvent:Connect(function(player)
+		local character = player.Character
+		local model = character and character:FindFirstChild("ToolModel")
+		if model then
+			model:SetAttribute("SwingAt", workspace:GetServerTimeNow())
+		end
+	end)
 end
 
 return ToolVisualService

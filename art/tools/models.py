@@ -6,7 +6,7 @@
 
 import math
 
-from lib import arc_pts, ball, box, cyl, prism, ring, wedge, wheel
+from lib import arc_pts, ball, box, cyl, prism, rig, ring, wedge, wheel, xform
 
 MODELS = {}
 
@@ -26,8 +26,9 @@ def clipper():
     box("Metal", (0, 0.02, -1.0), (0.62, 0.14, 2.1), bevel=0.05, rot=[("x", -5)])
     cyl("Chrome", (-0.33, -0.07, -2.05), (0.33, -0.07, -2.05), 0.2, verts=10)
     cyl("Dark", (-0.2, 0.25, -1.55), (0.2, 0.25, -1.55), 0.09, verts=8)
-    box("Metal", (0, 0.42, -0.75), (0.56, 0.1, 1.75), bevel=0.04, rot=[("x", 8)])
-    box("Accent", (0, 0.52, -0.55), (0.46, 0.08, 0.9), bevel=0.03, rot=[("x", 8)])
+    with rig("Lever"):  # presses down around the pin when cutting
+        box("Metal", (0, 0.42, -0.75), (0.56, 0.1, 1.75), bevel=0.04, rot=[("x", 8)])
+        box("Accent", (0, 0.52, -0.55), (0.46, 0.08, 0.9), bevel=0.03, rot=[("x", 8)])
     ring("Accent", (0, -0.16, 0.35), (1, 0, 0), 0.24, 0.07, seg=10, minor_seg=5)
 
 
@@ -40,20 +41,22 @@ def _scissor_loop(side, color, big):
 def scissors_safety():
     # Chunky kid scissors: round plastic loops, short blunt blades.
     for side in (-1, 1):
-        _scissor_loop(side, "Accent", True)
-        box("Accent", (side * 0.14, 0, -0.25), (0.22, 0.18, 0.55), bevel=0.06, rot=[("y", side * 18)])
-        pts = [(-0.11, 0), (0.11, 0), (0.1, 1.1), (0.0, 1.32), (-0.1, 1.1)]
-        prism("Metal", pts, (side * 0.05, 0, -0.45), (side * 0.0 + 1, 0, 0), (side * 0.06, 0, -1), 0.06)
+        with rig("SnipL" if side < 0 else "SnipR"):  # open/close around the screw
+            _scissor_loop(side, "Accent", True)
+            box("Accent", (side * 0.14, 0, -0.25), (0.22, 0.18, 0.55), bevel=0.06, rot=[("y", side * 18)])
+            pts = [(-0.11, 0), (0.11, 0), (0.1, 1.1), (0.0, 1.32), (-0.1, 1.1)]
+            prism("Metal", pts, (side * 0.05, 0, -0.45), (1, 0, 0), (side * 0.06, 0, -1), 0.06)
     ball("Chrome", (0, 0.06, -0.48), (0.16, 0.08, 0.16), seg=8, rings=4)
 
 
 @model
 def scissors_kitchen():
     for side in (-1, 1):
-        ring("Accent", (side * 0.3, 0, 0.3), (0, 1, 0), 0.3 if side < 0 else 0.25, 0.1, seg=10, minor_seg=6)
-        box("Accent", (side * 0.13, 0, -0.18), (0.2, 0.16, 0.5), bevel=0.05, rot=[("y", side * 15)])
-        pts = [(-0.12, 0), (0.12, 0), (0.0, 1.9)]
-        prism("Metal", pts, (side * 0.05, 0, -0.42), (1, 0, 0), (side * 0.07, 0, -1), 0.06)
+        with rig("SnipL" if side < 0 else "SnipR"):
+            ring("Accent", (side * 0.3, 0, 0.3), (0, 1, 0), 0.3 if side < 0 else 0.25, 0.1, seg=10, minor_seg=6)
+            box("Accent", (side * 0.13, 0, -0.18), (0.2, 0.16, 0.5), bevel=0.05, rot=[("y", side * 15)])
+            pts = [(-0.12, 0), (0.12, 0), (0.0, 1.9)]
+            prism("Metal", pts, (side * 0.05, 0, -0.42), (1, 0, 0), (side * 0.07, 0, -1), 0.06)
     ball("Chrome", (0, 0.06, -0.45), (0.15, 0.08, 0.15), seg=8, rings=4)
 
 
@@ -61,10 +64,11 @@ def scissors_kitchen():
 def shears():
     # Garden shears: long wooden handles, red grips, big curved blades.
     for side in (-1, 1):
-        cyl("Wood", (side * 0.35, 0, 0.9), (side * 0.12, 0, -0.75), 0.12, verts=8)
-        cyl("Accent", (side * 0.4, 0, 1.25), (side * 0.33, 0, 0.75), 0.15, verts=8)
-        pts = [(-0.18, 0), (0.16, 0), (0.12, 0.9), (0.02, 1.7), (-0.08, 1.5), (-0.14, 0.8)]
-        prism("Metal", pts, (side * 0.06, 0, -0.75), (1, 0, 0), (side * 0.1, 0, -1), 0.07)
+        with rig("SnipL" if side < 0 else "SnipR"):
+            cyl("Wood", (side * 0.35, 0, 0.9), (side * 0.12, 0, -0.75), 0.12, verts=8)
+            cyl("Accent", (side * 0.4, 0, 1.25), (side * 0.33, 0, 0.75), 0.15, verts=8)
+            pts = [(-0.18, 0), (0.16, 0), (0.12, 0.9), (0.02, 1.7), (-0.08, 1.5), (-0.14, 0.8)]
+            prism("Metal", pts, (side * 0.06, 0, -0.75), (1, 0, 0), (side * 0.1, 0, -1), 0.07)
     cyl("Chrome", (0, -0.12, -0.8), (0, 0.12, -0.8), 0.12, verts=8)
     box("Dark", (0, 0, -0.55), (0.32, 0.14, 0.28), bevel=0.04)
 
@@ -103,14 +107,16 @@ def hedge():
     box("Dark", (0, 0.1, 0.3), (0.34, 0.5, 0.25), bevel=0.06)
     ring("Dark", (0, 0.55, -0.8), (1, 0, 0), 0.38, 0.08, seg=10, minor_seg=5)
     box("Dark", (0, 0.05, -1.3), (0.9, 0.5, 0.2), bevel=0.06)
-    box("Metal", (0, 0.0, -2.4), (0.36, 0.08, 2.2), bevel=0.02)
-    for i in range(10):
-        for side in (-1, 1):
-            prism("Metal", [(0, 0), (0.18, 0), (0.09, 0.22)], (side * 0.18, 0, -1.45 - i * 0.2), (0, 0, -1), (side, 0, 0), 0.05, bevel=0.0)
+    with rig("Buzz"):  # the toothed bar shakes while cutting
+        box("Metal", (0, 0.0, -2.4), (0.36, 0.08, 2.2), bevel=0.02)
+        for i in range(10):
+            for side in (-1, 1):
+                prism("Metal", [(0, 0), (0.18, 0), (0.09, 0.22)], (side * 0.18, 0, -1.45 - i * 0.2), (0, 0, -1), (side, 0, 0), 0.05, bevel=0.0)
     box("Battery.Battery", (0, -0.4, -0.35), (0.55, 0.35, 0.7), bevel=0.06)
-    box("Accent.Saw", (0, 0.0, -2.4), (0.5, 0.12, 2.3), bevel=0.04)
-    for i in range(12):
-        box("Chrome.Saw", (0, 0, -1.3 - i * 0.2), (0.62, 0.06, 0.1), bevel=0.0)
+    with rig("Buzz"):
+        box("Accent.Saw", (0, 0.0, -2.4), (0.5, 0.12, 2.3), bevel=0.04)
+        for i in range(12):
+            box("Chrome.Saw", (0, 0, -1.3 - i * 0.2), (0.62, 0.06, 0.1), bevel=0.0)
 
 
 @model
@@ -125,10 +131,11 @@ def string_trimmer():
     # head + guard + spool + strings
     box("Dark", (0, -0.6, -3.75), (0.35, 0.35, 0.45), bevel=0.08)
     cyl("Accent", (0, -0.72, -3.55), (0, -0.78, -3.55), 0.55, verts=14, bevel=0.02)
-    cyl("Dark", (0, -0.82, -3.85), (0, -1.0, -3.85), 0.2, verts=10)
-    for a in (0, 120, 240):
-        r = math.radians(a)
-        cyl("Accent2", (0, -0.95, -3.85), (math.cos(r) * 0.6, -0.95, -3.85 + math.sin(r) * 0.6), 0.025, verts=4, bevel=0)
+    with rig("Head"):  # spool and strings whirl while cutting
+        cyl("Dark", (0, -0.82, -3.85), (0, -1.0, -3.85), 0.2, verts=10)
+        for a in (0, 90, 180, 270):
+            r = math.radians(a)
+            cyl("Accent2", (math.cos(r) * 0.05, -0.95, -3.85 + math.sin(r) * 0.05), (math.cos(r) * 0.6, -0.95, -3.85 + math.sin(r) * 0.6), 0.025, verts=4, bevel=0)
     # Volt Whacker: lightning fins
     prism("Light.Bolt", [(0, 0), (0.3, 0), (0.12, 0.25), (0.35, 0.25), (-0.05, 0.75), (0.08, 0.38), (-0.15, 0.38)], (0.3, 0.1, 0.9), (0, 0, -1), (0, 1, 0), 0.06)
     prism("Light.Bolt", [(0, 0), (0.3, 0), (0.12, 0.25), (0.35, 0.25), (-0.05, 0.75), (0.08, 0.38), (-0.15, 0.38)], (-0.3, 0.1, 0.9), (0, 0, -1), (0, 1, 0), 0.06)
@@ -144,13 +151,14 @@ def reel():
         wheel((x, 0.8, z), 1.6, 0.32, hub="Accent", spokes=5)
     box("Accent", (-1.0, 0.75, z + 0.1), (0.12, 0.7, 1.5), bevel=0.05)
     box("Accent", (1.0, 0.75, z + 0.1), (0.12, 0.7, 1.5), bevel=0.05)
-    cyl("Dark", (-1.0, 0.6, z), (1.0, 0.6, z), 0.08, verts=8)
-    for i in range(5):
-        a = math.radians(i * 72)
-        for k in range(4):
-            a2 = a + k * 0.18
-            x0 = -0.9 + k * 0.45
-            cyl("Metal", (x0, 0.6 + math.sin(a2) * 0.38, z + math.cos(a2) * 0.38), (x0 + 0.45, 0.6 + math.sin(a2 + 0.18) * 0.38, z + math.cos(a2 + 0.18) * 0.38), 0.05, verts=5, bevel=0)
+    with rig("Reel"):  # the spiral blades roll with the wheels
+        cyl("Dark", (-1.0, 0.6, z), (1.0, 0.6, z), 0.08, verts=8)
+        for i in range(5):
+            a = math.radians(i * 72)
+            for k in range(4):
+                a2 = a + k * 0.18
+                x0 = -0.9 + k * 0.45
+                cyl("Metal", (x0, 0.6 + math.sin(a2) * 0.38, z + math.cos(a2) * 0.38), (x0 + 0.45, 0.6 + math.sin(a2 + 0.18) * 0.38, z + math.cos(a2 + 0.18) * 0.38), 0.05, verts=5, bevel=0)
     cyl("Dark", (-0.95, 0.2, z + 0.85), (0.95, 0.2, z + 0.85), 0.18, verts=10)
     box("Metal", (0, 0.25, z - 0.35), (1.9, 0.06, 0.5), bevel=0.02)
     # Turbo: twin chrome exhausts + a scoop
@@ -336,13 +344,14 @@ def combine():
     box("Accent", (3.8, 1.2, -3.3), (0.25, 1.6, 2.0), bevel=0.08)
     for i in range(14):
         box("Chrome", (-3.4 + i * 0.52, 0.4, -4.3), (0.12, 0.12, 0.5), bevel=0.0)
-    cyl("Accent2", (-3.6, 1.7, -3.9), (3.6, 1.7, -3.9), 0.1, verts=8)
-    for i in range(6):
-        a = math.radians(i * 60)
-        y, z = 1.7 + math.sin(a) * 0.85, -3.9 + math.cos(a) * 0.85
-        cyl("Accent2", (-3.6, y, z), (3.6, y, z), 0.07, verts=6, bevel=0)
-        cyl("Accent2", (-3.0, 1.7, -3.9), (-3.0, y, z), 0.05, verts=5, bevel=0)
-        cyl("Accent2", (3.0, 1.7, -3.9), (3.0, y, z), 0.05, verts=5, bevel=0)
+    with rig("Reel"):
+        cyl("Accent2", (-3.6, 1.7, -3.9), (3.6, 1.7, -3.9), 0.1, verts=8)
+        for i in range(6):
+            a = math.radians(i * 60)
+            y, z = 1.7 + math.sin(a) * 0.85, -3.9 + math.cos(a) * 0.85
+            cyl("Accent2", (-3.6, y, z), (3.6, y, z), 0.07, verts=6, bevel=0)
+            cyl("Accent2", (-3.0, 1.7, -3.9), (-3.0, y, z), 0.05, verts=5, bevel=0)
+            cyl("Accent2", (3.0, 1.7, -3.9), (3.0, y, z), 0.05, verts=5, bevel=0)
     box("Dark", (0, 1.6, -1.9), (1.4, 1.0, 1.4), bevel=0.1)
     # auger pipe
     cyl("Accent", (-1.6, 4.4, 3.4), (-4.6, 5.4, 3.0), 0.28, verts=10)
@@ -367,13 +376,15 @@ def drone():
         cyl("Dark", (math.cos(a) * 1.6, 1.95, -0.4 + math.sin(a) * 1.6), (ex, 2.1, ez), 0.14, verts=8)
         cyl("Accent", (ex, 1.9, ez), (ex, 2.5, ez), 0.35, verts=10, bevel=0.06)
         cyl("Light", (ex, 1.75, ez), (ex, 1.9, ez), 0.18, verts=8)
-        for k in (0, 1):
-            b = a + math.radians(90 * k + 20)
-            box("Metal", (ex, 2.6, ez), (1.9, 0.05, 0.22), bevel=0.0, rot=[("y", -math.degrees(b))])
-        cyl("Chrome", (ex, 2.5, ez), (ex, 2.68, ez), 0.1, verts=6)
+        with rig(f"Rotor{i + 1}"):
+            for k in (0, 1):
+                b = a + math.radians(90 * k + 20)
+                box("Metal", (ex, 2.6, ez), (1.9, 0.05, 0.22), bevel=0.0, rot=[("y", -math.degrees(b))])
+            cyl("Chrome", (ex, 2.5, ez), (ex, 2.68, ez), 0.1, verts=6)
     # blades below
-    for k in range(3):
-        box("Metal", (0, 0.9, -0.4), (3.0, 0.06, 0.3), bevel=0.0, rot=[("y", k * 60)])
+    with rig("Rotor0"):
+        for k in range(3):
+            box("Metal", (0, 0.9, -0.4), (3.0, 0.06, 0.3), bevel=0.0, rot=[("y", k * 60)])
     cyl("Dark", (0, 0.85, -0.4), (0, 1.45, -0.4), 0.2, verts=8)
     # skids
     for x in (-1.2, 1.2):
@@ -404,8 +415,8 @@ def mowzilla():
         cyl("Teeth", (x + 0.22, 1.1, -4.75), (x + 0.22, 1.6, -4.85), 0.17, verts=4, r2=0.02)
     # eyes
     for x in (-1.2, 1.2):
-        ball("Eye", (x, 3.9, -4.2), (1.25, 1.25, 1.0), seg=12, rings=8)
-        ball("Dark", (x * 0.94, 3.85, -4.72), (0.5, 0.5, 0.2), seg=10, rings=6)
+        ball("Eye", (x, 4.0, -4.2), (1.6, 1.6, 1.1), seg=12, rings=8)
+        ball("Dark", (x * 0.92, 3.9, -4.75), (0.7, 0.7, 0.25), seg=10, rings=6)
         box("Accent2", (x, 4.7, -4.3), (1.3, 0.25, 0.5), bevel=0.08, rot=[("z", -12 if x < 0 else 12)])
     # spikes on the back
     for i in range(5):
@@ -416,9 +427,141 @@ def mowzilla():
         cyl("Chrome", (x, 3.5, 1.6), (x, 5.2, 2.0), 0.25, verts=10)
         cyl("Light", (x, 5.2, 2.0), (x, 6.0, 2.25), 0.22, verts=8, r2=0.04)
     # front cutter drum
-    cyl("Metal", (-2.6, 0.55, -5.3), (2.6, 0.55, -5.3), 0.5, verts=12)
-    for i in range(10):
-        box("Chrome", (-2.3 + i * 0.5, 0.55, -5.3), (0.1, 1.3, 0.12), bevel=0, rot=[("x", i * 36)])
+    with rig("Reel"):
+        cyl("Metal", (-2.6, 0.55, -5.3), (2.6, 0.55, -5.3), 0.5, verts=12)
+        for i in range(10):
+            box("Chrome", (-2.3 + i * 0.5, 0.55, -5.3), (0.1, 1.3, 0.12), bevel=0, rot=[("x", i * 36)])
     # rails to hold
     cyl("Dark", (0, 3.9, -1.6), (0, 5.0, -1.3), 0.1, verts=6)
     cyl("SteeringWheel", (-0.7, 5.0, -1.3), (0.7, 5.0, -1.3), 0.12, verts=8)
+
+
+# ------------------------------------------------- the special late tools
+
+
+@model
+def mega_push():
+    # Comically giant push mower: the classic mower blown up 2.6x, the
+    # player stands on a little back step and steers with a tiny wheel.
+    with xform(2.6, (0, 0, -0.2)):
+        push()
+    box("Dark", (0, 2.05, 0.2), (2.6, 0.3, 2.0), bevel=0.08)  # back step (RideLift 2.2)
+    for x in (-1.1, 1.1):
+        cyl("Chrome", (x, 2.0, -0.7), (x, 0.0, -0.7), 0.12, verts=8)
+    cyl("Dark", (0, 2.2, -0.9), (0, 4.1, -0.75), 0.1, verts=8)
+    ring("SteeringWheel", (0, 4.15, -0.72), (0, 0.9, 0.42), 0.4, 0.07, seg=12, minor_seg=6)
+
+
+@model
+def fortress():
+    # Field Fortress: a combine turned into a little castle on wheels.
+    combine()
+    for x in (-1.8, 1.8):
+        for z in (0.3, 4.5):
+            cyl("Stone", (x, 3.0, z), (x, 6.6, z), 0.7, verts=10, bevel=0.05)
+            cyl("Accent", (x, 6.6, z), (x, 8.2, z), 0.85, verts=10, r2=0.05)
+            cyl("Dark", (x, 8.0, z), (x, 9.0, z), 0.04, verts=4, bevel=0)
+            prism("Accent2", [(0, 0), (0.8, -0.2), (0, -0.45)], (x, 9.0, z), (1, 0, 0), (0, 1, 0), 0.04, bevel=0)
+    for i in range(7):
+        box("Stone", (-1.8 + i * 0.6, 5.2, 4.6), (0.35, 0.5, 0.35), bevel=0.04)
+        box("Stone", (-1.8 + i * 0.6, 5.2, 0.2), (0.35, 0.5, 0.35), bevel=0.04)
+    box("Wood", (0, 1.4, -2.55), (2.6, 0.2, 1.4), bevel=0.04, rot=[("x", -25)])  # drawbridge ramp
+    for x in (-1.2, 1.2):
+        cyl("Dark", (x, 2.0, -2.0), (x, 3.2, -1.6), 0.04, verts=4, bevel=0)
+
+
+@model
+def swarm():
+    # Drone Swarm: the hover pad plus three mini drones that circle it.
+    drone()
+    with rig("Orbit"):
+        for i in range(3):
+            a = math.radians(i * 120 + 30)
+            with xform(0.32, (math.cos(a) * 4.6, 3.6, -0.4 + math.sin(a) * 4.6)):
+                drone()
+
+
+@model
+def void():
+    # VOID: an obsidian platform floating over a swirling portal that eats
+    # the grass, purple crystals and shards orbiting around.
+    cyl("Accent", (0, 1.7, -0.6), (0, 2.2, -0.6), 2.4, verts=8, bevel=0.15)  # platform (RideLift 2.2)
+    cyl("Glow", (0, 1.62, -0.6), (0, 1.7, -0.6), 2.2, verts=8, bevel=0.02)
+    for i in range(8):
+        a = math.radians(i * 45 + 22.5)
+        cyl("Crystal", (math.cos(a) * 2.0, 1.7, -0.6 + math.sin(a) * 2.0), (math.cos(a) * 2.6, 0.5, -0.6 + math.sin(a) * 2.6), 0.28, verts=5, r2=0.03)
+    with rig("Portal"):  # spins around its own centre (a ring lying flat)
+        ring("Glow", (0, 0.35, -4.2), (0, 1, 0), 1.8, 0.22, seg=16, minor_seg=6)
+        ring("Accent2", (0, 0.35, -4.2), (0, 1, 0), 1.25, 0.12, seg=14, minor_seg=5)
+        for i in range(6):
+            a = math.radians(i * 60)
+            box("Crystal", (math.cos(a) * 1.5, 0.35, -4.2 + math.sin(a) * 1.5), (0.18, 0.18, 0.9), bevel=0.02, rot=[("y", -i * 60 + 30)])
+    cyl("Accent", (0, 1.8, -2.4), (0, 0.6, -3.6), 0.2, verts=6)
+    for x in (-1.6, 1.6):
+        cyl("Crystal", (x, 2.2, 0.8), (x * 1.1, 5.4, 1.0), 0.45, verts=5, r2=0.04)
+        cyl("Crystal", (x * 0.6, 2.2, 1.3), (x * 0.7, 4.2, 1.5), 0.3, verts=5, r2=0.03)
+    cyl("Dark", (0, 2.2, -1.6), (0, 3.5, -1.3), 0.08, verts=6)
+    cyl("SteeringWheel", (-0.6, 3.5, -1.3), (0.6, 3.5, -1.3), 0.1, verts=8)
+    with rig("Orbit"):  # shards circle the player
+        for i in range(5):
+            a = math.radians(i * 72)
+            ball("Crystal", (math.cos(a) * 3.4, 4.2 + (i % 2) * 0.8, -0.6 + math.sin(a) * 3.4), (0.45, 0.9, 0.45), seg=5, rings=3)
+
+
+@model
+def airship():
+    # Sky Mower Carrier: a blimp with a gondola the player stands in and a
+    # spinning blade disc hanging under it.
+    box("Wood", (0, 2.05, -0.6), (2.6, 0.3, 3.4), bevel=0.08)  # gondola floor (RideLift 2.2)
+    for x in (-1.3, 1.3):
+        box("Accent", (x, 2.6, -0.6), (0.15, 0.9, 3.4), bevel=0.04)
+    box("Accent", (0, 2.6, -2.3), (2.6, 0.9, 0.15), bevel=0.04)
+    for x in (-1.2, 1.2):
+        for z in (-2.2, 1.0):
+            cyl("Dark", (x, 2.2, z), (x * 0.7, 6.4, z * 0.8), 0.04, verts=4, bevel=0)
+    ball("Accent2", (0, 8.2, -0.4), (4.6, 3.6, 9.0), seg=16, rings=10)
+    for z in (-2.6, 0.2, 2.8):
+        cyl("Accent", (0, 8.2, z - 0.15), (0, 8.2, z + 0.15), 2.0 if abs(z) < 1 else 1.6, verts=16, bevel=0.02)
+    for rot in (0, 90):
+        prism("Accent", [(0, 0), (1.6, 0.0), (1.9, 1.4), (0.6, 1.4)], (0, 8.2, 3.6), (0, 0, 1), (0, 1, 0) if rot == 0 else (1, 0, 0), 0.1)
+        prism("Accent", [(0, 0), (1.6, 0.0), (1.9, -1.4), (0.6, -1.4)], (0, 8.2, 3.6), (0, 0, 1), (0, 1, 0) if rot == 0 else (1, 0, 0), 0.1)
+    with rig("Prop"):  # tail propeller, spins around Z
+        for k in range(3):
+            box("Metal", (0, 8.2, 5.0), (0.25, 1.6, 0.06), bevel=0, rot=[("z", k * 60)])
+        cyl("Chrome", (0, 8.2, 4.85), (0, 8.2, 5.15), 0.18, verts=8)
+    cyl("Dark", (0, 2.0, -0.6), (0, 0.6, -0.6), 0.1, verts=6)
+    with rig("Rotor0"):
+        cyl("Metal", (0, 0.45, -0.6), (0, 0.55, -0.6), 1.8, verts=16, bevel=0.02)
+        for k in range(6):
+            box("Chrome", (0, 0.5, -0.6), (3.8, 0.05, 0.25), bevel=0, rot=[("y", k * 30)])
+    cyl("Dark", (0, 2.2, -1.9), (0, 3.4, -1.7), 0.08, verts=6)
+    ring("SteeringWheel", (0, 3.45, -1.68), (0, 0.9, 0.42), 0.45, 0.07, seg=12, minor_seg=6)
+
+
+@model
+def drill():
+    # Terra-Mower: an earth-drilling tank with a giant spinning drill nose,
+    # rocks on its back and lava glowing through the cracks.
+    box("Accent", (0, 2.0, -0.6), (4.0, 2.2, 5.6), bevel=0.45)
+    box("Dark", (0, 3.05, 0.2), (2.4, 0.2, 2.2), bevel=0.05)  # top deck (RideLift 3.1)
+    for x in (-2.35, 2.35):
+        box("Rubber", (x, 0.9, -0.6), (0.9, 1.8, 6.2), bevel=0.45)
+        for i in range(6):
+            wheel((x, 0.9, -3.0 + i * 0.95), 0.9, 0.95, hub="Dark")
+    for i, (x, z) in enumerate(((-1.2, 1.6), (1.3, 1.2), (0.9, 2.4), (-0.6, 2.6))):
+        ball("Stone", (x, 3.2, z), (0.9 + i * 0.1, 0.7, 0.8), seg=6, rings=4)
+    for x, z, ln in ((-2.0, -1.0, 1.4), (2.02, 0.4, 1.0), (-2.02, 1.4, 0.8)):
+        box("Glow", (x, 2.0, z), (0.06, 0.12, ln), bevel=0, rot=[("x", 20)])
+    with rig("Drill"):  # spins around its own (Z) axis
+        cyl("Metal", (0, 1.9, -3.4), (0, 1.9, -6.6), 1.4, verts=12, r2=0.06)
+        for k in range(10):
+            t = k / 10
+            a = math.radians(k * 72)
+            r = 1.35 * (1 - t)
+            box("Chrome", (math.cos(a) * r, 1.9 + math.sin(a) * r, -3.5 - t * 3.0), (0.18, 0.18, 0.7), bevel=0, rot=[("z", math.degrees(a)), ("x", 20)])
+    cyl("Accent2", (0, 1.9, -3.2), (0, 1.9, -3.5), 1.55, verts=12, bevel=0.04)
+    for x in (-1.2, 1.2):
+        cyl("Light", (x, 2.7, -3.4), (x, 2.7, -3.5), 0.22, verts=8)
+    cyl("Chrome", (1.4, 3.0, 2.0), (1.4, 4.6, 2.2), 0.2, verts=8)
+    cyl("Dark", (0, 3.15, -0.9), (0, 4.4, -0.7), 0.08, verts=6)
+    cyl("SteeringWheel", (-0.6, 4.4, -0.7), (0.6, 4.4, -0.7), 0.1, verts=8)
