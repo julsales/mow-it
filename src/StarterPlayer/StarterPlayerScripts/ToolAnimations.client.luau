@@ -22,7 +22,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 type Piece = { Weld: Weld, Base: CFrame }
-type Rig = { Name: string, Pieces: { Piece }, Radius: number, Angle: number }
+type Rig = { Name: string, Pieces: { Piece }, Radius: number, Angle: number, Pivot: Vector3, PivotSize: number }
 type Entry = { Model: Model, Rigs: { Rig }, Dirty: boolean, Connection: RBXScriptConnection? }
 
 local SNIP_TIME = 0.28 -- seconds for one open-close
@@ -39,12 +39,20 @@ local function scan(model: Model): Entry
 		if typeof(name) == "string" and weld then
 			local rig = byName[name]
 			if not rig then
-				rig = { Name = name, Pieces = {}, Radius = 0.1, Angle = 0 }
+				rig = { Name = name, Pieces = {}, Radius = 0.1, Angle = 0, Pivot = weld.C0.Position, PivotSize = 0 }
 				byName[name] = rig
 				table.insert(rigs, rig)
 			end
 			table.insert(rig.Pieces, { Weld = weld, Base = weld.C0 })
 			rig.Radius = math.max(rig.Radius, (part :: BasePart).Size.Y / 2)
+			-- Everything in a rig turns around its biggest piece's centre
+			-- (the drill cone, the drum, the tyre), so small pieces that sit
+			-- off-centre (spikes, spokes) stay attached.
+			local size = (part :: BasePart).Size.Magnitude
+			if size > rig.PivotSize then
+				rig.PivotSize = size
+				rig.Pivot = weld.C0.Position
+			end
 		end
 	end
 	local entry: Entry = { Model = model, Rigs = rigs, Dirty = false, Connection = nil }
@@ -77,8 +85,9 @@ local function animate(entry: Entry, hrp: BasePart?, now: number, dt: number)
 		if startsWith(name, "Spin") or name == "Reel" then
 			-- Rolling forward (-Z): the top of the wheel moves forward.
 			rig.Angle -= speed / rig.Radius * dt
+			local turn = CFrame.new(rig.Pivot) * CFrame.Angles(rig.Angle, 0, 0) * CFrame.new(-rig.Pivot)
 			each(function(p)
-				return p.Base * CFrame.Angles(rig.Angle, 0, 0)
+				return turn * p.Base
 			end)
 		elseif name == "JawTop" or name == "JawBottom" then
 			-- Chomps faster the faster you drive; shut when standing still.
@@ -91,18 +100,21 @@ local function animate(entry: Entry, hrp: BasePart?, now: number, dt: number)
 			end)
 		elseif name == "Drum" then
 			rig.Angle -= 7 * dt
+			local turn = CFrame.new(rig.Pivot) * CFrame.Angles(rig.Angle, 0, 0) * CFrame.new(-rig.Pivot)
 			each(function(p)
-				return p.Base * CFrame.Angles(rig.Angle, 0, 0)
+				return turn * p.Base
 			end)
 		elseif startsWith(name, "Rotor") or name == "Head" or name == "Portal" then
 			rig.Angle += (if name == "Portal" then 2.5 else 22) * dt
+			local turn = CFrame.new(rig.Pivot) * CFrame.Angles(0, rig.Angle, 0) * CFrame.new(-rig.Pivot)
 			each(function(p)
-				return p.Base * CFrame.Angles(0, rig.Angle, 0)
+				return turn * p.Base
 			end)
 		elseif name == "Prop" or name == "Drill" then
 			rig.Angle += (if name == "Prop" then 14 else 8) * dt
+			local turn = CFrame.new(rig.Pivot) * CFrame.Angles(0, 0, rig.Angle) * CFrame.new(-rig.Pivot)
 			each(function(p)
-				return p.Base * CFrame.Angles(0, 0, rig.Angle)
+				return turn * p.Base
 			end)
 		elseif name == "Orbit" then
 			rig.Angle += 0.9 * dt

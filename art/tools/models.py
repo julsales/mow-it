@@ -589,8 +589,9 @@ def drill():
         for k in range(12):  # cone spikes spiralling round the drill
             t = k / 12
             a = math.radians(k * 75)
-            r = 1.4 * (1 - t) - 0.05
-            base = (math.cos(a) * r, 1.9 + math.sin(a) * r, -3.6 - t * 2.9)
+            z = -3.6 - t * 2.6
+            r = (1.4 + (0.06 - 1.4) * (-3.4 - z) / 3.2) * 0.9  # just under the cone's surface
+            base = (math.cos(a) * r, 1.9 + math.sin(a) * r, z)
             tip = (math.cos(a) * (r + 0.55), 1.9 + math.sin(a) * (r + 0.55), base[2] - 0.35)
             cyl("Chrome", base, tip, 0.2 - t * 0.08, verts=8, r2=0.01)
     cyl("Accent2", (0, 1.9, -3.2), (0, 1.9, -3.5), 1.55, verts=12, bevel=0.04)
