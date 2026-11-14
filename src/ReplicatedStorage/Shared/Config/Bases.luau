@@ -56,7 +56,7 @@ local Bases = {
 	OwnerText = "%s's Island",
 	CabinText = "%s's Loft", -- the sign over the cabin's porch
 	-- The dirt path from the bridge to the cabin's steps: an S through `Via`.
-	Walkway = { Width = 5, Via = { v3(8, 0, 32), v3(0, 0, 14) } },
+	Walkway = { Width = 5, Via = { v3(8, 0, 32), v3(0, 0, 14) }, Tuck = 4 }, -- `Tuck`: studs it runs on under the steps
 	-- The owner's picture and name floating over the base (BaseService).
 	Tag = {
 		At = v3(0, 34, 0),

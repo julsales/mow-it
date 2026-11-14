@@ -320,8 +320,16 @@ local function buildBase(kit: Kit, parent: Instance, slot: Slot): Model
 	for _, via in Config.Walkway.Via do
 		table.insert(route, flat(inBase(slot, CFrame.new(via)).Position))
 	end
+	-- Up to the cabin: the path runs on under its bottom step, so no grass
+	-- shows between them.
+	local front = cabinAt:VectorToWorldSpace(Vector3.zAxis) -- the way the cabin faces
 	table.insert(route, steps)
-	kit.Path(path, kit.Spline(route), Config.Walkway.Width)
+	table.insert(route, steps - Vector3.new(front.X, 0, front.Z).Unit * Config.Walkway.Tuck)
+	local curve = kit.Spline(route)
+	if #curve % 2 == 0 then
+		table.insert(curve, curve[#curve]) -- Path lays a slab between every other point
+	end
+	kit.Path(path, curve, Config.Walkway.Width)
 
 	-- Hay yard. Its customers arrive at the jetty.
 	local yard = HayYard.Build(base, inBase(slot, Config.Yard.Offset))
