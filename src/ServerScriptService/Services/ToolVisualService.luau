@@ -95,7 +95,14 @@ local function attach(character: Model, toolId: string)
 
 	if model:GetAttribute("Ground") then
 		local lift = (model:GetAttribute("RideLift") :: number?) or 0
-		if lift > 0 then
+		local seat = model:GetAttribute("SeatHeight") :: number?
+		if seat then
+			-- Seated ride-on: the hips rest on the seat (ToolPoses plays the
+			-- sit animation), so HipHeight is the seat's height whatever
+			-- the avatar's leg length. R6 legs count as 2 studs.
+			baseHipHeight[humanoid] = humanoid.HipHeight
+			humanoid.HipHeight = if isR6 then math.max(0, seat - 2) else seat
+		elseif lift > 0 then
 			baseHipHeight[humanoid] = humanoid.HipHeight
 			humanoid.HipHeight += lift
 		end
