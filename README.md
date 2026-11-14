@@ -20,22 +20,86 @@ Lobby parties of up to **4 players** teleport together into a private match.
 
 ## Quick start (Studio)
 
-1. Install [Rokit](https://github.com/rojo-rbx/rokit), then in this repo:
-   ```sh
-   rokit install        # installs the pinned Rojo
-   rojo serve           # Land place  (or: rojo serve lobby.project.json)
-   ```
-2. Open an empty baseplate in Roblox Studio, connect the Rojo plugin.
-   Step-by-step guide (pt-BR), incl. plugin install and troubleshooting:
-   [docs/ROJO.md](docs/ROJO.md).
-3. Press **Play**. The server builds a graybox world (labeled zone
+### 1. Install the pinned Rojo
+
+Rojo 7.6.1 is pinned by [`rokit.toml`](rokit.toml). Pick one path:
+
+**Option A - Rokit (cross-platform):**
+
+Install [Rokit](https://github.com/rojo-rbx/rokit) first, then:
+
+```sh
+rokit install        # reads rokit.toml, installs Rojo 7.6.1
+make serve ROJO=rojo
+```
+
+**Option B - download the binary straight into `.tools/bin` (Linux x86_64):**
+
+```sh
+mkdir -p .tools/bin
+curl --fail --location -o /tmp/rojo.zip https://github.com/rojo-rbx/rojo/releases/download/v7.6.1/rojo-7.6.1-linux-x86_64.zip
+unzip -o /tmp/rojo.zip -d /tmp/rojo
+cp /tmp/rojo/rojo .tools/bin/rojo && chmod +x .tools/bin/rojo
+.tools/bin/rojo --version    # expect: Rojo 7.6.1
+```
+
+Other platforms: take the matching asset from the same
+[v7.6.1 release page](https://github.com/rojo-rbx/rojo/releases/tag/v7.6.1)
+(`rojo-7.6.1-macos-aarch64.zip`, `rojo-7.6.1-windows-x86_64.zip`, ...).
+
+`.tools/` is gitignored, so a clean checkout has no binary in it -
+install it once, or point the Makefile at a Rojo already on your PATH:
+
+```sh
+make serve ROJO=rojo
+```
+
+### 2. Serve the project
+
+The [Makefile](Makefile) wraps the commands local dev actually uses.
+Both serve targets listen on `127.0.0.1:34872`, so the Studio plugin
+connects to `localhost:34872`:
+
+```sh
+make serve           # Game place  (default.project.json)
+make serve-lobby     # Lobby place (lobby.project.json)
+make build           # writes build/MowIt-Game.rbxlx + build/MowIt-Lobby.rbxlx
+make clean           # deletes those two files
+```
+Stop serving one project before serving the other: both use the same
+port, so only one can be connected at a time.
+
+### 3. Connect from Studio
+
+Step-by-step guide (pt-BR), incl. plugin install and troubleshooting:
+[docs/ROJO.md](docs/ROJO.md).
+
+1. Start `make serve` (or `make serve-lobby`) in a terminal and leave it
+   running.
+2. Install the Rojo plugin: download
+   [`Rojo.rbxm`](https://github.com/rojo-rbx/rojo/releases/download/v7.6.1/Rojo.rbxm)
+   from the same release, then in Studio open **Plugins** -> **Plugins
+   Folder** and drop the file there. With Vinegar Flatpak, the folder is
+   `~/.var/app/org.vinegarhq.Vinegar/data/vinegar/prefixes/studio/drive_c/users/<user>/AppData/Local/Roblox/Plugins/`.
+   Restart Studio after installing the plugin.
+3. Open `build/MowIt-Game.rbxlx` after `make build`, or an empty baseplate.
+   In edit mode, open the **Rojo** plugin, enter host `localhost` and port
+   `34872`, click **Connect**, and accept the sync if prompted. The project
+   should show **MowIt-Game** (or **MowIt-Lobby** when serving the lobby).
+4. Press **Play**. The server builds a graybox world (labeled zone
    fields, Sell pads, Join Pad), so the full loop works before any
    real map exists: click to cut, fill up, load the Baler and click the bales, buy the next
    tool from the top-right buttons, unlock zones.
-4. To test like production, create two places (Lobby = start place,
-   Game = sub-place), paste their ids into
-   `src/ReplicatedStorage/Shared/Config/GameConfig.luau`, and sync each
-   project file into its place.
+
+### 4. PlaceIds
+
+PlaceIds stay `0` in this repo for local dev. In Studio, the server runs
+both grayboxes so one place can exercise the local loop. Real PlaceIds are
+production-only: create two places in Studio (Lobby = start place,
+Game = sub-place), then paste their ids into
+[`src/ReplicatedStorage/Shared/Config/GameConfig.luau`](src/ReplicatedStorage/Shared/Config/GameConfig.luau).
+Until then `make build` still produces valid local place files - they
+just don't teleport anywhere.
 
 ## Layout
 

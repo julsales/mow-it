@@ -19,3 +19,6 @@ sourcemap.json
 # Upload-ready UI art (tools/prepare-ui-uploads.py)
 /build/
 art/tools/out/audit/
+
+# Local toolchain installs
+.tools/
