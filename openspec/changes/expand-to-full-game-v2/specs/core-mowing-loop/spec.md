@@ -33,7 +33,7 @@ Carried grass SHALL be tracked as a count per variant (for example Normal, Golde
 The player SHALL sell grass through the hay yard at their base: carried grass is loaded into the baler, the baler presses it into hay bales that pile up on a stack, and the player sells bales by clicking them, receiving Coins where each variant pays its own value multiplier and the area value applies. Sold bales SHALL go into the silo, and customers SHALL buy from the silo (never loose grass from the player), paying a tip on top of the sale. Each step (machine working, bales stacking, bales entering the silo, customers walking) SHALL be animated.
 
 #### Scenario: Loading the baler
-- **WHEN** a player with carried grass steps onto the baler's loading deck, or onto an island's drop-off pad
+- **WHEN** a player with carried grass steps into the square outlined on the ground by the baler, or onto an island's drop-off pad
 - **THEN** all carried grass is removed from storage and added to the baler's hopper with its value
 
 #### Scenario: Baling
@@ -48,12 +48,16 @@ The player SHALL sell grass through the hay yard at their base: carried grass is
 - **WHEN** a player near the stack clicks one of their bales
 - **THEN** Coins are credited for that bale, it leaves the stack and is added to the silo's stock
 
+#### Scenario: Knowing the next step
+- **WHEN** a player is at the hay yard
+- **THEN** the screen names the next step of the loop (load grass, wait for the baler, click the bales, go mow more)
+
 #### Scenario: Customers
 - **WHEN** the silo has stock
 - **THEN** customers arrive from time to time, remove bales from the stock and pay the player a tip
 
 #### Scenario: Loading with empty storage
-- **WHEN** a player steps onto the loading deck or a drop-off pad carrying no grass
+- **WHEN** a player steps into the load square or onto a drop-off pad carrying no grass
 - **THEN** no grass or currency changes
 
 ### Requirement: Legible illustrated HUD

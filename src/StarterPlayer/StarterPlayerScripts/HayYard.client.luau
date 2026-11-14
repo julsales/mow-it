@@ -29,6 +29,7 @@ local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local Bales = require(script.Parent:WaitForChild("HayBales"))
 local Customers = require(script.Parent:WaitForChild("HayCustomers"))
 local Rigs = require(script.Parent:WaitForChild("HayRigs"))
+local Ui = require(script.Parent:WaitForChild("UiKit"))
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -104,7 +105,7 @@ end
 local function popup(at: Vector3, message: string, color: Color3)
 	local host = anchor(at)
 	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromOffset(190, 46)
+	gui.Size = UDim2.fromOffset(260, 60)
 	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
 	gui.MaxDistance = 120
@@ -149,6 +150,43 @@ local function puffs(parent: Instance, color: Color3, size: number, speed: numbe
 	emitter.Rate = 0
 	emitter.Parent = parent
 	return emitter
+end
+
+-- "What do I do now?": one line at the top of the screen while the player
+-- is at the yard, always naming the next step of the loop.
+local hintGui = Ui.LocalGui("HayHint", 5)
+hintGui.Enabled = false
+local hintFrame = Ui.Surface(hintGui, Ui.Theme.TrackerHeader, Ui.Theme.TrackerStroke, 14, 2)
+hintFrame.AnchorPoint = Vector2.new(0.5, 0)
+hintFrame.Position = UDim2.new(0.5, 0, 0, 132)
+hintFrame.Size = UDim2.fromOffset(0, 42)
+hintFrame.AutomaticSize = Enum.AutomaticSize.X
+local hintText = Ui.Heading(hintFrame, "", 20, Ui.Theme.Text)
+hintText.AutomaticSize = Enum.AutomaticSize.X
+hintText.TextWrapped = false
+hintText.Size = UDim2.new(0, 0, 1, 0)
+hintText.TextXAlignment = Enum.TextXAlignment.Center
+do
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 18)
+	padding.PaddingRight = UDim.new(0, 18)
+	padding.Parent = hintFrame
+end
+local lastSaleAt = -math.huge
+
+-- The next step, or nil when there is nothing to say.
+local function nextStep(profile: any): string?
+	local state = Hay.State(profile)
+	if #state.Bales > 0 then
+		return "Click the hay bales to sell them!"
+	elseif state.Units > 0 then
+		return "The baler is pressing your grass into bales…"
+	elseif os.clock() - lastSaleAt < 6 then
+		return "All sold! Customers buy your hay at the silo. Go mow more grass!"
+	elseif GrassBag.Total(profile) > 0 then
+		return "Step into the yellow square to load your grass"
+	end
+	return nil
 end
 
 -- The view of one yard ---------------------------------------------------------------
@@ -358,11 +396,9 @@ local function sync(v: View, profile: any, instant: boolean)
 		v.BalerTag.Text = "Stack full! Sell some bales"
 	elseif units > 0 then
 		v.BalerTag.Text = ("Baling… %s grass left"):format(Format.Number(units))
-	elseif GrassBag.Total(profile) > 0 then
-		v.BalerTag.Text = "Step up to load your grass"
 	end
-	v.BalerGui.Enabled = units > 0 or GrassBag.Total(profile) > 0
-	v.StackTag.Text = "Click a bale to sell it"
+	v.BalerGui.Enabled = units > 0
+	v.StackTag.Text = "Click the bales to sell"
 	v.StackGui.Enabled = count > 0
 	if v.SiloTag then
 		v.SiloTag.Text = if state.Stock > 0 then ("HAY FOR SALE\n%d in stock"):format(state.Stock) else "HAY FOR SALE"
@@ -555,6 +591,24 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 end);
 
+-- The hint follows the player: only at the yard, never over a menu.
+task.spawn(function()
+	while true do
+		task.wait(0.3)
+		local v, profile = view, ClientState.Get()
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local message: string? = nil
+		if v and profile and root and not Ui.MenuOpen and (root.Position - v.Pallet:GetPivot().Position).Magnitude < Config.HintDistance then
+			message = nextStep(profile)
+		end
+		if message then
+			hintText.Text = message
+		end
+		hintGui.Enabled = message ~= nil
+	end
+end);
+
 (remotes:WaitForChild("HayLoaded") :: RemoteEvent).OnClientEvent:Connect(function(units: number)
 	if view then
 		throwGrass(view, units)
@@ -564,8 +618,9 @@ end);
 (remotes:WaitForChild("SellFeedback") :: RemoteEvent).OnClientEvent:Connect(function(earned: number, baleId: number?)
 	local v = view
 	local where = v and baleId and v.Sold[baleId]
+	lastSaleAt = os.clock()
 	if where then
-		popup(where, "+" .. Format.Number(earned), GOLD)
+		popup(where, ("+%s Coins"):format(Format.Number(earned)), GOLD)
 	end
 end);
 

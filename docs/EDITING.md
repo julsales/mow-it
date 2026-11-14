@@ -56,8 +56,9 @@ Workspace
 ├─ Zones (Folder)
 │  ├─ front_yard (Model: the home island)
 │  │  ├─ PlayerBase   the cabin; GameSpawn is inside it
-│  │  ├─ HayYard      Baler, BaleStack, Silo, Ground (each its own Model),
-│  │  │               the invisible CustomerSpawn marker; SellPad is inside Baler
+│  │  ├─ HayYard      Baler, BaleStack, Silo, Ground, LoadSquare (each its own
+│  │  │               Model; SellPad is inside LoadSquare), the invisible
+│  │  │               CustomerSpawn marker
 │  │  ├─ FarmerStand  farmer (Npc) + stand + tools on sale
 │  │  ├─ Dock         jetty + rowboat
 │  │  ├─ Yard         planters, mailbox
@@ -124,7 +125,7 @@ Code finds things by these names and attributes, never by position:
 |---|---|---|
 | `Workspace/Zones/<ZoneId>` Models | ids from `Config/Zones.luau` | one island Model per area; everything below can sit anywhere inside it |
 | `GrassArea` (Part, any size/rotation) | inside `Zones/<ZoneId>` | grass grows on every 4×4 cell inside it; its bottom is the lawn surface. Move/resize/duplicate to reshape lawns |
-| `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it hands your grass in: it goes to the baler (the stall behind an island's pad is decoration; the baler's own pad is an invisible box over its loading deck) |
+| `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it hands your grass in: it goes to the baler (the stall behind an island's pad is decoration; the yard's own pad is an invisible box inside the `LoadSquare` outlined on the ground: move the LoadSquare Model to move where grass is handed in) |
 | `HayYard` (Model) with `Baler`, `BaleStack`, `Silo` (Models) and `CustomerSpawn` (Part) | inside the home island | the selling line: bales come out of the Baler, stack on BaleStack, ride into the Silo; customers walk from CustomerSpawn to the Silo's counter. Don't rename the mesh pieces or remove their attributes (`Rig`, `Pivot_…`): they drive the animations |
 | `FarmerStand` (Model) with an `Npc` | inside `Zones/<ZoneId>` | the island's tool seller; its farmer is the quest contact (`QuestWorld`) |
 | `ZoneGate` (Part) | inside `Zones/<ZoneId>` | locked gate, opens for players who unlocked the zone. The game adds its "Unlock" prompt at runtime (`PromptAnchor` attachment, 4.5 studs above the gate's bottom edge); add your own `PromptAnchor` to place it elsewhere |

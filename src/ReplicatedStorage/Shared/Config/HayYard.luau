@@ -59,6 +59,7 @@ local HayYard = {
 	GoldenChance = 0.04, -- chance a bale comes out golden
 	GoldenMultiplier = 5,
 	SellDistance = 48, -- how close to the stack a click still sells (studs)
+	HintDistance = 70, -- the "what to do next" banner shows this close to the yard
 	SiloCapacity = 30, -- bales the silo keeps in stock for customers
 	TipRate = 0.1, -- customers pay this share of the bales' value on top
 	CustomerEvery = { Min = 5, Max = 9 }, -- seconds between customers while the silo has stock
@@ -176,9 +177,11 @@ local HayYard = {
 		},
 	} :: { [string]: PieceDef },
 
-	-- Where the player hands grass in (the contract part "SellPad", an
-	-- invisible box over the baler's loading deck; yard frame).
-	LoadZone = { Piece = "Baler", Center = v3(-1.6, 2.6, 4.4), Size = v3(6, 5, 5) },
+	-- Where the player hands grass in: a small square outlined on the ground
+	-- in front of the baler (Model "LoadSquare": four lines and the invisible
+	-- contract part "SellPad" inside them). Yard frame; `Side` is the square's
+	-- outer size, `Line` the width of its outline.
+	LoadSquare = { Center = v3(-12.6, 0, 7.4), Side = 4.5, Line = 0.35, Height = 5, Color = rgb(255, 214, 90) },
 	-- Customers walk in from the invisible "CustomerSpawn" marker (drag it
 	-- in Studio); built this far from the silo's counter.
 	CustomerSpawn = v3(6, 0, 34),
@@ -191,6 +194,7 @@ local HayYard = {
 			{ Center = v3(-4.8, 0, 1.6), Size = v3(25.5, 0, 10) }, -- baler and stack
 			{ Center = v3(6.3, 0, -6.2), Size = v3(20, 0, 13) }, -- silo and elevator
 			{ Center = v3(9.5, 0, 2.6), Size = v3(10, 0, 7) }, -- in front of the counter
+			{ Center = v3(-12.6, 0, 6.6), Size = v3(8.5, 0, 8) }, -- under the load square
 		},
 	},
 	-- The yard stands this far from where an island's sell pad would be

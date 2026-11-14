@@ -8,7 +8,8 @@ the plan: what exists, how it is put together and what comes next.
 ## The loop
 
 1. **Cut** grass until storage is full (unchanged).
-2. **Load**: walk onto the baler's loading deck at the base. All carried
+2. **Load**: step into the small square outlined on the ground in front
+   of the baler at the base. All carried
    grass flies into the hopper. On the other islands the old sell pads are
    **drop-off pads**: they send the grass to the same hopper, so you don't
    have to walk home to empty your storage (fuel is refilled at both).
@@ -22,6 +23,10 @@ the plan: what exists, how it is put together and what comes next.
 5. **Customers**: while the silo has stock, customers walk up to its
    counter (they arrive at the dock), take 1 or 2 bales and pay a tip (10% of what those bales sold
    for). Nobody buys loose grass from the player any more.
+
+While the player is at the yard, a line at the top of the screen always
+names the next step (load, wait for the baler, click the bales, go mow
+more), and every sale pops "+N Coins" where the bale was.
 
 Every step is animated on the client: flywheel, rattling body, press,
 exhaust puffs and gauge on the baler; grass thrown into the hopper and the
@@ -52,8 +57,9 @@ their own bales.
 
 In the place, the yard is one Model `HayYard` inside the home island with
 the Models `Baler`, `BaleStack`, `Silo` and `Ground` (the packed dirt),
-plus two invisible parts: `SellPad` (inside `Baler`, the loading zone)
-and `CustomerSpawn` (where customers walk in from). Code finds them by
+`LoadSquare` (the outlined square where grass is handed in, with the
+invisible contract part `SellPad` inside it) and the invisible part
+`CustomerSpawn` (where customers walk in from). Code finds them by
 name and reads where they stand, so each can be dragged by hand
 (docs/EDITING.md).
 
