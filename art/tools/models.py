@@ -585,8 +585,8 @@ def drill():
         box("Rubber", (x, 0.9, -0.6), (0.9, 1.8, 6.2), bevel=0.45)
         for i in range(6):
             wheel((x, 0.9, -3.0 + i * 0.95), 0.9, 0.95, hub="Dark")
-    for i, (x, z) in enumerate(((-1.2, 1.6), (1.3, 1.2), (0.9, 2.4), (-0.6, 2.6))):
-        ball("Stone", (x, 3.2, z), (0.9 + i * 0.1, 0.7, 0.8), seg=6, rings=4)
+    for i, (x, z) in enumerate(((-1.25, 0.9), (1.25, 0.7), (0.85, 1.55), (-0.7, 1.65))):  # half sunk into the roof
+        ball("Stone", (x, 3.05, z), (0.85 + i * 0.08, 0.7, 0.75), seg=6, rings=4)
     for x, z, ln in ((-2.0, -1.0, 1.4), (2.02, 0.4, 1.0), (-2.02, 1.4, 0.8)):
         box("Glow", (x, 2.0, z), (0.06, 0.12, ln), bevel=0, rot=[("x", 20)])
     with rig("Drill"):  # spins around its own (Z) axis
@@ -602,5 +602,5 @@ def drill():
     cyl("Accent2", (0, 1.9, -3.2), (0, 1.9, -3.5), 1.55, verts=12, bevel=0.04)
     for x in (-1.2, 1.2):
         cyl("Light", (x, 2.7, -3.4), (x, 2.7, -3.5), 0.22, verts=8)
-    cyl("Chrome", (1.4, 3.0, 2.0), (1.4, 4.6, 2.2), 0.2, verts=8)
+    cyl("Chrome", (1.3, 2.8, 1.4), (1.3, 4.6, 1.6), 0.2, verts=8)
     handrail(3.15)
