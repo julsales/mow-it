@@ -12,7 +12,7 @@ import os
 import sys
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -54,7 +54,13 @@ def reset():
 
 
 def export(name):
+    # Roblox's importer turns FBX models 180 degrees around Y (it ignores
+    # the axis settings), so bake the opposite turn into the file: in the
+    # game, -Z stays forward and +X right.
     bpy.ops.object.select_all(action="SELECT")
+    for o in bpy.context.selected_objects:
+        o.matrix_world = Matrix.Rotation(math.pi, 4, "Z") @ o.matrix_world
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=False)
     bpy.ops.export_scene.fbx(
         filepath=os.path.join(OUT, f"{name}.fbx"),
         use_selection=True,
@@ -67,6 +73,9 @@ def export(name):
         add_leaf_bones=False,
         bake_anim=False,
     )
+    for o in bpy.context.selected_objects:
+        o.matrix_world = Matrix.Rotation(math.pi, 4, "Z") @ o.matrix_world
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=False)
 
 
 def preview(name):

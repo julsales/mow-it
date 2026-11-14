@@ -512,7 +512,9 @@ function ToolModels.Build(toolId: string, fit: Fit?): Model
 		local model, root, scale = fromArt(art, look, def, toolId, kind, fit)
 		model.Name = "ToolModel"
 		model:SetAttribute("ToolId", toolId)
-		addGrips(model)
+		if KINDS[kind].Ground then
+			addGrips(model) -- hand tools hold by the origin; GripL/R would turn on the two-hand pose
+		end
 		finish(model, root, kind)
 		if KINDS[kind].RideLift > 0 and def.RideLift then
 			model:SetAttribute("RideLift", def.RideLift * scale)

@@ -30,22 +30,22 @@ export type ToolLook = {
 local rgb = Color3.fromRGB
 
 local Models: { [string]: ModelDef } = {
-	clipper = { AssetId = 0, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3 },
-	scissors_safety = { AssetId = 0, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8 },
-	scissors_kitchen = { AssetId = 0, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1 },
-	shears = { AssetId = 0, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6 },
-	sickle = { AssetId = 0, Center = Vector3.new(0, 0.866, -0.925), Size = Vector3.new(0.329, 2.062, 3.05), HoldLength = 2.3 },
-	grass_whip = { AssetId = 0, Center = Vector3.new(0, 0.207, -1.6), Size = Vector3.new(0.269, 0.813, 4.3), HoldLength = 3.2 },
-	hedge = { AssetId = 0, Center = Vector3.new(0, 0.218, -1.55), Size = Vector3.new(0.9, 1.585, 4), HoldLength = 3.4 },
-	string_trimmer = { AssetId = 0, Center = Vector3.new(0.025, -0.083, -1.515), Size = Vector3.new(1.15, 1.834, 5.73), HoldLength = 4.8 },
-	reel = { AssetId = 0, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2) },
-	push = { AssetId = 0, Center = Vector3.new(0, 1.25, -3.087), Size = Vector3.new(3.55, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -1.8) },
-	rider = { AssetId = 0, Center = Vector3.new(0, 1.696, -0.776), Size = Vector3.new(4.455, 3.62, 6.007), RideLift = 1.35 },
-	zeroturn = { AssetId = 0, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3 },
-	tractor = { AssetId = 0, Center = Vector3.new(0, 3.141, -2.23), Size = Vector3.new(6.05, 6.718, 10.14), RideLift = 2.25 },
-	combine = { AssetId = 0, Center = Vector3.new(-0.602, 2.895, 0.179), Size = Vector3.new(9.054, 6.211, 9.998), RideLift = 2.2 },
-	drone = { AssetId = 0, Center = Vector3.new(0, 1.778, -0.4), Size = Vector3.new(6.058, 3.415, 6.058), RideLift = 2.3 },
-	mowzilla = { AssetId = 0, Center = Vector3.new(0, 2.953, -1.209), Size = Vector3.new(7.115, 6.107, 9.456), RideLift = 3.9 },
+	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3 },
+	scissors_safety = { AssetId = 120638250934550, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8 },
+	scissors_kitchen = { AssetId = 124984095097638, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1 },
+	shears = { AssetId = 111659672280353, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6 },
+	sickle = { AssetId = 93802071925746, Center = Vector3.new(0, 0.866, -0.925), Size = Vector3.new(0.329, 2.062, 3.05), HoldLength = 2.3 },
+	grass_whip = { AssetId = 123278661581067, Center = Vector3.new(0, 0.207, -1.6), Size = Vector3.new(0.269, 0.813, 4.3), HoldLength = 3.2 },
+	hedge = { AssetId = 72879795646218, Center = Vector3.new(0, 0.218, -1.55), Size = Vector3.new(0.9, 1.585, 4), HoldLength = 3.4 },
+	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0.025, -0.083, -1.515), Size = Vector3.new(1.15, 1.834, 5.73), HoldLength = 4.8 },
+	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2) },
+	push = { AssetId = 127384897680211, Center = Vector3.new(0, 1.25, -3.087), Size = Vector3.new(3.55, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -1.8) },
+	rider = { AssetId = 133849751211282, Center = Vector3.new(0, 1.696, -0.776), Size = Vector3.new(4.455, 3.62, 6.007), RideLift = 1.35 },
+	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3 },
+	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.141, -2.23), Size = Vector3.new(6.05, 6.718, 10.14), RideLift = 2.25 },
+	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 2.895, 0.179), Size = Vector3.new(9.054, 6.211, 9.998), RideLift = 2.2 },
+	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 1.778, -0.4), Size = Vector3.new(6.058, 3.415, 6.058), RideLift = 2.3 },
+	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 2.953, -1.209), Size = Vector3.new(7.115, 6.107, 9.456), RideLift = 3.9 },
 }
 
 -- Fixed colours/materials of the shared pieces (by mesh name).
