@@ -196,6 +196,7 @@ def main():
         MODELS[name]()
         lib.finish(name)
         meta[name] = bounds()
+        meta[name]["pivots"] = {k: v for k, v in lib.PIVOTS.items() if not k.startswith("Spin")}
         hits = clearance(name)
         print(f"CLEAR {name}: " + (", ".join(hits) if hits else "ok"))
         export(name)

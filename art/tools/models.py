@@ -482,10 +482,14 @@ def mega_push():
     # player stands on a little back step and steers with a tiny wheel.
     with xform(2.6, (0, 0, 2.7)):  # the grass bag ends right in front of the step
         push()
-    box("Dark", (0, 2.05, 0.1), (2.6, 0.3, 2.2), bevel=0.08)  # back step (RideLift 2.2)
-    for x in (-1.1, 1.1):
-        cyl("Chrome", (x, 2.0, -0.85), (x, 0.0, -0.85), 0.12, verts=8)
-        cyl("Chrome", (x, 2.0, 1.0), (x, 0.0, 1.0), 0.12, verts=8)
+    # a rolling platform hitched behind the mower (RideLift 2.2)
+    box("Dark", (0, 2.05, 0.1), (2.6, 0.3, 2.2), bevel=0.08)
+    box("Accent2", (0, 2.22, 0.1), (2.4, 0.06, 2.0), bevel=0.02)
+    for x in (-1.0, 1.0):  # hitch bars to the deck
+        cyl("Dark", (x, 1.95, -0.9), (x, 1.3, -3.3), 0.12, verts=8)
+    box("Dark", (0, 1.6, 0.1), (2.2, 0.5, 0.8), bevel=0.06)
+    wheel((-1.55, 0.9, 0.1), 1.8, 0.45, hub="Accent2")
+    wheel((1.55, 0.9, 0.1), 1.8, 0.45, hub="Accent2")
     cyl("Dark", (0, 2.2, -1.05), (0, 4.6, -0.95), 0.1, verts=8)
     ring("SteeringWheel", (0, 4.65, -0.93), (0, 0.9, 0.42), 0.4, 0.07, seg=12, minor_seg=6)
 

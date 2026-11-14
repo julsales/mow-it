@@ -23,6 +23,7 @@ export type ModelDef = {
 	RideLift: number?, -- riders: height of the deck the player stands on
 	Handle: Vector3?, -- push/reel mowers: the game adds the fitted handle from (±X, Y, Z)
 	Snip: { Pivot: Vector3, Axis: Vector3, Angle: number }?, -- blades/lever: hinge and how far they open (degrees)
+	Pivots: { [string]: Vector3 }?, -- per rig: the axle it turns on (authored; written by sync_config.py)
 	Seat: Vector3?, -- ride-ons the player SITS on: top-centre of the seat (authored); the game moves the seat under the player
 }
 
@@ -47,28 +48,28 @@ export type Finish = {
 local rgb = Color3.fromRGB
 
 local Models: { [string]: ModelDef } = {
-	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3, Snip = { Pivot = Vector3.new(0, 0.25, -1.55), Axis = Vector3.xAxis, Angle = 10 } },
-	scissors_safety = { AssetId = 120638250934550, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8, Snip = { Pivot = Vector3.new(0, 0, -0.48), Axis = Vector3.yAxis, Angle = 18 } },
-	scissors_kitchen = { AssetId = 124984095097638, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1, Snip = { Pivot = Vector3.new(0, 0, -0.45), Axis = Vector3.yAxis, Angle = 16 } },
-	shears = { AssetId = 111659672280353, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6, Snip = { Pivot = Vector3.new(0, 0, -0.8), Axis = Vector3.yAxis, Angle = 14 } },
+	clipper = { AssetId = 125003935411772, Center = Vector3.new(0, 0.074, -0.796), Size = Vector3.new(0.66, 1.088, 2.882), HoldLength = 1.3, Snip = { Pivot = Vector3.new(0, 0.25, -1.55), Axis = Vector3.xAxis, Angle = 10 }, Pivots = { Lever = Vector3.new(-0, 0.42, -0.75) } },
+	scissors_safety = { AssetId = 120638250934550, Center = Vector3.new(0, 0.002, -0.536), Size = Vector3.new(1.54, 0.195, 2.428), HoldLength = 1.8, Snip = { Pivot = Vector3.new(0, 0, -0.48), Axis = Vector3.yAxis, Angle = 18 }, Pivots = { SnipL = Vector3.new(-0.32, 0, 0.25), SnipR = Vector3.new(0.32, 0, 0.25) } },
+	scissors_kitchen = { AssetId = 124984095097638, Center = Vector3.new(-0.025, 0.007, -0.808), Size = Vector3.new(1.35, 0.187, 2.976), HoldLength = 2.1, Snip = { Pivot = Vector3.new(0, 0, -0.45), Axis = Vector3.yAxis, Angle = 16 }, Pivots = { SnipL = Vector3.new(-0.3, 0, 0.3), SnipR = Vector3.new(0.3, 0, 0.3) } },
+	shears = { AssetId = 111659672280353, Center = Vector3.new(0, 0, -0.58), Size = Vector3.new(1.063, 0.277, 3.689), HoldLength = 2.6, Snip = { Pivot = Vector3.new(0, 0, -0.8), Axis = Vector3.yAxis, Angle = 14 }, Pivots = { SnipL = Vector3.new(-0.235, 0, 0.075), SnipR = Vector3.new(0.235, 0, 0.075) } },
 	sickle = { AssetId = 93802071925746, Center = Vector3.new(0, 0.866, -0.925), Size = Vector3.new(0.329, 2.062, 3.05), HoldLength = 2.3 },
 	grass_whip = { AssetId = 123278661581067, Center = Vector3.new(0, 0.207, -1.6), Size = Vector3.new(0.269, 0.813, 4.3), HoldLength = 3.2 },
-	hedge = { AssetId = 72879795646218, Center = Vector3.new(0, 0.218, -1.55), Size = Vector3.new(0.9, 1.585, 4), HoldLength = 3.4 },
-	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0, -0.083, -1.55), Size = Vector3.new(1.2, 1.834, 5.8), HoldLength = 4.8 },
-	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2) },
+	hedge = { AssetId = 72879795646218, Center = Vector3.new(0, 0.218, -1.55), Size = Vector3.new(0.9, 1.585, 4), HoldLength = 3.4, Pivots = { Buzz = Vector3.new(0, 0, -2.4) } },
+	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0, -0.083, -1.55), Size = Vector3.new(1.2, 1.834, 5.8), HoldLength = 4.8, Pivots = { Head = Vector3.new(0, -0.91, -3.85) } },
+	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2), Pivots = { Reel = Vector3.new(0, 0.6, -3) } },
 	push = { AssetId = 127384897680211, Center = Vector3.new(0, 1.25, -3.687), Size = Vector3.new(3.55, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -2.4) },
 	rider = { AssetId = 133849751211282, Center = Vector3.new(0, 1.793, -0.776), Size = Vector3.new(4.455, 3.814, 6.007), RideLift = 1.35, Seat = Vector3.new(0, 2.4, 0.6) },
 	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3, Seat = Vector3.new(0, 2.15, 0.4) },
 	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.491, -2.23), Size = Vector3.new(6.05, 7.418, 10.14), RideLift = 2.25, Seat = Vector3.new(0, 3.075, 0.6) },
-	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 3.595, 0.24), Size = Vector3.new(9.054, 7.611, 10.12), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2) },
-	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 2.502, -0.4), Size = Vector3.new(6.058, 4.865, 6.058), RideLift = 2.3 },
+	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 3.595, 0.24), Size = Vector3.new(9.054, 7.611, 10.12), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2), Pivots = { Drum = Vector3.new(0, 1.7, -3.9) } },
+	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 2.502, -0.4), Size = Vector3.new(6.058, 4.865, 6.058), RideLift = 2.3, Pivots = { Rotor0 = Vector3.new(0, 0.9, -0.4), Rotor1 = Vector3.new(2.121, 2.6, 1.721), Rotor2 = Vector3.new(-2.121, 2.6, 1.721), Rotor3 = Vector3.new(-2.121, 2.6, -2.521), Rotor4 = Vector3.new(2.121, 2.6, -2.521) } },
 	mega_push = { AssetId = 121793856419832, Center = Vector3.new(0, 3.25, -5.622), Size = Vector3.new(9.23, 6.5, 13.645), RideLift = 2.2 },
-	fortress = { AssetId = 77627639646586, Center = Vector3.new(-0.602, 4.395, 0.556), Size = Vector3.new(9.054, 9.211, 10.752), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2) },
-	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.623, -1.678), Size = Vector3.new(9.906, 5.106, 8.838), RideLift = 2.3 },
-	void = { AssetId = 139076317027769, Center = Vector3.new(0.325, 2.805, -1.714), Size = Vector3.new(6.521, 5.291, 9.011), RideLift = 2.2 },
-	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 6.325, 0.298), Size = Vector3.new(4.6, 11.75, 10.396), RideLift = 2.2 },
-	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.902, -2.05), Size = Vector3.new(5.815, 5.805, 9.1), RideLift = 3.15 },
-	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 3.1, -1.215), Size = Vector3.new(7.412, 6.91, 10.069), RideLift = 3.9 },
+	fortress = { AssetId = 77627639646586, Center = Vector3.new(-0.602, 4.395, 0.556), Size = Vector3.new(9.054, 9.211, 10.752), RideLift = 2.2, Seat = Vector3.new(0, 3.2, -0.2), Pivots = { Drum = Vector3.new(0, 1.7, -3.9) } },
+	swarm = { AssetId = 81977994625587, Center = Vector3.new(0, 2.623, -1.678), Size = Vector3.new(9.906, 5.106, 8.838), RideLift = 2.3, Pivots = { Orbit = Vector3.new(3.984, 4.224, 1.772), Rotor0 = Vector3.new(0, 0.9, -0.4), Rotor1 = Vector3.new(2.121, 2.6, 1.721), Rotor2 = Vector3.new(-2.121, 2.6, 1.721), Rotor3 = Vector3.new(-2.121, 2.6, -2.521), Rotor4 = Vector3.new(2.121, 2.6, -2.521) } },
+	void = { AssetId = 139076317027769, Center = Vector3.new(0.325, 2.805, -1.714), Size = Vector3.new(6.521, 5.291, 9.011), RideLift = 2.2, Pivots = { Orbit = Vector3.new(3.4, 4.2, -0.619), Portal = Vector3.new(0, 0.35, -4.2) } },
+	airship = { AssetId = 101949380235177, Center = Vector3.new(0, 6.325, 0.298), Size = Vector3.new(4.6, 11.75, 10.396), RideLift = 2.2, Pivots = { Prop = Vector3.new(0, 10.2, 5), Rotor0 = Vector3.new(0, 0.5, -0.6) } },
+	drill = { AssetId = 76698397475352, Center = Vector3.new(0, 2.902, -2.05), Size = Vector3.new(5.815, 5.805, 9.1), RideLift = 3.15, Pivots = { Drill = Vector3.new(-0, 1.9, -5) } },
+	mowzilla = { AssetId = 98397533214522, Center = Vector3.new(0, 3.1, -1.215), Size = Vector3.new(7.412, 6.91, 10.069), RideLift = 3.9, Pivots = { Drum = Vector3.new(0, 0.55, -5.3), JawBottom = Vector3.new(-1.58, 1.335, -4.753), JawTop = Vector3.new(-1.8, 1.915, -4.752) } },
 }
 
 -- Fixed colours/materials of the shared pieces (by mesh name).
