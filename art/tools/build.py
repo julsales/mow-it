@@ -166,11 +166,11 @@ def clearance(name):
 
     kind, where = spec
     if kind == "stand":
-        boxes = {"body": ((-0.85, where + 0.15, -0.55), (0.85, where + 5.4, 0.55))}
+        boxes = {"body": ((-0.85, where + 0.15, -0.65), (0.85, where + 5.4, 0.65))}
     else:
         x, y, z = where
         boxes = {
-            "body": ((x - 0.85, y + 0.1, z - 0.45), (x + 0.85, y + 3.7, z + 0.45)),
+            "body": ((x - 0.85, y + 0.1, z - 0.6), (x + 0.85, y + 3.7, z + 0.6)),
             "legs": ((x - 0.8, y - 0.95, z - 1.5), (x + 0.8, y + 0.5, z - 0.45)),  # feet rest 1 stud under the seat
         }
     hits = []
