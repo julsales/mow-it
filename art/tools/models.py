@@ -264,6 +264,9 @@ def zeroturn():
     box("Chrome", (-2.55, 0.65, -2.6), (0.08, 0.3, 1.6), bevel=0.02)
     wheel((-1.4, 0.4, -3.8), 0.8, 0.4, hub="Dark")
     wheel((1.4, 0.4, -3.8), 0.8, 0.4, hub="Dark")
+    for x in (-1.4, 1.4):  # caster forks holding the front wheels on the deck
+        cyl("Dark", (x, 0.4, -3.8), (x, 0.75, -3.35), 0.07, verts=6)
+        box("Dark", (x, 0.8, -3.35), (0.5, 0.12, 0.4), bevel=0.03)
     wheel((-1.85, 1.0, 1.0), 2.0, 0.95, hub="Accent2", tread=True)
     wheel((1.85, 1.0, 1.0), 2.0, 0.95, hub="Accent2", tread=True)
     # roll bar (pro)
@@ -376,6 +379,8 @@ def combine():
     wheel((1.95, 1.55, 0.1), 3.1, 1.0, hub="Accent2", tread=True)
     wheel((-1.7, 0.85, 4.2), 1.7, 0.6, hub="Accent2", tread=True)
     wheel((1.7, 0.85, 4.2), 1.7, 0.6, hub="Accent2", tread=True)
+    cyl("Dark", (-1.4, 0.85, 4.2), (1.4, 0.85, 4.2), 0.14, verts=8)  # rear axle under the body
+    box("Dark", (0, 1.1, 4.2), (0.6, 0.5, 0.6), bevel=0.05)
 
 
 @model
