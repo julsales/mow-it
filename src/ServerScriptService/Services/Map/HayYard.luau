@@ -63,13 +63,13 @@ end
 
 -- Packed dirt under the machines, so they stand on a yard instead of the
 -- lawn: thin parts like the paths (two crossed slabs and four round
--- corners per pad, a hair apart in height so overlaps never flicker).
+-- corners per pad, all exactly level so the joins don't show).
 local function buildGround(yard: Model, cf: CFrame)
 	local ground = Props.model("Ground", yard)
 	local spec = Config.Ground
 	local r = spec.Corner
-	local function slab(index: number, center: Vector3, size: Vector3, round: boolean)
-		local lift = 0.05 + (index % 4) * 0.012
+	local lift = 0.05
+	local function slab(center: Vector3, size: Vector3, round: boolean)
 		local part = Props.make("Dirt", ground, {
 			Shape = if round then Enum.PartType.Cylinder else nil,
 			Size = if round then Vector3.new(0.2, size.X, size.X) else Vector3.new(size.X, 0.2, size.Z),
@@ -79,13 +79,13 @@ local function buildGround(yard: Model, cf: CFrame)
 		})
 		part.CanQuery = false
 	end
-	for i, pad in spec.Pads do
+	for _, pad in spec.Pads do
 		local w, d = pad.Size.X, pad.Size.Z
-		slab(i, pad.Center, Vector3.new(w - 2 * r, 0, d), false)
-		slab(i + 1, pad.Center, Vector3.new(w, 0, d - 2 * r), false)
+		slab(pad.Center, Vector3.new(w - 2 * r, 0, d), false)
+		slab(pad.Center, Vector3.new(w, 0, d - 2 * r), false)
 		for _, sx in { -1, 1 } do
 			for _, sz in { -1, 1 } do
-				slab(i + 2, pad.Center + Vector3.new(sx * (w / 2 - r), 0, sz * (d / 2 - r)), Vector3.new(2 * r, 0, 2 * r), true)
+				slab(pad.Center + Vector3.new(sx * (w / 2 - r), 0, sz * (d / 2 - r)), Vector3.new(2 * r, 0, 2 * r), true)
 			end
 		end
 	end
@@ -134,7 +134,7 @@ function HayYard.EnsureBuilt()
 	if not home or not station or not station:IsA("Model") then
 		return
 	end
-	if HayYard.Build(home, station:GetPivot()) then
+	if HayYard.Build(home, station:GetPivot() * Config.StationOffset) then
 		station:Destroy()
 	end
 end

@@ -10,8 +10,8 @@
 
 local Config = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Config.HayYard)
 
-type Piece = { Part: BasePart, Rest: CFrame }
-type Rig = { Def: Config.RigDef, Pivot: Vector3, Pieces: { Piece }, Phase: number, Value: number, Total: CFrame, Last: CFrame?, Stepped: number }
+type Piece = { Part: BasePart, Rest: CFrame, Size: Vector3 }
+type Rig = { Def: Config.RigDef, Pivot: Vector3, Pieces: { Piece }, Phase: number, Value: number, Total: CFrame, Last: CFrame?, LastValue: number, Stepped: number }
 
 local HayRigs = {}
 HayRigs.__index = HayRigs
@@ -22,7 +22,7 @@ function HayRigs.new(model: Model, defs: { [string]: Config.RigDef }): Player
 	local self = setmetatable({ Model = model, Rigs = {}, Frame = 0, LastPivot = nil, Dirty = true, Connection = nil }, HayRigs)
 	for name, def in defs do
 		local pivot = model:GetAttribute("Pivot_" .. name)
-		self.Rigs[name] = { Def = def, Pivot = if typeof(pivot) == "Vector3" then pivot else Vector3.zero, Pieces = {}, Phase = 0, Value = 0, Total = CFrame.identity, Last = nil, Stepped = -1 }
+		self.Rigs[name] = { Def = def, Pivot = if typeof(pivot) == "Vector3" then pivot else Vector3.zero, Pieces = {}, Phase = 0, Value = 0, Total = CFrame.identity, Last = nil, LastValue = -1, Stepped = -1 }
 	end
 	-- Streaming / late replication: pick up pieces as they arrive.
 	self.Connection = model.DescendantAdded:Connect(function()
@@ -37,15 +37,16 @@ function HayRigs.Destroy(self: Player)
 	end
 end
 
--- A piece's place at rest, relative to the model. Remembered on the piece
--- the first time we see it (it is still where the server put it).
-local function restOf(model: Model, part: BasePart): CFrame
-	local rest = part:GetAttribute("Rest")
-	if typeof(rest) ~= "CFrame" then
-		rest = model:GetPivot():ToObjectSpace(part.CFrame)
+-- A piece's place and size at rest, relative to the model. Remembered on
+-- the piece the first time we see it (it is still as the server made it).
+local function restOf(model: Model, part: BasePart): (CFrame, Vector3)
+	local rest, size = part:GetAttribute("Rest"), part:GetAttribute("RestSize")
+	if typeof(rest) ~= "CFrame" or typeof(size) ~= "Vector3" then
+		rest, size = model:GetPivot():ToObjectSpace(part.CFrame), part.Size
 		part:SetAttribute("Rest", rest)
+		part:SetAttribute("RestSize", size)
 	end
-	return rest :: CFrame
+	return rest :: CFrame, size :: Vector3
 end
 
 local function scan(self: Player)
@@ -58,7 +59,8 @@ local function scan(self: Player)
 		local name = d:IsA("BasePart") and d:GetAttribute("Rig")
 		local rig = if typeof(name) == "string" then self.Rigs[name] else nil
 		if rig then
-			table.insert(rig.Pieces, { Part = d :: BasePart, Rest = restOf(self.Model, d :: BasePart) })
+			local rest, size = restOf(self.Model, d :: BasePart)
+			table.insert(rig.Pieces, { Part = d :: BasePart, Rest = rest, Size = size })
 		end
 	end
 end
@@ -88,11 +90,12 @@ local function own(rig: Rig, dt: number): CFrame
 		return CFrame.new(axis * (def.Travel or 1) * value)
 	elseif def.Kind == "Swing" then
 		return about(rig.Pivot, CFrame.fromAxisAngle(axis, math.rad(def.Angle or 45) * value))
-	else -- Loop
+	elseif def.Kind == "Loop" then
 		local travel = def.Travel or 1
 		rig.Phase = (rig.Phase + value * dt) % travel
 		return CFrame.new(axis * rig.Phase)
 	end
+	return CFrame.identity -- Grow: sized in Step
 end
 
 local function resolve(self: Player, rig: Rig, dt: number): CFrame
@@ -115,10 +118,21 @@ function HayRigs.Step(self: Player, dt: number)
 	self.LastPivot = pivot
 	for _, rig in self.Rigs do
 		local total = resolve(self, rig, dt)
-		if moved or total ~= rig.Last then
+		local grow = rig.Def.Kind == "Grow"
+		if moved or total ~= rig.Last or (grow and rig.Value ~= rig.LastValue) then
 			rig.Last = total
+			rig.LastValue = rig.Value
 			for _, piece in rig.Pieces do
-				piece.Part.CFrame = pivot * total * piece.Rest
+				if grow then
+					-- shrink toward the rig's pivot; gone when there is nothing left
+					local scale = math.clamp(rig.Value, 0, 1)
+					local rest = piece.Rest
+					piece.Part.Size = piece.Size * math.max(scale, 0.02)
+					piece.Part.Transparency = if scale < 0.04 then 1 else 0
+					piece.Part.CFrame = pivot * total * (rest.Rotation + rig.Pivot + (rest.Position - rig.Pivot) * scale)
+				else
+					piece.Part.CFrame = pivot * total * piece.Rest
+				end
 			end
 		end
 	end

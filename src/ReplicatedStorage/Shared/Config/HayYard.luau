@@ -30,7 +30,8 @@ export type RigDef = {
 	--   Slide  moves along Axis by Travel * value
 	--   Swing  turns around Axis by Angle (degrees) * value
 	--   Loop   moves along Axis at speed `value`, wrapping every Travel studs
-	Kind: "Spin" | "Shake" | "Slide" | "Swing" | "Loop",
+	--   Grow   scales around its pivot by `value` (0 = gone)
+	Kind: "Spin" | "Shake" | "Slide" | "Swing" | "Loop" | "Grow",
 	Axis: Vector3?,
 	Travel: number?,
 	Angle: number?,
@@ -61,7 +62,7 @@ local HayYard = {
 	SiloCapacity = 30, -- bales the silo keeps in stock for customers
 	TipRate = 0.1, -- customers pay this share of the bales' value on top
 	CustomerEvery = { Min = 5, Max = 9 }, -- seconds between customers while the silo has stock
-	CustomerBales = { Min = 1, Max = 3 }, -- bales one customer buys
+	CustomerBales = { Min = 1, Max = 2 }, -- bales one customer buys (two fit under the counter's awning)
 	CustomerWalkSeconds = 6, -- from the spawn marker to the counter; the tip lands then
 	CustomerSpeed = { Min = 7, Max = 16 }, -- studs/s limits when matching that time
 
@@ -84,10 +85,10 @@ local HayYard = {
 	-- Rows written by art/yard/sync_config.py (ids from out/assets.json, boxes
 	-- and pivots from out/meta.json). AssetId 0 = not uploaded yet.
 	Models = {
-		bale = { AssetId = 0, Center = Vector3.new(0, 0.765, 0), Size = Vector3.new(2.766, 1.53, 1.56) },
-		baler = { AssetId = 0, Center = Vector3.new(0.421, 3.745, 1.225), Size = Vector3.new(11.122, 7.49, 7.15), Pivots = { Cap = Vector3.new(1.66, 7.44, -0.9), Flywheel = Vector3.new(-1.3, 3, 2.035), Heap = Vector3.new(-1.6, 6.45, -0), Needle = Vector3.new(1.9, 3.75, 1.87), Plunger = Vector3.new(2.6, 5.3, -0), Shake = Vector3.new(-0.2, 3, -0) } },
-		pallet = { AssetId = 0, Center = Vector3.new(0, 1.695, -0.025), Size = Vector3.new(8, 3.39, 3.75) },
-		silo = { AssetId = 0, Center = Vector3.new(-3.65, 8.525, 0.714), Size = Vector3.new(15.3, 17.05, 9.428), Pivots = { Belt = Vector3.new(-9.95, 1.848, -0), Hatch = Vector3.new(-3.86, 9.95, -0), Vane = Vector3.new(-0, 16.75, -0) } },
+		bale = { AssetId = 78418165538120, Center = Vector3.new(0, 0.765, 0), Size = Vector3.new(2.766, 1.53, 1.56) },
+		baler = { AssetId = 111855121608229, Center = Vector3.new(0.421, 3.745, 1.225), Size = Vector3.new(11.122, 7.49, 7.15), Pivots = { Cap = Vector3.new(1.66, 7.44, -0.9), Flywheel = Vector3.new(-1.3, 3, 2.035), Heap = Vector3.new(-1.6, 6.45, -0), Needle = Vector3.new(1.9, 3.75, 1.87), Plunger = Vector3.new(2.6, 5.3, -0), Shake = Vector3.new(-0.2, 3, -0) } },
+		pallet = { AssetId = 126116120776841, Center = Vector3.new(0, 1.695, -0.025), Size = Vector3.new(8, 3.39, 3.75) },
+		silo = { AssetId = 88677231845583, Center = Vector3.new(-3.65, 8.525, 0.714), Size = Vector3.new(15.3, 17.05, 9.428), Pivots = { Belt = Vector3.new(-9.95, 1.848, -0), Hatch = Vector3.new(-3.86, 9.95, -0), Vane = Vector3.new(-0, 16.75, -0) } },
 	} :: { [string]: ModelDef },
 
 	-- Colours and materials by mesh name; names missing here use the tools'
@@ -118,7 +119,7 @@ local HayYard = {
 				Plunger = { Kind = "Slide", Axis = Vector3.yAxis, Travel = 0.95, Parent = "Shake" },
 				Cap = { Kind = "Swing", Axis = Vector3.zAxis, Angle = 55, Parent = "Shake" },
 				Needle = { Kind = "Swing", Axis = Vector3.zAxis, Angle = -110, Parent = "Shake" },
-				Heap = { Kind = "Slide", Axis = Vector3.yAxis, Travel = -1.25, Parent = "Shake" },
+				Heap = { Kind = "Grow", Parent = "Shake" },
 			},
 			Markers = {
 				Hopper = v3(-1.6, 6.6, 0), -- grass is thrown in here
@@ -188,10 +189,13 @@ local HayYard = {
 		Color = rgb(214, 176, 122),
 		Pads = {
 			{ Center = v3(-4.8, 0, 1.6), Size = v3(25.5, 0, 10) }, -- baler and stack
-			{ Center = v3(6.3, 0, -6.6), Size = v3(20, 0, 14) }, -- silo and elevator
+			{ Center = v3(6.3, 0, -6.2), Size = v3(20, 0, 13) }, -- silo and elevator
 			{ Center = v3(9.5, 0, 2.6), Size = v3(10, 0, 7) }, -- in front of the counter
 		},
 	},
+	-- The yard stands this far from where an island's sell pad would be
+	-- (back from the path, which bulges toward that spot).
+	StationOffset = CFrame.new(0, 0, -8),
 	-- Room the yard needs on a freshly generated island (MapService).
 	Radius = 20,
 

@@ -27,6 +27,7 @@ local MapLayout = require(Shared.Config.MapLayout)
 local Zones = require(Shared.Config.Zones)
 local Format = require(Shared.Format)
 local Quests = require(Shared.Config.Quests)
+local HayYardConfig = require(Shared.Config.HayYard)
 
 local Props = require(script.Parent.Map.Props)
 local ShopDisplay = require(script.Parent.Map.ShopDisplay)
@@ -741,7 +742,7 @@ function MapService.BuildIfMissing()
 			local cf = facing(pos, arrival + forward * st.Forward)
 			-- The base gets the hay yard (baler, stack, silo); the other
 			-- islands a drop-off pad that sends grass to it.
-			local yard = if island.Def.ShopAt == "House" then HayYard.Build(islandModels[island.Id], cf) else nil
+			local yard = if island.Def.ShopAt == "House" then HayYard.Build(islandModels[island.Id], cf * HayYardConfig.StationOffset) else nil
 			if yard then
 				claim(pos, HayYard.Radius)
 			else

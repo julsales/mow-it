@@ -108,7 +108,10 @@ local function spawnPerson(at: Vector3, facing: Vector3): Person?
 	animator.Parent = humanoid
 	local person: Person = { Model = model, Root = root, Height = humanoid.HipHeight + root.Size.Y / 2, Walk = nil, Idle = nil, Carried = {} }
 	root.Anchored = true
-	root.CFrame = CFrame.lookAt(at + Vector3.new(0, person.Height, 0), at + facing + Vector3.new(0, person.Height, 0))
+	-- Move the whole model before it enters the world (moving only the root
+	-- would leave welded pieces like the hat behind).
+	model.PrimaryPart = root
+	model:PivotTo(CFrame.lookAt(at + Vector3.new(0, person.Height, 0), at + Vector3.new(facing.X, 0, facing.Z) + Vector3.new(0, person.Height, 0)))
 	model.Parent = folder
 	person.Walk = track(animator, Config.Animations.Walk)
 	person.Idle = track(animator, Config.Animations.Idle)

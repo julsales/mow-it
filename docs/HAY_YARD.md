@@ -20,7 +20,7 @@ the plan: what exists, how it is put together and what comes next.
 4. **Sell**: click a bale. Coins are paid at once, the bale hops onto the
    elevator, rides up and drops into the **silo**.
 5. **Customers**: while the silo has stock, customers walk up to its
-   counter, take 1 to 3 bales and pay a tip (10% of what those bales sold
+   counter (they arrive at the dock), take 1 or 2 bales and pay a tip (10% of what those bales sold
    for). Nobody buys loose grass from the player any more.
 
 Every step is animated on the client: flywheel, rattling body, press,

@@ -70,8 +70,8 @@ end
 local function tag(at: Vector3, width: number): (BillboardGui, TextLabel)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "HayTag"
-	gui.Size = UDim2.fromOffset(width, 34)
-	gui.MaxDistance = 70
+	gui.Size = UDim2.fromOffset(width, 28)
+	gui.MaxDistance = 55
 	gui.LightInfluence = 0
 	gui.Adornee = anchor(at)
 	gui.ResetOnSpawn = false
@@ -171,7 +171,7 @@ type View = {
 	BalerGui: BillboardGui,
 	StackTag: TextLabel,
 	StackGui: BillboardGui,
-	SiloTag: TextLabel,
+	SiloTag: TextLabel?,
 	Power: number, -- 0..1, the baler spinning up and down
 	Heap: number,
 	Hatch: number,
@@ -194,9 +194,11 @@ local function createView(yard: Model, baler: Model, pallet: Model, silo: Model)
 	local exhaust = anchor(at(baler, baleMarkers.Exhaust))
 	local mouth = anchor(at(baler, baleMarkers.Tray))
 	local hopper = anchor(at(baler, baleMarkers.Hopper))
-	local balerGui, balerTag = tag(at(baler, baleMarkers.Hopper + Vector3.new(0, 3.2, 0)), 250)
-	local stackGui, stackTag = tag(at(pallet, Vector3.new(0, 8.2, 0)), 210)
-	local _, siloTag = tag(at(silo, siloMarkers.Counter + Vector3.new(0, 2.6, 1.2)), 150)
+	local balerGui, balerTag = tag(at(baler, baleMarkers.Hopper + Vector3.new(0, 3.2, 0)), 210)
+	local stackGui, stackTag = tag(at(pallet, Vector3.new(0, 8.2, 0)), 170)
+	-- The silo's own board shows what is in stock.
+	local board = silo:FindFirstChild("Sign")
+	local siloTag = if board then board:FindFirstChildWhichIsA("TextLabel", true) :: TextLabel? else nil
 	local highlight = Instance.new("Highlight")
 	highlight.FillColor = GOLD
 	highlight.FillTransparency = 0.65
@@ -362,7 +364,9 @@ local function sync(v: View, profile: any, instant: boolean)
 	v.BalerGui.Enabled = units > 0 or GrassBag.Total(profile) > 0
 	v.StackTag.Text = "Click a bale to sell it"
 	v.StackGui.Enabled = count > 0
-	v.SiloTag.Text = ("Stock: %d"):format(state.Stock)
+	if v.SiloTag then
+		v.SiloTag.Text = if state.Stock > 0 then ("HAY FOR SALE\n%d in stock"):format(state.Stock) else "HAY FOR SALE"
+	end
 end
 
 -- The machines, every frame -----------------------------------------------------------------
@@ -408,7 +412,7 @@ local function step(v: View, profile: any, dt: number)
 	rigs:Set("Plunger", stroke * power)
 	rigs:Set("Cap", power * math.max(0, math.sin(t * 13)) ^ 2 + kick * 0.6)
 	rigs:Set("Needle", 0.12 + power * (0.62 + 0.1 * math.sin(t * 7)) + kick * 0.2)
-	rigs:Set("Heap", 1 - v.Heap)
+	rigs:Set("Heap", v.Heap)
 	rigs:Step(dt)
 	v.Smoke.Rate = 5 * power
 
@@ -505,6 +509,14 @@ local function dropView()
 		end
 	end
 end
+
+-- Download the yard's meshes up front, so the first bale doesn't pop in late.
+task.spawn(function()
+	local art = ReplicatedStorage:WaitForChild("YardArt", 30)
+	if art then
+		game:GetService("ContentProvider"):PreloadAsync({ art })
+	end
+end)
 
 -- Look for the yard now and then (it may stream in or be rebuilt).
 task.spawn(function()
