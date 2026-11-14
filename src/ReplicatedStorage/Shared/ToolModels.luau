@@ -567,6 +567,11 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 	if def.Seat then
 		model:SetAttribute("SeatHeight", def.Seat.Y * scale) -- ToolVisualService sits the player here
 	end
+	-- Axles of the moving pieces, in the finished model's space.
+	local shift = if def.Seat then Vector3.new(0, 0, def.Seat.Z) else Vector3.zero
+	for rigName, pivot in def.Pivots or {} do
+		model:SetAttribute("Pivot_" .. rigName, (pivot - shift) * scale)
+	end
 	-- Hinge of the blades / lever, for the open-close animation.
 	if def.Snip then
 		model:SetAttribute("SnipPivot", def.Snip.Pivot * scale)

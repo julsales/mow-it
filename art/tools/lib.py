@@ -40,6 +40,7 @@ def rotm(rot):
 _RIG = [None]
 _XFORM = [Matrix.Identity(4)]
 _SPIN = [0]
+PIVOTS = {}  # rig name -> centre of its first piece (the axle it turns on), roblox coords
 
 
 @contextlib.contextmanager
@@ -71,6 +72,7 @@ def next_spin():
 
 
 def reset_state():
+    PIVOTS.clear()
     _RIG[0] = None
     _XFORM[0] = Matrix.Identity(4)
     _SPIN[0] = 0
@@ -94,6 +96,10 @@ def _place(o, matrix, group, bevel, smooth=False):
     o["grp"] = group
     if _RIG[0]:
         o["rig"] = _RIG[0]
+        if _RIG[0] not in PIVOTS:
+            pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
+            mid = sum(pts, Vector()) / 8
+            PIVOTS[_RIG[0]] = [round(mid.x, 3), round(mid.z, 3), round(-mid.y, 3)]
     return o
 
 
@@ -190,7 +196,12 @@ def wheel(c, diameter, width, hub="Accent", tread=False, spokes=0, axis_x=True):
     its own spin rig (unless built inside another rig)."""
     if _RIG[0] is None:
         with rig(next_spin()):
-            return wheel(c, diameter, width, hub, tread, spokes, axis_x)
+            wheel(c, diameter, width, hub, tread, spokes, axis_x)
+        # a fixed axle stub joins the wheel to the body
+        x, y, z = c
+        side = 1 if x >= 0 else -1
+        cyl("Dark", (x - side * width * 0.45, y, z), (x * 0.45, y, z), max(0.06, diameter * 0.09), verts=8, bevel=0)
+        return
     x, y, z = c
     hw = width / 2
     r = diameter / 2

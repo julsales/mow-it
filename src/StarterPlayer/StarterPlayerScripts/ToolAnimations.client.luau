@@ -55,6 +55,14 @@ local function scan(model: Model): Entry
 			end
 		end
 	end
+	-- The model knows the exact axle of each moving piece (Config/ToolArt
+	-- Pivots); the biggest-piece guess is only a fallback.
+	for _, rig in rigs do
+		local pivot = model:GetAttribute("Pivot_" .. rig.Name)
+		if typeof(pivot) == "Vector3" then
+			rig.Pivot = pivot
+		end
+	end
 	local entry: Entry = { Model = model, Rigs = rigs, Dirty = false, Connection = nil }
 	-- Big models replicate in pieces: rescan when more pieces arrive.
 	entry.Connection = model.DescendantAdded:Connect(function()

@@ -23,5 +23,10 @@ for name, box in meta.items():
         raise SystemExit(f"no Models row for {name}")
     asset = str(assets.get(name, 0))
     text = pattern.sub(lambda m: m.group(1) + (asset if asset != "0" else m.group(2)) + m.group(3) + v3(box["center"]) + m.group(4) + v3(box["size"]), text)
+    # axles the moving pieces turn on (Pivots = { … } at the end of the row)
+    row = re.compile(rf"(\t{name} = \{{ AssetId[^\n]*?)(, Pivots = \{{[^}}]*\}})?( \}},\n)")
+    piv = box.get("pivots") or {}
+    table = ", Pivots = { " + ", ".join(f"{k} = {v3(v)}" for k, v in sorted(piv.items())) + " }" if piv else ""
+    text = row.sub(lambda m: m.group(1) + table + m.group(3), text)
 open(CONFIG, "w").write(text)
 print("synced", len(meta), "models,", len(assets), "asset ids")
