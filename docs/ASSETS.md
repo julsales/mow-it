@@ -138,10 +138,39 @@ that feeds real data to whatever kit wins. Replace widgets, keep bindings.
 
 ## 4. Audio
 
-| Need | Where to get it | Status |
+All ids live in `Shared/Config/Sounds.luau`; `StarterPlayerScripts/SoundManager.luau` plays them and `Audio.client.luau` wires them to the game. Rule: only free Creator Store audio from Roblox's licensed libraries (**Pro Sound Effects**, **APM Music**), Roblox's own UI pack, or creators who publish their **own** recordings/synths for free use. No rips from other games or commercial songs. Every id was loaded in Play on this place (permission check) and its loudness measured with `AudioAnalyzer` to level the volumes. Audited 2026-11-14.
+
+| Use | Asset (creator) | Id |
 |---|---|---|
-| Cut/snip, mower loop per tool tier, sell "cha-ching", buy, unlock fanfare, UI click, ambient birds/wind per zone | **Creator Store → Audio** (Studio: Toolbox → Audio). Search the exact phrases; filter by length. Roblox audio has per-asset privacy/permissions — use assets listed as distributable, or upload our own from a royalty-free library and log the source here. | 🔎 mapped as a category; individual ids chosen in Studio, logged here before use |
-| Snip, Swish, MowCut, Collect, Full, Sell, Buy, Engine loop (mowing cycle) | **Placeholders built into every Roblox client** (`rbxasset://sounds/...`: swordslash, electronicpingshort, snap, victory, clickfast). All ids in `Shared/Config/Sounds.luau`, played by `Mowing.client.luau` | ✅ placeholders playing; 🔎 swap Engine for a real lawn mower loop (Toolbox → Audio → "lawn mower", or upload the CC0 BigSoundBank #1071 recording) and log the id here |
+| Music: Front Yard theme | Lakefront Days, Ukulele Underscore (APM) | 9038622066 |
+| Music: Backyard theme | Charming View, Ukulele (APM) | 1839578771 |
+| Music: Sunny Farm theme | Happy Daze (b) (APM) | 1839993539 |
+| Music: Big Ranch theme | Rural Rapture (b) (APM) | 1841849270 |
+| Music: Golf Estate theme | A Walk In The Park (B) (APM) | 1846205663 |
+| Music: Mega Fields theme | Sail Boat (c) (APM) | 1840007459 |
+| Ambience: home islands | Neighborhood Birds 2 (PSE) | 9112835068 |
+| Ambience: farm islands | Birds Park 2, summer day + insects (PSE) | 9112749076 |
+| Ambience: Mega Fields | Farmland Presence 2, crickets + wind (PSE) | 9112777821 |
+| Scissors / shears snips (x4 variants) | Scissors Various Cuts 17 / 10, Hedge Trimmer Scissors Snips 16 / 8 (PSE) | 9118831072, 9118830476, 9114795025, 9114794521 |
+| Sickle / grass whip swish | Wood Scrape, Dried Palm Fronds Swishing By 3 (PSE) | 9120957949 |
+| Swing at nothing (x4) | Roblox_UI_Whoosh_01..04 (Roblox) | 15675024286, 15675028888, 15674975792, 15675012262 |
+| String trimmer loop | Grass Trimmer 2 (PSE), loop 1.2-7.9 s | 9114657257 |
+| Reel mower rattle | Lawn Mower Old Push Style 7 (PSE), loop 3.3-9.3 s | 9116245626 |
+| Push mower engine | Lawn Mower Motor 1 (PSE), loop 3-16 s | 9116244745 |
+| Riding mower engine | Lawn mower Idle (Loop) (NordicRider, own recording) | 4946047659 |
+| Tractor / harvester engine | Tractor Engine JD loop idle (TunikaTante) | 5306143177 |
+| Grass-cutting layer (motor mowers) | Lawn Mower (SpaceODY, mower cutting grass) | 1688282813 |
+| Grass into bag | Cartoon Pop (Daily Sounds, self-synthesized) | 106984966606682 |
+| Bag full | Error Buzz (Daily Sounds) | 91501650514390 |
+| Coins (sell cascade, buy) | Coin Pickup / Retro Coin Collect (Daily Sounds) | 130378474223829, 138309872562566 |
+| Sell drawer | Cash Register 3 (PSE) | 9113728198 |
+| Buy stinger | The Plinky Plonk Picnic, Sting 2 (APM) | 1841411953 |
+| Unlock island stinger | Rural Rapture (sting) (APM) | 1841853310 |
+| Gate creak under unlock | Door Short Squeak 2 (PSE) | 9114153097 |
+| Level up stinger | Daily Affirmation, Mnemonic 2 (APM) | 9048750245 |
+| UI click | Roblox_UI_Bright_Click (Roblox) | 15675059323 |
+
+Rejected: Plants vs. Zombies, Minecraft, Geometry Dash, Undertale, Baldi and similar uploads (ripped from other games); "DistrokidOfficial" songs (commercial releases, wrong mood); user "cash register"/"coin" uploads with no source.
 
 ## 5. VFX / animation
 
