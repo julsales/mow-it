@@ -10,9 +10,12 @@
 --   Buzz        shakes while cutting (hedge trimmer bar, saw chain)
 --   SnipL/SnipR/Lever open and close around the model's SnipPivot on each
 --               cut (the server stamps SwingAt on the model per cut).
+-- Also: pieces tagged "RainbowPiece" (Rainbow finish, held or on display)
+-- cycle through the rainbow.
 -- Each piece is welded to the model's Root; we only change the weld's C0
 -- around the value it was built with.
 
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -108,6 +111,11 @@ end
 
 RunService.RenderStepped:Connect(function(dt)
 	local now = workspace:GetServerTimeNow()
+	for i, piece in CollectionService:GetTagged("RainbowPiece") do
+		if piece:IsA("BasePart") then
+			piece.Color = Color3.fromHSV((now * 0.2 + i * 0.07) % 1, 0.7, 1)
+		end
+	end
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
 		local model = character and character:FindFirstChild("ToolModel")

@@ -31,6 +31,16 @@ export type ToolLook = {
 	Color2: Color3, -- "Accent2" pieces (stripes, rims, trim)
 	Extras: { string }?, -- optional pieces to keep ("Turbo", "Crown"…)
 	Scale: number?, -- ground tools: size multiplier (default from the ladder)
+	Finish: string?, -- "Golden" | "Rainbow" | "Void": special paint + effects (Finishes)
+}
+
+export type Finish = {
+	Color: Color3, -- replaces the Accent paint
+	Color2: Color3, -- Accent2 / Glow, always neon
+	Material: Enum.Material,
+	Rainbow: boolean?, -- Accent cycles through the rainbow (ToolAnimations.client)
+	Particle: { Texture: string, Color: ColorSequence, Rate: number, Size: number, LightEmission: number },
+	Light: Color3,
 }
 
 local rgb = Color3.fromRGB
@@ -124,17 +134,46 @@ local Tools: { [string]: ToolLook } = {
 	estate_comb = { Model = "combine", Color = rgb(60, 170, 90), Color2 = rgb(255, 230, 120) },
 	greenkeeper = { Model = "tractor", Color = rgb(30, 110, 60), Color2 = rgb(255, 255, 255), Extras = { "Canopy" } },
 	mansion_mower = { Model = "rider", Color = rgb(30, 40, 70), Color2 = rgb(255, 196, 50) },
-	royal_tractor = { Model = "tractor", Color = rgb(120, 40, 170), Color2 = rgb(255, 196, 50), Extras = { "Canopy", "Crown" } },
-	fairway_titan = { Model = "tractor", Color = rgb(240, 240, 240), Color2 = rgb(30, 130, 70), Extras = { "Canopy" } },
+	royal_tractor = { Model = "tractor", Color = rgb(120, 40, 170), Color2 = rgb(255, 196, 50), Extras = { "Canopy", "Crown" }, Finish = "Golden" },
+	fairway_titan = { Model = "tractor", Color = rgb(240, 240, 240), Color2 = rgb(30, 130, 70), Extras = { "Canopy" }, Finish = "Golden" },
 	-- Mega Fields: the special ones (themed, comically big, VOID)
 	combine_harvester = { Model = "combine", Color = rgb(220, 50, 40), Color2 = rgb(255, 214, 70) },
-	mega_mower = { Model = "mega_push", Color = rgb(230, 40, 40), Color2 = rgb(255, 214, 60), Extras = { "Bag", "Deluxe" } },
-	field_fortress = { Model = "fortress", Color = rgb(70, 90, 170), Color2 = rgb(255, 210, 60) },
-	drone_swarm = { Model = "swarm", Color = rgb(40, 180, 230), Color2 = rgb(255, 255, 255) },
-	titan_harvester = { Model = "void", Color = rgb(36, 22, 58), Color2 = rgb(190, 90, 255), Scale = 1.3 },
-	sky_mower = { Model = "airship", Color = rgb(70, 140, 230), Color2 = rgb(250, 248, 240) },
+	mega_mower = { Model = "mega_push", Color = rgb(230, 40, 40), Color2 = rgb(255, 214, 60), Extras = { "Bag", "Deluxe" }, Finish = "Rainbow" },
+	field_fortress = { Model = "fortress", Color = rgb(70, 90, 170), Color2 = rgb(255, 210, 60), Finish = "Golden" },
+	drone_swarm = { Model = "swarm", Color = rgb(40, 180, 230), Color2 = rgb(255, 255, 255), Finish = "Rainbow" },
+	titan_harvester = { Model = "void", Color = rgb(36, 22, 58), Color2 = rgb(190, 90, 255), Scale = 1.3, Finish = "Void" },
+	sky_mower = { Model = "airship", Color = rgb(70, 140, 230), Color2 = rgb(250, 248, 240), Finish = "Rainbow" },
 	terra_mower = { Model = "drill", Color = rgb(150, 90, 50), Color2 = rgb(255, 130, 30) },
-	mowzilla = { Model = "mowzilla", Color = rgb(200, 30, 40), Color2 = rgb(255, 200, 40), Scale = 1.35 },
+	mowzilla = { Model = "mowzilla", Color = rgb(200, 30, 40), Color2 = rgb(255, 200, 40), Scale = 1.35, Finish = "Void" },
 }
 
-return { Models = Models, Pieces = Pieces, Tools = Tools }
+-- Special finishes for the top tools. Particle textures are free Creator
+-- Store images (docs/ASSETS.md): "star sparkle particle" by Vupatu (decal
+-- 6490035158), "Rainbow Sparkle Particle" by Rokelium (9289210132),
+-- "Dream Particle Void Outline" by redgodnior (4508781782).
+local Finishes: { [string]: Finish } = {
+	Golden = {
+		Color = rgb(255, 190, 40),
+		Color2 = rgb(255, 244, 180),
+		Material = Enum.Material.Foil,
+		Particle = { Texture = "rbxassetid://6490035152", Color = ColorSequence.new(rgb(255, 230, 120)), Rate = 10, Size = 0.6, LightEmission = 1 },
+		Light = rgb(255, 210, 90),
+	},
+	Rainbow = {
+		Color = rgb(255, 80, 80),
+		Color2 = rgb(255, 255, 255),
+		Material = Enum.Material.SmoothPlastic,
+		Rainbow = true,
+		Particle = { Texture = "rbxassetid://9289210113", Color = ColorSequence.new(rgb(255, 255, 255)), Rate = 12, Size = 0.7, LightEmission = 0.6 },
+		Light = rgb(200, 200, 255),
+	},
+	Void = {
+		Color = rgb(24, 12, 40),
+		Color2 = rgb(180, 80, 255),
+		Material = Enum.Material.SmoothPlastic,
+		Particle = { Texture = "rbxassetid://4508781776", Color = ColorSequence.new(rgb(190, 100, 255), rgb(60, 0, 120)), Rate = 14, Size = 1.1, LightEmission = 0.8 },
+		Light = rgb(170, 70, 255),
+	},
+}
+
+return { Models = Models, Pieces = Pieces, Tools = Tools, Finishes = Finishes }
