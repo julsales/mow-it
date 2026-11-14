@@ -457,8 +457,13 @@ def mowzilla():
         cyl("Dark", (x, 0.55, -5.3), (x, 1.6, -4.3), 0.16, verts=6)
     with rig("Drum"):  # the cutter drum spins all the time
         cyl("Metal", (-2.6, 0.55, -5.3), (2.6, 0.55, -5.3), 0.5, verts=12)
-        for i in range(10):
-            box("Chrome", (-2.3 + i * 0.5, 0.55, -5.3), (0.1, 1.3, 0.12), bevel=0, rot=[("x", i * 36)])
+        for i in range(10):  # cone spikes all round the drum
+            for k in (0, 1):
+                a = math.radians(i * 36 + k * 180)
+                x = -2.3 + i * 0.5
+                base = (x, 0.55 + math.sin(a) * 0.45, -5.3 + math.cos(a) * 0.45)
+                tip = (x, 0.55 + math.sin(a) * 0.95, -5.3 + math.cos(a) * 0.95)
+                cyl("Chrome", base, tip, 0.14, verts=8, r2=0.01)
     # rails to hold
     handrail(3.9, width=0.7)
 
@@ -581,11 +586,13 @@ def drill():
         box("Glow", (x, 2.0, z), (0.06, 0.12, ln), bevel=0, rot=[("x", 20)])
     with rig("Drill"):  # spins around its own (Z) axis
         cyl("Metal", (0, 1.9, -3.4), (0, 1.9, -6.6), 1.4, verts=12, r2=0.06)
-        for k in range(10):
-            t = k / 10
-            a = math.radians(k * 72)
-            r = 1.35 * (1 - t)
-            box("Chrome", (math.cos(a) * r, 1.9 + math.sin(a) * r, -3.5 - t * 3.0), (0.18, 0.18, 0.7), bevel=0, rot=[("z", math.degrees(a)), ("x", 20)])
+        for k in range(12):  # cone spikes spiralling round the drill
+            t = k / 12
+            a = math.radians(k * 75)
+            r = 1.4 * (1 - t) - 0.05
+            base = (math.cos(a) * r, 1.9 + math.sin(a) * r, -3.6 - t * 2.9)
+            tip = (math.cos(a) * (r + 0.55), 1.9 + math.sin(a) * (r + 0.55), base[2] - 0.35)
+            cyl("Chrome", base, tip, 0.2 - t * 0.08, verts=8, r2=0.01)
     cyl("Accent2", (0, 1.9, -3.2), (0, 1.9, -3.5), 1.55, verts=12, bevel=0.04)
     for x in (-1.2, 1.2):
         cyl("Light", (x, 2.7, -3.4), (x, 2.7, -3.5), 0.22, verts=8)
