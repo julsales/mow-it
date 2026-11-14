@@ -30,7 +30,7 @@ Lobby parties of up to **4 players** teleport together into a private match.
    [docs/ROJO.md](docs/ROJO.md).
 3. Press **Play**. The server builds a graybox world (labeled zone
    fields, Sell pads, Join Pad), so the full loop works before any
-   real map exists: click to cut, fill up, stand on SELL, buy the next
+   real map exists: click to cut, fill up, load the Baler and click the bales, buy the next
    tool from the top-right buttons, unlock zones.
 4. To test like production, create two places (Lobby = start place,
    Game = sub-place), paste their ids into

@@ -233,32 +233,33 @@ local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: 
 	return m
 end
 
--- A farmer NPC (default R15 body, colored clothes, a straw hat built from
--- parts) standing still, e.g. behind a FarmerStand counter. No dialog.
-local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
-	task.spawn(function()
-		local description = Instance.new("HumanoidDescription")
-		local skin = Color3.fromRGB(234, 184, 146)
-		description.HeadColor = skin
-		description.LeftArmColor = skin
-		description.RightArmColor = skin
-		description.TorsoColor = shirt
-		description.LeftLegColor = Color3.fromRGB(60, 90, 150) -- jeans
-		description.RightLegColor = Color3.fromRGB(60, 90, 150)
-		local ok, npc = pcall(function()
-			return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
-		end)
-		if not ok or not npc then
-			warn("[MowIt][Map] Could not build the NPC:", npc)
-			return
-		end
-		npc.Name = "Npc"
-		local humanoid = npc:FindFirstChildOfClass("Humanoid") :: Humanoid
-		humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-		local root = npc:FindFirstChild("HumanoidRootPart") :: BasePart
-		root.Anchored = true
-		npc:PivotTo(at * CFrame.new(0, humanoid.HipHeight + root.Size.Y / 2, 0))
+-- A person: default R15 body in coloured clothes, optionally a straw hat
+-- built from parts. Yields while Roblox builds the body; nil on failure.
+-- Shared by the farmers (below) and the hay yard's customers (Map/HayYard).
+export type NpcLook = { Shirt: Color3, Pants: Color3?, Skin: Color3?, Hat: boolean? }
 
+local function person(look: NpcLook): Model?
+	local description = Instance.new("HumanoidDescription")
+	local skin = look.Skin or Color3.fromRGB(234, 184, 146)
+	local pants = look.Pants or Color3.fromRGB(60, 90, 150) -- jeans
+	description.HeadColor = skin
+	description.LeftArmColor = skin
+	description.RightArmColor = skin
+	description.TorsoColor = look.Shirt
+	description.LeftLegColor = pants
+	description.RightLegColor = pants
+	local ok, npc = pcall(function()
+		return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
+	end)
+	if not ok or not npc then
+		warn("[MowIt][Map] Could not build the NPC:", npc)
+		return nil
+	end
+	local humanoid = npc:FindFirstChildOfClass("Humanoid") :: Humanoid
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	local root = npc:FindFirstChild("HumanoidRootPart") :: BasePart
+	root.Anchored = true
+	if look.Hat ~= false then
 		local head = npc:FindFirstChild("Head") :: BasePart
 		local straw = Color3.fromRGB(226, 196, 120)
 		for i, spec in { { size = Vector3.new(0.12, 2.4, 2.4), y = 0.55 }, { size = Vector3.new(0.9, 1.25, 1.25), y = 0.95 } } do
@@ -277,7 +278,24 @@ local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
 			weld.Parent = piece
 			piece.Parent = npc
 		end
+	end
+	return npc
+end
 
+-- A farmer standing still with a name tag, e.g. behind a FarmerStand
+-- counter. No dialog.
+local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
+	task.spawn(function()
+		local npc = person({ Shirt = shirt })
+		if not npc then
+			return
+		end
+		npc.Name = "Npc"
+		local humanoid = npc:FindFirstChildOfClass("Humanoid") :: Humanoid
+		local root = npc:FindFirstChild("HumanoidRootPart") :: BasePart
+		npc:PivotTo(at * CFrame.new(0, humanoid.HipHeight + root.Size.Y / 2, 0))
+
+		local head = npc:FindFirstChild("Head") :: BasePart
 		local tag = Instance.new("BillboardGui")
 		tag.Name = "NameTag"
 		tag.Size = UDim2.fromOffset(160, 36)
@@ -298,8 +316,9 @@ local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
 	end)
 end
 
--- Market stall behind the sell pad: counter with grass bales, striped
--- awning and a "SELL GRASS" board (no NPC: stepping on the pad sells).
+-- Market stall behind an island's drop-off pad: counter with grass bales,
+-- striped awning and a "DROP OFF" board (stepping on the pad sends your
+-- grass to the baler at the base, Map/HayYard).
 -- Local -Z is away from the lawn, so the stall sits behind the pad.
 local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 	local m = model("SellStall", parent)
@@ -318,13 +337,13 @@ local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 		box("Awning", m, cf, Vector3.new(1.55, 0.35, 4.2), x - 3.9 + i * 1.55, back + 0.6, color, Enum.Material.Fabric, 7.5)
 	end
 	local board = box("Board", m, cf, Vector3.new(7, 1.6, 0.3), x, back + 2.75, COLORS.White, nil, 7.9)
-	label(board, Enum.NormalId.Back, "SELL GRASS", Color3.fromRGB(90, 60, 0))
+	label(board, Enum.NormalId.Back, "DROP OFF", Color3.fromRGB(90, 60, 0))
 end
 
 local function sellPad(parent: Instance, cf: CFrame, x: number, z: number)
 	-- Contract part: must be called "SellPad" (EconomyService finds it by name).
 	local pad = box("SellPad", parent, cf, Vector3.new(10, 0.4, 10), x, z, COLORS.Sell, Enum.Material.Neon)
-	label(pad, Enum.NormalId.Top, "SELL", Color3.fromRGB(90, 60, 0))
+	label(pad, Enum.NormalId.Top, "DROP OFF", Color3.fromRGB(90, 60, 0))
 	sellStall(parent, cf, x, z)
 end
 
@@ -683,6 +702,7 @@ Props.sign = sign
 Props.shop = shop
 Props.sellPad = sellPad
 Props.npc = npc
+Props.person = person
 Props.planters = planters
 
 -- Late summer afternoon: low warm sun, long soft shadows, warm haze, a

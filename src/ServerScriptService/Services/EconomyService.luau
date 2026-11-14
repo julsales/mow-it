@@ -1,7 +1,9 @@
 --!strict
 -- The core loop, server side: Cut -> carry Grass (limited by backpack) ->
--- stand on a Sell Pad -> Grass becomes Coins. Every client request is
--- validated here (cooldown, distance, capacity); the client only asks.
+-- hand it in at a "SellPad" (the baler's loading deck at the base, or an
+-- island's drop-off pad) -> HayService presses it into bales the player
+-- sells. Every client request is validated here (cooldown, distance,
+-- capacity); the client only asks.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,6 +18,7 @@ local ProfileService = require(script.Parent.ProfileService)
 local GrassService = require(script.Parent.GrassService)
 local LevelService = require(script.Parent.LevelService)
 local LandService = require(script.Parent.LandService)
+local HayService = require(script.Parent.HayService)
 
 local Tuning = require(Shared.Config.Progression)
 local Rules = require(Shared.ProgressionRules)
@@ -79,7 +82,7 @@ local function tryCut(player: Player)
 	if tool.FuelType ~= "None" and profile.Fuel <= 0 then
 		if not emptyFuel[player] then
 			emptyFuel[player] = true
-			(remotes.Notify :: RemoteEvent):FireClient(player, "Out of fuel! Walk onto a SELL pad to refill for free.")
+			(remotes.Notify :: RemoteEvent):FireClient(player, "Out of fuel! Load grass at your Baler or a drop-off pad to refill for free.")
 		end
 		return
 	end
@@ -130,23 +133,14 @@ function EconomyService.CanSellAnywhere(player: Player): boolean
 	return profile ~= nil and buffStacks(profile, "auto_sell") > 0
 end
 
+-- Pays out everything carried at once, skipping the hay yard: Auto-Sell
+-- (remote selling), and places that have no yard.
 function EconomyService.SellAll(player: Player)
 	local profile = ProfileService.Get(player)
 	if not profile or GrassBag.Total(profile) <= 0 then
 		return
 	end
-	-- Value uses the best zone THIS player has unlocked (helpers on a richer
-	-- land still sell at their own progression); per-tuft origin tracking
-	-- is a Phase-4 refinement (docs/DEVELOPMENT_PLAN.md).
-	local bestValue = 1
-	for zoneId in profile.UnlockedZoneIds do
-		local zone = Zones.ById[zoneId]
-		if zone and zone.GrassValue > bestValue then
-			bestValue = zone.GrassValue
-		end
-	end
-	local earned = GrassBag.SellValue(profile, bestValue)
-	earned = Rules.AwardCoins(profile, earned)
+	local earned = Rules.AwardCoins(profile, HayService.LoadValue(profile))
 	profile.SellCount += 1
 	GrassBag.Clear(profile)
 	LevelService.AddXp(player, earned * CompanyLevel.XpPerCoinSold)
@@ -155,12 +149,22 @@ function EconomyService.SellAll(player: Player)
 	(remotes:FindFirstChild("SellFeedback") :: RemoteEvent):FireClient(player, earned)
 end
 
+-- Standing on a SellPad: the grass goes to the baler (bales to sell at the
+-- base); without a hay yard it is paid out on the spot.
+local function handIn(player: Player)
+	if HayService.HasYard() then
+		HayService.Load(player)
+	else
+		EconomyService.SellAll(player)
+	end
+end
+
 function EconomyService.Init(remoteFolder: Folder)
 	remotes = remoteFolder;
 	Players.PlayerRemoving:Connect(function(player) lastSwingAt[player] = nil; emptyFuel[player] = nil end);
 	(remoteFolder:WaitForChild("CutRequest") :: RemoteEvent).OnServerEvent:Connect(tryCut)
 
-	-- Sell pads are physical: tag any Part "SellPad" in Studio and it works.
+	-- Handing grass in is physical: name any Part "SellPad" in Studio and it works.
 	task.spawn(function()
 		local pads = {}
 		for _, instance in workspace:GetDescendants() do
@@ -196,7 +200,7 @@ function EconomyService.Init(remoteFolder: Folder)
 								profile.Fuel = Tuning.FuelCapacity; emptyFuel[player] = nil
 								ProfileService.NotifyChanged(player)
 							end
-							EconomyService.SellAll(player)
+							handIn(player)
 							break
 						end
 					end

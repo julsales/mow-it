@@ -30,7 +30,7 @@ Read before working in this repo:
    or lighting. Every island is one Model with each piece as its own
    Model inside, so Julia can move islands and pieces by hand.
 5. **Keep it playable:** every change must leave the loop working —
-   cut → sell → buy → unlock — in Play Solo.
+   cut → bale → sell → buy → unlock — in Play Solo.
 6. All player-facing text is **English**. Game name: **Mow It!**
 
 ## Code rules (DRY — reusable building blocks)
@@ -68,17 +68,20 @@ Read before working in this repo:
     offshore stop swimming).
 12. Islands are joined by **wooden bridges**; each area's gate (and the
     invisible wall above it) stands on its bridge, so there are no fences
-    on land. Each island has a **SellPad** by the bridge arrival (no buyer
-    NPC) and a **farmer's tool stand** off to the side near the coast
+    on land. The home island has the **hay yard** by the base (baler, bale
+    stack, silo: `Map/HayYard`, docs/HAY_YARD.md); every other island has
+    a drop-off **SellPad** by the bridge arrival that sends grass to it;
+    every island has a **farmer's tool stand** off to the side near the coast
     (`Map/FarmerStand`), with room kept for a future quick-travel pad.
     Layout = data in `Config/MapLayout.luau` (a new area is a config row).
 13. **Each area has its own, better grass types** (higher value/health,
     different look: color, height, blade shape in `Config/GrassTypes.luau`).
     Rare better grass (lucky, golden, the next area's) also appears
     **sparsely, by luck, as small patches in earlier areas**.
-14. Selling is **physical**: walk onto an island's sell pad. No free
-    on-screen sell button; remote selling is only for Auto-Sell / a future
-    "Sell Anywhere" pass.
+14. Selling is **physical**: load grass into the baler at the base (or
+    a drop-off pad), then click the bales it presses; sold bales go to the
+    silo, where customers buy them. No free on-screen sell button; remote
+    selling is only for Auto-Sell / a future "Sell Anywhere" pass.
 15. First-person play must work (camera can be zoomed into first person);
     tools must look right from the player's own view.
 

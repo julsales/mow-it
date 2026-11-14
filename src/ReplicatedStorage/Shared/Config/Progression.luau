@@ -42,7 +42,7 @@ return {
 	DailyClovers = { 5, 10, 15, 20, 30, 40, 60 },
 	Tutorial = {
 		{ Id = "cut", Text = "Cut 10 grass. Click or tap the lawn, or press the controller trigger.", Target = 10, Coins = 20, Clovers = 2 },
-		{ Id = "sell", Text = "Walk onto the buyer's SELL pad to sell your grass.", Target = 1, Coins = 20, Clovers = 3 },
+		{ Id = "sell", Text = "Load your grass into the Baler at your base, then click a bale to sell it.", Target = 1, Coins = 20, Clovers = 3 },
 		{ Id = "tool", Text = "Visit the equipment stall and buy Safety Scissors.", Target = 1, Coins = 50, Clovers = 5 },
 		{ Id = "expansion", Text = "Reach Company Level 2, then buy the Backyard gate.", Target = 1, Coins = 150, Clovers = 10 },
 	},

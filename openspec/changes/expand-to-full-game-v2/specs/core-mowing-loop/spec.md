@@ -30,15 +30,47 @@ Carried grass SHALL be tracked as a count per variant (for example Normal, Golde
 - **THEN** their inventory shows both counts separately while the total respects the storage cap
 
 ### Requirement: Selling grass
-The player SHALL be able to sell all carried grass at a Sell Pad, receiving Coins where each variant pays its own value multiplier and the area value applies.
+The player SHALL sell grass through the hay yard at their base: carried grass is loaded into the baler, the baler presses it into hay bales that pile up on a stack, and the player sells bales by clicking them, receiving Coins where each variant pays its own value multiplier and the area value applies. Sold bales SHALL go into the silo, and customers SHALL buy from the silo (never loose grass from the player), paying a tip on top of the sale. Each step (machine working, bales stacking, bales entering the silo, customers walking) SHALL be animated.
 
-#### Scenario: Sell at pad
-- **WHEN** a player with carried grass stands on a Sell Pad
-- **THEN** all carried grass is removed and Coins are credited according to each variant's multiplier
+#### Scenario: Loading the baler
+- **WHEN** a player with carried grass steps onto the baler's loading deck, or onto an island's drop-off pad
+- **THEN** all carried grass is removed from storage and added to the baler's hopper with its value
 
-#### Scenario: Selling with empty storage
-- **WHEN** a player uses a Sell Pad carrying no grass
-- **THEN** no currency changes
+#### Scenario: Baling
+- **WHEN** the hopper holds grass and the stack has room
+- **THEN** the baler turns it into bales over time, each worth its share of the loaded grass, and occasionally a golden bale worth several times more
+
+#### Scenario: Stack full
+- **WHEN** the stack holds as many bales as the baler's level allows
+- **THEN** the baler waits and the remaining grass stays in the hopper
+
+#### Scenario: Selling a bale
+- **WHEN** a player near the stack clicks one of their bales
+- **THEN** Coins are credited for that bale, it leaves the stack and is added to the silo's stock
+
+#### Scenario: Selling with a tool in hand
+- **WHEN** a player holding a tool clicks a bale
+- **THEN** the bale is sold exactly as with empty hands
+
+#### Scenario: Upgrading the baler
+- **WHEN** a player at the baler buys its next level, has the Coins and has unlocked the island that level requires
+- **THEN** the Coins are spent and the baler's stack holds more bales and presses more bales at a time
+
+#### Scenario: Upgrade capped by land
+- **WHEN** the next baler level requires an island the player has not unlocked
+- **THEN** the upgrade is refused and the player is told which island to unlock
+
+#### Scenario: Knowing the next step
+- **WHEN** a player is at the hay yard
+- **THEN** the screen names the next step of the loop (load grass, wait for the baler, click the bales, go mow more)
+
+#### Scenario: Customers
+- **WHEN** the silo has stock
+- **THEN** customers arrive from time to time, remove bales from the stock and pay the player a tip
+
+#### Scenario: Loading with empty storage
+- **WHEN** a player steps onto the loading deck or a drop-off pad carrying no grass
+- **THEN** no grass or currency changes
 
 ### Requirement: Legible illustrated HUD
 The HUD SHALL use original transparent icon assets with editable vector masters for navigation, Coins, Clovers, fuel, storage and all five weather states. Coins and Clovers SHALL be prominent icon/value indicators below the left navigation. Weather and fuel SHALL be stacked as independent icon/value indicators on the right. Navigation SHALL sit below the upper-left system controls with a compact layout on short screens. The weather name SHALL be available on hover or activation.

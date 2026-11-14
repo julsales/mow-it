@@ -6,7 +6,8 @@ already-merged #8. The published LandPlaceId remains 83958278376153.
 ## Play
 
 Connect Rojo to `default.project.json`, then Play Solo. The current baked map is
-preserved. Cut the lawn, walk onto the buyer's SELL pad, and buy better tools and
+preserved. Cut the lawn, load it into the Baler at your base (or an island's drop-off pad),
+click the bales to sell them (docs/HAY_YARD.md), and buy better tools and
 storage in Shop. Gate purchases require both Coins and Company Level. Helpers
 use the host's open land, with their own shop progression and earnings.
 
@@ -29,7 +30,7 @@ continues offline. Cut mature beds to harvest; overflow remains in the bed
 rather than disappearing. For this slice all special seeds yield Golden grass,
 with yield and growth differences from the seed catalog.
 
-Motorized tools consume fuel while cutting. SELL pads refill it for free,
+Motorized tools consume fuel while cutting. The baler's loading deck and the drop-off pads refill it for free,
 including when carrying no grass, so there is always a recovery path. Rideable
 models use the existing character-mounted tool presentation and movement speed
 boost; a separate physically driven vehicle system is not implemented.
