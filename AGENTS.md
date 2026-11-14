@@ -77,7 +77,10 @@ Read before working in this repo:
     home one has a drop-off **SellPad** by the bridge arrival that sends
     grass to the player's own yard;
     every island has a **farmer's tool stand** off to the side near the coast
-    (`Map/FarmerStand`), with room kept for a future quick-travel pad.
+    (`Map/FarmerStand`). **Boat travel** (`Config/Travel`, `TravelService`,
+    `Shared/Jetties`): a jetty with a rowboat by each island's bridge
+    arrival sails the player home to their base, and the base's jetty to
+    any island they unlocked.
     Layout = data in `Config/MapLayout.luau` (a new area is a config row).
 13. **Each area has its own, better grass types** (higher value/health,
     different look: color, height, blade shape in `Config/GrassTypes.luau`).

@@ -58,6 +58,17 @@ Each area SHALL grow its own grass type with higher health and value than the pr
 - **WHEN** grass regrows in an early area
 - **THEN** a small fraction of cells may regrow as a small patch of a rarer, more valuable grass type that looks different from the area's own grass
 
+### Requirement: Boat travel between islands and the base
+Every island past the home one SHALL have a jetty with a boat by the bridge arrival, and every personal base a jetty of its own. From an island's jetty a player who unlocked that island SHALL be able to sail to their own base; from their base's jetty, to any island they have unlocked. The server SHALL check every trip (the player stands by a jetty they may use, the destination is theirs to go to, trips have a cooldown).
+
+#### Scenario: Going home to sell
+- **WHEN** a player on a far island uses the boat at its jetty
+- **THEN** after a short trip they stand on the jetty of their own base
+
+#### Scenario: Locked destination
+- **WHEN** a player asks to sail to an island they have not unlocked
+- **THEN** nothing happens
+
 ### Requirement: Physical selling at the hay yard
 Players SHALL hand carried grass in physically: at the baler in the hay yard on their own base, or at an island's drop-off pad on an island they have unlocked, which sends it to that baler. Bales SHALL only be sold at the yard (see `core-mowing-loop`); remote selling SHALL only be available through Auto-Sell or a dedicated pass.
 

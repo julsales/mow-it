@@ -115,6 +115,7 @@ if isLandPlace then
 	ToolArtService.Init() -- tool meshes first: the shop displays use them
 	MapService.BuildIfMissing()
 	MapService.BakeBases() -- a place baked before personal bases existed gets them for this session
+	MapService.BakeJetties() -- same for the islands' boat jetties
 	require(Services.Map.ShopDisplay).Refresh() -- baked displays get the current tool art
 	require(Services.BaseService).Init()
 	GrassService.Init(remotes)
@@ -128,6 +129,7 @@ if isLandPlace then
 	require(Services.MovementService).Init()
 	ShopService.Init(remotes)
 	AdminService.Init(remotes)
+	require(Services.TravelService).Init(remotes)
 	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool)
 	require(Services.Map.Gates).Init(ShopService.UnlockZone);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)

@@ -36,6 +36,7 @@ local FarmerStand = require(script.Parent.Map.FarmerStand)
 local HayYard = require(script.Parent.Map.HayYard)
 local Bases = require(script.Parent.Map.Bases)
 local BasesConfig = require(Shared.Config.Bases)
+local TravelConfig = require(Shared.Config.Travel)
 local SharedBases = require(Shared.Bases)
 local Geo = require(script.Parent.Map.MapGeometry)
 local LawnCells = require(Shared.LawnCells)
@@ -308,7 +309,7 @@ end
 type Opening = { Point: Vector3, Direction: Vector3 }
 type Plan = {
 	KeepClear: { [string]: { number } },
-	DockDir: { [string]: Vector3 },
+	Jetties: { [string]: { Coast: Vector3, Direction: Vector3 } }, -- island id -> where its jetty leaves the coast
 	FarDir: Vector3,
 	FarCenter: Vector3,
 	Openings: { Opening },
@@ -331,16 +332,26 @@ local function coastPlan(): Plan
 			table.insert(openings, { Point = bridge.Finish, Direction = bridge.Direction })
 		end
 	end
-	-- Docks point away from the first bridge, a bit to the side.
-	local dockDir: { [string]: Vector3 } = {}
+	-- Jetties (boat travel, Config/Travel): on every island a bridge leads
+	-- onto, a little way round the coast from where it arrives, on the
+	-- side away from the drop-off pad. No cliff there; the shore wall opens.
+	local jetties: { [string]: { Coast: Vector3, Direction: Vector3 } } = {}
 	for _, island in Geo.Islands do
-		if island.Def.Dock then
-			local departure = Geo.Departure(island)
-			local away = if departure then (island.Center - departure).Unit else Vector3.new(0, 0, 1)
-			local dir = CFrame.Angles(0, math.rad(65), 0) * away
-			dockDir[island.Id] = dir
-			table.insert(keepClear[island.Id], Geo.AngleOf(dir))
-			table.insert(openings, { Point = island.Center + dir * Geo.CoastRadius(island, Geo.AngleOf(dir)), Direction = dir })
+		local bridge = Geo.BridgeTo(island)
+		if bridge then
+			local arrival = Geo.AngleOf(bridge.Finish - island.Center)
+			local turn = math.deg(TravelConfig.Jetty.Along / island.Def.Radius)
+			local right = bridge.Direction:Cross(Vector3.yAxis)
+			local padSide = if MapLayout.Stations.Sell.Side >= 0 then 1 else -1
+			local angle = arrival + turn
+			if (Geo.Direction(angle) - Geo.Direction(arrival)):Dot(right) * padSide > 0 then
+				angle = arrival - turn
+			end
+			local dir = Geo.Direction(angle)
+			local coast = island.Center + dir * Geo.CoastRadius(island, angle)
+			jetties[island.Id] = { Coast = coast, Direction = dir }
+			table.insert(keepClear[island.Id], angle)
+			table.insert(openings, { Point = coast, Direction = dir })
 		end
 	end
 	local last = Geo.Islands[#Geo.Islands]
@@ -407,7 +418,7 @@ local function coastPlan(): Plan
 	end
 	return {
 		KeepClear = keepClear,
-		DockDir = dockDir,
+		Jetties = jetties,
 		FarDir = farDir,
 		FarCenter = farCenter,
 		Openings = openings,
@@ -664,6 +675,14 @@ local function buildDock(parent: Instance, coast: Vector3, dir: Vector3, length:
 	return dock
 end
 
+-- An island's jetty for boat travel (contract Model "Jetty", Shared/Jetties).
+local function buildJetty(islandModel: Instance, jetty: { Coast: Vector3, Direction: Vector3 }): Model
+	-- The deck starts on the grass, just past the top of the beach.
+	local dock = buildDock(islandModel, jetty.Coast, jetty.Direction, TravelConfig.Jetty.Length, BEACH + 1)
+	dock.Name = "Jetty"
+	return dock
+end
+
 -- Invisible walls just offshore around every island, open where bridges
 -- (and the last island's pier) leave the coast.
 local function buildShoreWalls(islandModels: { [string]: Model }, openings: { { Point: Vector3, Direction: Vector3 } })
@@ -807,7 +826,7 @@ function MapService.BuildIfMissing()
 	end
 
 	local plan = coastPlan()
-	local keepClear, dockDir, farDir, farCenter = plan.KeepClear, plan.DockDir, plan.FarDir, plan.FarCenter
+	local keepClear, farDir, farCenter = plan.KeepClear, plan.FarDir, plan.FarCenter
 	local last = Geo.Islands[#Geo.Islands]
 
 	-- 1. Paths and stations: per island, a path from where you arrive to
@@ -1023,9 +1042,9 @@ function MapService.BuildIfMissing()
 		Props.sign(pier, signAt, 0, 0, "MORE ISLANDS\nComing soon", COLORS.BarnRed)
 		isletTrees(Props.model("FarIsland", land), farCenter, MapLayout.FarIsland.Radius, 18, Random.new(MapLayout.Seed + 9))
 	end
-	for id, dir in dockDir do
-		local island = Geo.ById[id]
-		buildDock(islandModels[id], island.Center + dir * Geo.CoastRadius(island, Geo.AngleOf(dir)), dir, MapLayout.DockLength, BEACH - 4)
+	for id, jetty in plan.Jetties do
+		buildJetty(islandModels[id], jetty)
+		claim(jetty.Coast - jetty.Direction * (BEACH + 2), 6)
 	end
 	buildShoreWalls(islandModels, openings)
 
@@ -1201,6 +1220,30 @@ end
 -- Does nothing if Workspace/Zones already exists. See docs/EDITING.md.
 function MapService.Bake()
 	MapService.BuildIfMissing()
+end
+
+-- For a place baked before boat travel existed (Edit mode, then Ctrl+S):
+--   require(game.ServerScriptService.Services.MapService).BakeJetties()
+-- Builds the missing island jetties and reopens those islands' shore walls
+-- there. Returns where they were built, so trees or rocks standing in the
+-- way can be moved by hand.
+function MapService.BakeJetties(): { [string]: Vector3 }
+	local zones = Workspace:FindFirstChild("Zones")
+	local plan = coastPlan()
+	local built = {}
+	for id, jetty in plan.Jetties do
+		local island = zones and zones:FindFirstChild(id)
+		if island and island:IsA("Model") and not island:FindFirstChild("Jetty") then
+			buildJetty(island, jetty)
+			local walls = island:FindFirstChild("ShoreWalls")
+			if walls then
+				walls:Destroy()
+			end
+			buildShoreWalls({ [id] = island }, plan.Openings)
+			built[id] = jetty.Coast
+		end
+	end
+	return built
 end
 
 -- For a place baked before personal bases existed (Edit mode, then Ctrl+S):

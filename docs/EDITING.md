@@ -63,7 +63,8 @@ Workspace
 │  │  ├─ ShoreWalls   invisible walls just offshore
 │  │  └─ Lawns        GrassArea parts (where grass grows)
 │  ├─ backyard (Model) ... same, with a Path instead of the Promenade, a
-│  │                    SellStation (drop-off SellPad + its stall), plus
+│  │                    SellStation (drop-off SellPad + its stall), a Jetty
+│  │                    (boat travel; its pivot is where you land), plus
 │  │  └─ Bridge       the bridge onto this island: ZoneGate, ZoneWall, arch, side walls
 │  └─ ... one Model per island (mega_fields also has the Pier)
 ├─ Bases (Folder)     the players' personal bases round the home island

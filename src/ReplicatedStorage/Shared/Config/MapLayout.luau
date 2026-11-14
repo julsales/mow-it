@@ -29,7 +29,6 @@ export type AreaDef = {
 	Props: { string }, -- Props.Kinds names, grouped in one cluster (a farmyard), the first is its center
 	ShopAt: string?, -- "House": the home island, with the players' personal bases around it (Config/Bases)
 	Trees: number, -- trees along the island's rim, in clusters
-	Dock: boolean?, -- a little dock with a moored rowboat on the coast
 	Patches: { [string]: number }, -- chance a regrown cell starts a patch of that grass (GrassTypes)
 }
 
@@ -52,7 +51,7 @@ local MapLayout = {
 	Islets = 16, -- small wooded islets out in the water
 	SeaRocks = 40,
 	FarIsland = { Distance = 360, Radius = 90 }, -- past the last island, in the haze
-	DockLength = 30, -- studs out from the coast (Dock = true islands)
+	DockLength = 30, -- studs out to sea the library jetty model is made for (shorter jetties scale it)
 
 	-- What stands where a bridge arrives on an island (`Forward` studs inland
 	-- from the bridge, `Side` studs to the right (+) or left (-) of the path).
