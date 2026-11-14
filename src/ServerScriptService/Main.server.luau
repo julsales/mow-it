@@ -48,7 +48,11 @@ local REMOTE_NAMES = {
 	"ProfileUpdated",
 	"QueueUpdated",
 	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit, cutPositions) after each swing
-	"SellFeedback", -- server -> client: (coinsEarned)
+	"SellFeedback", -- server -> client: (coinsEarned, baleId?) after a sale
+	"HayAction", -- client -> server: ("Sell", baleId) a click on a bale
+	"HayLoaded", -- server -> client: (units) grass went into the baler's hopper
+	"HayCustomer", -- server -> client: (bales, walkSeconds) a customer is coming to the silo
+	"HayTip", -- server -> client: (coins) the customer paid at the counter
 	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
 	"LevelUp", -- server -> client: (newLevel) when the Company Level goes up
 }
@@ -111,6 +115,7 @@ if isLandPlace then
 	LandService.Init()
 	GrassService.Init()
 	LevelService.Init(remotes)
+	require(Services.HayService).Init(remotes) -- before EconomyService: it may build the yard's SellPad
 	EconomyService.Init(remotes)
 	ProgressionService.Init(remotes, EconomyService)
 	WeatherService.Init(remotes)

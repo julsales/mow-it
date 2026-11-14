@@ -82,7 +82,8 @@ Workspace/
     LobbySpawn         (SpawnLocation)
   Zones/
     front_yard/  backyard/  sunny_farm/  big_ranch/  golf_estate/  mega_fields/
-      SellPad          (Part) standing on/near it sells carried grass
+      SellPad          (Part) standing on/near it hands carried grass in (to the baler)
+      HayYard          (Model, home island) Baler, BaleStack, Silo: docs/HAY_YARD.md
       ZoneGate         (Part, zones 2-6) solid gate; each client opens the gates its
                        player unlocked. The real lock is still in profile data
       ZoneWall         (Parts, invisible) walls above this zone's fences; opened

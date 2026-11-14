@@ -24,6 +24,7 @@ local RunService = game:GetService("RunService")
 
 local Tools = require(script.Parent.Config.Tools)
 local ToolArt = require(script.Parent.Config.ToolArt)
+local ArtModels = require(script.Parent.ArtModels)
 
 local ToolModels = {}
 
@@ -445,19 +446,10 @@ local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	else
 		local spec = ToolArt.Pieces[piece.Name]
 		if spec then
-			piece.Color = spec.Color
-			piece.Material = spec.Material
-			piece.Transparency = spec.Transparency or 0
-			piece.Reflectance = spec.Reflectance or 0
+			ArtModels.Paint(piece, spec)
 		end
 	end
-	if piece:IsA("MeshPart") then
-		piece.TextureID = ""
-	end
-	local appearance = piece:FindFirstChildOfClass("SurfaceAppearance")
-	if appearance then
-		appearance:Destroy() -- the importer's material would hide the paint
-	end
+	ArtModels.Strip(piece)
 end
 
 -- Golden / Rainbow / Void: special paint, a glow and particles on the
@@ -518,10 +510,7 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 	local copy = template:Clone()
 	-- 1. Back to the authored size and place (the bounding box covers every
 	--    piece, extras included, exactly like art/tools/out/meta.json).
-	local box, size = copy:GetBoundingBox()
-	copy:ScaleTo(copy:GetScale() * largest(def.Size) / largest(size))
-	box = copy:GetBoundingBox()
-	copy:PivotTo(CFrame.new(def.Center) * box:ToObjectSpace(copy:GetPivot()))
+	ArtModels.Restore(copy, def)
 	-- 2. Keep the extras this tool lists, paint everything.
 	local keep: { [string]: boolean } = {}
 	for _, extra in look.Extras or {} do
@@ -532,19 +521,14 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 			d:Destroy()
 		elseif d:IsA("BasePart") then
 			-- "Group.Extra#Rig": the rig is what ToolAnimations moves.
-			local name, rigName = string.match(d.Name, "^([^#]+)#(.+)$")
-			if name and rigName then
-				d.Name = name
-				d:SetAttribute("Rig", rigName)
+			local group, extra, rigName = ArtModels.Split(d.Name)
+			if extra and not keep[extra] then
+				d:Destroy()
+				continue
 			end
-			local group, extra = string.match(d.Name, "^([^%.]+)%.(.+)$")
-			if group and extra then
-				if keep[extra] then
-					d.Name = group
-				else
-					d:Destroy()
-					continue
-				end
+			d.Name = group
+			if rigName then
+				d:SetAttribute("Rig", rigName)
 			end
 			paint(d, look)
 		end

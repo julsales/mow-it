@@ -98,7 +98,7 @@ local function action(player: Player, name: any, id: any)
 		else
 			local stored = GrassBag.Add(profile, "normal", profile.OfflineGrass)
 			profile.OfflineGrass -= stored
-			message = if stored > 0 then "Offline grass collected. Walk to SELL to cash it in." else "No grass collected. Check your storage and offline production."
+			message = if stored > 0 then "Offline grass collected. Take it to your Baler to cash it in." else "No grass collected. Check your storage and offline production."
 		end
 	elseif name == "Daily" then
 		local time = os.time()

@@ -1,8 +1,9 @@
 --!strict
 -- When storage is full: a big "STORAGE FULL!" banner and a glowing beam
--- from the player to the nearest sell pad in an unlocked zone. Selling is
--- physical (walk onto the pad), so the game shows the way instead of
--- offering a sell button. Local only; hides as soon as storage has room.
+-- from the player to the nearest place to unload ("SellPad": the baler's
+-- loading deck at the base, or an island's drop-off pad) in an unlocked
+-- zone. Selling is physical, so the game shows the way instead of offering
+-- a sell button. Local only; hides as soon as storage has room.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -40,7 +41,7 @@ banner.BackgroundColor3 = Color3.fromRGB(200, 60, 40)
 banner.TextColor3 = Color3.new(1, 1, 1)
 banner.Font = Enum.Font.GothamBlack
 banner.TextScaled = true
-banner.Text = "STORAGE FULL! Go sell"
+banner.Text = "STORAGE FULL! Go unload"
 banner.Parent = gui
 do
 	local corner = Instance.new("UICorner")

@@ -1,6 +1,7 @@
 --!strict
--- Makes sell pads easy to spot without cluttering the screen: a small
--- "SELL" sign above each pad (visible within ~60 studs, not through
+-- Makes the islands' drop-off pads (contract name "SellPad": stand on one
+-- and your grass is sent to the baler at your base) easy to spot without
+-- cluttering the screen: a small "DROP OFF" sign above each pad (visible within ~60 studs, not through
 -- walls) and a faint gold light column. Only pads in expansions open on
 -- this session's land (LandState) get them. Pads are found by their contract name "SellPad"
 -- (streaming-safe); local only.
@@ -32,13 +33,14 @@ local function isUnlocked(zoneId: string?): boolean
 end
 
 local function decorate(pad: BasePart)
-	if decorated[pad] then
+	-- The baler's own loading deck needs no sign: the machine is the sign.
+	if decorated[pad] or pad:FindFirstAncestor("HayYard") then
 		return
 	end
 
 	local sign = Instance.new("BillboardGui")
 	sign.Name = "SellSign"
-	sign.Size = UDim2.fromOffset(130, 40)
+	sign.Size = UDim2.fromOffset(170, 40)
 	sign.StudsOffsetWorldSpace = Vector3.new(0, 7, 0)
 	sign.AlwaysOnTop = false
 	sign.MaxDistance = SIGN_DISTANCE
@@ -50,7 +52,7 @@ local function decorate(pad: BasePart)
 	text.TextColor3 = Color3.fromRGB(60, 40, 0)
 	text.Font = Enum.Font.GothamBlack
 	text.TextScaled = true
-	text.Text = "SELL"
+	text.Text = "DROP OFF"
 	text.Parent = sign
 	local c = Instance.new("UICorner")
 	c.CornerRadius = UDim.new(0, 10)
