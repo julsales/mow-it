@@ -56,7 +56,8 @@ Workspace
 ├─ Zones (Folder)
 │  ├─ front_yard (Model: the home island)
 │  │  ├─ PlayerBase   the cabin; GameSpawn is inside it
-│  │  ├─ SellStation  SellPad + its stall
+│  │  ├─ HayYard      Baler, BaleStack, Silo, Ground (each its own Model),
+│  │  │               the invisible CustomerSpawn marker; SellPad is inside Baler
 │  │  ├─ FarmerStand  farmer (Npc) + stand + tools on sale
 │  │  ├─ Dock         jetty + rowboat
 │  │  ├─ Yard         planters, mailbox
@@ -64,7 +65,8 @@ Workspace
 │  │  ├─ Trees        trees, bushes, flowers, boulders
 │  │  ├─ ShoreWalls   invisible walls just offshore
 │  │  └─ Lawns        GrassArea parts (where grass grows)
-│  ├─ backyard (Model) ... same, plus
+│  ├─ backyard (Model) ... same, with a SellStation (drop-off SellPad + its
+│  │                    stall) instead of the HayYard, plus
 │  │  └─ Bridge       the bridge onto this island: ZoneGate, ZoneWall, arch, side walls
 │  └─ ... one Model per island (mega_fields also has the Pier)
 └─ Sea (Folder)       FarSea plates, islets, the far island
@@ -87,12 +89,15 @@ Workspace
 - **Bridges** belong to the island they lead onto. After moving an island,
   move its bridge (and the next island's bridge) so their ends touch land.
 - The game never moves anything back: it only reads names, never
-  positions. Grass grows wherever the GrassArea parts are, selling works on
-  any `SellPad`, gates and their walls work wherever the Bridge is, the
+  positions. Grass grows wherever the GrassArea parts are, grass is handed
+  in on any `SellPad`, the hay yard animates wherever its Baler, BaleStack
+  and Silo stand (move each one separately if you like; customers walk in
+  from `CustomerSpawn`), gates and their walls work wherever the Bridge is, the
   shop and quest prompts follow the FarmerStand, players spawn on
   `GameSpawn` (inside PlayerBase).
 - **Don't** rename or ungroup the island Models (`Zones/<ZoneId>`), and keep
-  these names: `GrassArea`, `SellPad`, `ZoneGate`, `ZoneWall`, `FarmerStand`
+  these names: `GrassArea`, `SellPad`, `HayYard` (with `Baler`, `BaleStack`,
+  `Silo`, `CustomerSpawn`), `ZoneGate`, `ZoneWall`, `FarmerStand`
   (with its `Npc`), `GameSpawn`, and the island's `BakedPivot` attribute
   (Restamp uses it to know how far the island moved).
 
@@ -119,7 +124,8 @@ Code finds things by these names and attributes, never by position:
 |---|---|---|
 | `Workspace/Zones/<ZoneId>` Models | ids from `Config/Zones.luau` | one island Model per area; everything below can sit anywhere inside it |
 | `GrassArea` (Part, any size/rotation) | inside `Zones/<ZoneId>` | grass grows on every 4×4 cell inside it; its bottom is the lawn surface. Move/resize/duplicate to reshape lawns |
-| `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it sells grass (the stall behind it is decoration, no NPC) |
+| `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it hands your grass in: it goes to the baler (the stall behind an island's pad is decoration; the baler's own pad is an invisible box over its loading deck) |
+| `HayYard` (Model) with `Baler`, `BaleStack`, `Silo` (Models) and `CustomerSpawn` (Part) | inside the home island | the selling line: bales come out of the Baler, stack on BaleStack, ride into the Silo; customers walk from CustomerSpawn to the Silo's counter. Don't rename the mesh pieces or remove their attributes (`Rig`, `Pivot_…`): they drive the animations |
 | `FarmerStand` (Model) with an `Npc` | inside `Zones/<ZoneId>` | the island's tool seller; its farmer is the quest contact (`QuestWorld`) |
 | `ZoneGate` (Part) | inside `Zones/<ZoneId>` | locked gate, opens for players who unlocked the zone. The game adds its "Unlock" prompt at runtime (`PromptAnchor` attachment, 4.5 studs above the gate's bottom edge); add your own `PromptAnchor` to place it elsewhere |
 | `ZoneWall` (Parts, invisible) | inside `Zones/<ZoneId>` | blocks climbing over the locked gate on the bridge |

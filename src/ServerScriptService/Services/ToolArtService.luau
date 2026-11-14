@@ -1,14 +1,15 @@
 --!strict
--- Loads the low-poly tool art (Config/ToolArt.Models, uploaded from
--- art/tools/) with InsertService and keeps one clean template per base
--- model in ReplicatedStorage/ToolArt, where ToolModels finds it on server
--- and client. Runs before the map builds the shop displays; a model that
+-- Loads the low-poly art (Config/ToolArt.Models from art/tools/, and
+-- Config/HayYard.Models from art/yard/) with InsertService and keeps one
+-- clean template per model in ReplicatedStorage/ToolArt and /YardArt, where
+-- ToolModels and the hay yard find it on server and client. Runs before the map builds the shop displays; a model that
 -- isn't uploaded (AssetId 0) or fails to load just keeps the Part look.
 
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ToolArt = require(ReplicatedStorage:WaitForChild("Shared").Config.ToolArt)
+local HayYard = require(ReplicatedStorage:WaitForChild("Shared").Config.HayYard)
 
 local ToolArtService = {}
 
@@ -42,13 +43,14 @@ local function clean(container: Instance, name: string): Model?
 	return found
 end
 
--- Loads every uploaded model; returns when all are done or timed out.
-function ToolArtService.Init()
-	local folder = ReplicatedStorage:FindFirstChild("ToolArt") or Instance.new("Folder")
-	folder.Name = "ToolArt"
+-- Loads every uploaded model of `models` into ReplicatedStorage/<folderName>;
+-- returns when all are done or timed out.
+function ToolArtService.Load(folderName: string, models: { [string]: { AssetId: number } })
+	local folder = ReplicatedStorage:FindFirstChild(folderName) or Instance.new("Folder")
+	folder.Name = folderName
 	folder.Parent = ReplicatedStorage
 	local pending = 0
-	for name, def in ToolArt.Models do
+	for name, def in models do
 		if def.AssetId > 0 and not folder:FindFirstChild(name) then
 			pending += 1
 			task.spawn(function()
@@ -57,7 +59,7 @@ function ToolArtService.Init()
 				if model then
 					model.Parent = folder
 				else
-					warn(`[ToolArt] {name} ({def.AssetId}) did not load: {if ok then "no parts" else result}`)
+					warn(`[{folderName}] {name} ({def.AssetId}) did not load: {if ok then "no parts" else result}`)
 				end
 				pending -= 1
 			end)
@@ -67,6 +69,12 @@ function ToolArtService.Init()
 	while pending > 0 and os.clock() - started < LOAD_TIMEOUT do
 		task.wait(0.1)
 	end
+end
+
+-- Tool art, then the hay yard's (Config/HayYard.Models, art/yard/).
+function ToolArtService.Init()
+	ToolArtService.Load("ToolArt", ToolArt.Models)
+	ToolArtService.Load("YardArt", HayYard.Models)
 end
 
 return ToolArtService

@@ -8,6 +8,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local GameConfig = require(Shared.Config.GameConfig)
 local Tuning = require(Shared.Config.Progression)
 local Rules = require(Shared.ProgressionRules)
+local Hay = require(Shared.Hay)
 export type Profile = { [string]: any }
 local ProfileService = {}
 local profiles: { [Player]: Profile } = {}
@@ -34,6 +35,7 @@ local function defaults(): Profile
 	data.BuffStacks = {}
 	data.Level = 1
 	data.Xp = 0
+	data.Hay = Hay.Defaults()
 	return data
 end
 

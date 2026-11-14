@@ -32,6 +32,7 @@ local Props = require(script.Parent.Map.Props)
 local ShopDisplay = require(script.Parent.Map.ShopDisplay)
 local ShopInterior = require(script.Parent.Map.ShopInterior)
 local FarmerStand = require(script.Parent.Map.FarmerStand)
+local HayYard = require(script.Parent.Map.HayYard)
 local Geo = require(script.Parent.Map.MapGeometry)
 local LawnCells = require(Shared.LawnCells)
 
@@ -738,10 +739,17 @@ function MapService.BuildIfMissing()
 			local st = MapLayout.Stations.Sell
 			local pos = arrival + forward * st.Forward + right * st.Side
 			local cf = facing(pos, arrival + forward * st.Forward)
-			local station = Props.model("SellStation", islandModels[island.Id])
-			Props.sellPad(station, cf, 0, 0)
-			station.WorldPivot = cf
-			claim(pos + cf.LookVector * 4, 10)
+			-- The base gets the hay yard (baler, stack, silo); the other
+			-- islands a drop-off pad that sends grass to it.
+			local yard = if island.Def.ShopAt == "House" then HayYard.Build(islandModels[island.Id], cf) else nil
+			if yard then
+				claim(pos, HayYard.Radius)
+			else
+				local station = Props.model("SellStation", islandModels[island.Id])
+				Props.sellPad(station, cf, 0, 0)
+				station.WorldPivot = cf
+				claim(pos + cf.LookVector * 4, 10)
+			end
 		end
 		do
 			local st = MapLayout.Stations.Travel
