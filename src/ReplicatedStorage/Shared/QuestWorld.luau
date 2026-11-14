@@ -6,7 +6,8 @@ function World.Find(id: string): (BasePart?, BasePart?)
 	local def = Quests.ById[id]
 	local zones = workspace:FindFirstChild("Zones")
 	local zone = def and zones and zones:FindFirstChild(def.ZoneId)
-	local stall = zone and zone:FindFirstChild("SellStall", true)
+	-- The quest contact is the island's farmer at the tool stand.
+	local stall = zone and zone:FindFirstChild("FarmerStand", true)
 	local npc = stall and stall:FindFirstChild("Npc")
 	local root = npc and npc:FindFirstChild("HumanoidRootPart")
 	local pad = zone and zone:FindFirstChild("SellPad", true)

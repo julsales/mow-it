@@ -1,5 +1,6 @@
 --!strict
--- A walk-in shop building, in two layers so each can change on its own:
+-- A log cabin, used as the player's base on the house island (BuildHome)
+-- or as a walk-in shop (Build). Two layers so each can change on its own:
 --   * Shell (logShell): a log cabin built from parts, with a centered door,
 --     windows, a porch with steps and a chimney. Reports its inside as a Room.
 --   * Furnishing: fireplace, lanterns, shelves, a counter with the
@@ -76,6 +77,7 @@ local FLOOR = 1.6 -- floor height above the ground
 local DOOR_W, DOOR_H = 5, 8
 local RISE = 7 -- roof height above the walls
 local CORNER_POST = 2.6 -- square corner timbers (logs butt into them)
+local TRIM_TUCK = 0.3 -- log ends stop this far under the window/door trim
 
 type Opening = { X1: number, X2: number, Y1: number, Y2: number }
 
@@ -101,18 +103,22 @@ local function logWall(parent: Instance, line: CFrame, length: number, openings:
 		local reach = length / 2 + LOG_D / 2 - CORNER_POST / 2
 		local pieces = { { -reach, reach } }
 		for _, o in openings do
-			-- Cut every log whose thickness overlaps the opening.
+			-- Cut every log whose thickness overlaps the opening. The cut is
+			-- TRIM_TUCK wider than the opening, so each cut log end hides
+			-- inside the trim board around it (no log end showing in, or
+			-- z-fighting with, a window or the door).
+			local x1, x2 = o.X1 - TRIM_TUCK, o.X2 + TRIM_TUCK
 			if y + LOG_D / 2 > o.Y1 + 0.01 and y - LOG_D / 2 < o.Y2 - 0.01 then
 				local nextPieces = {}
 				for _, piece in pieces do
-					if o.X2 <= piece[1] or o.X1 >= piece[2] then
+					if x2 <= piece[1] or x1 >= piece[2] then
 						table.insert(nextPieces, piece)
 					else
-						if o.X1 > piece[1] then
-							table.insert(nextPieces, { piece[1], o.X1 })
+						if x1 > piece[1] then
+							table.insert(nextPieces, { piece[1], x1 })
 						end
-						if o.X2 < piece[2] then
-							table.insert(nextPieces, { o.X2, piece[2] })
+						if x2 < piece[2] then
+							table.insert(nextPieces, { x2, piece[2] })
 						end
 					end
 				end
@@ -384,7 +390,11 @@ end
 -- Furnishing ----------------------------------------------------------------------
 
 
-local function furnish(m: Instance, room: Room, toolIds: { string }, title: string, keeper: string)
+export type ShopOptions = { ToolIds: { string }, Keeper: string }
+
+-- Inside: fireplace, lanterns, shelves and the sign over the porch. With
+-- `shop`, also a counter with the shopkeeper and the tools on plaques.
+local function furnish(m: Instance, room: Room, title: string, shop: ShopOptions?)
 	local f = room.Floor
 	local ground = f - Vector3.new(0, f.Y - Props.GroundTop, 0)
 	local halfW, halfD = room.Width / 2, room.Depth / 2
@@ -445,53 +455,89 @@ local function furnish(m: Instance, room: Room, toolIds: { string }, title: stri
 		end
 	end
 
-	-- Counter beside the door, the shopkeeper behind it.
-	local counterX = if room.DoorX < 0 then halfW - 6 else -halfW + 6
-	local counterCf = f * CFrame.new(counterX, 0, halfD - 6)
-	local counter = Props.make("Counter", m, {
-		Size = Vector3.new(7, 3.4, 2.4),
-		CFrame = counterCf * CFrame.new(0, 1.7, 0),
-		Color = LOG_DARK,
-		Material = Enum.Material.WoodPlanks,
-	})
-	Props.make("CounterTop", m, {
-		Size = Vector3.new(7.4, 0.3, 2.8),
-		CFrame = counterCf * CFrame.new(0, 3.55, 0),
-		Color = LOG,
-		Material = Enum.Material.Wood,
-	})
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.Name = "OpenShopPrompt"
-	prompt.ObjectText = title
-	prompt.ActionText = "Browse all"
-	prompt.KeyboardKeyCode = Enum.KeyCode.F
-	prompt.MaxActivationDistance = 10
-	prompt.RequiresLineOfSight = false
-	prompt.Parent = counter
-	Props.npc(m, counterCf * CFrame.new(0, 0, -2.6) * CFrame.Angles(0, math.pi, 0), keeper, Color3.fromRGB(70, 110, 170))
-
-	-- Tools on big plaques: two flanking the fireplace, two on each side
-	-- wall. The most expensive one gets the featured gold frame.
-	local hand, mowers = ShopDisplay.Split(toolIds)
-	local y = math.min(5.6, room.Height - 4)
-	local sideZ = math.min(7.2, halfD - 4) -- clear of the side windows
-	local slots = {
-		f * CFrame.new(-(3.25 + 4.2), y, back + 0.1),
-		f * CFrame.new(3.25 + 4.2, y, back + 0.1),
-		f * CFrame.new(-halfW + 0.1, y, -sideZ) * CFrame.Angles(0, math.rad(90), 0),
-		f * CFrame.new(-halfW + 0.1, y, sideZ) * CFrame.Angles(0, math.rad(90), 0),
-		f * CFrame.new(halfW - 0.1, y, -sideZ) * CFrame.Angles(0, -math.rad(90), 0),
-		f * CFrame.new(halfW - 0.1, y, sideZ) * CFrame.Angles(0, -math.rad(90), 0),
-	}
-	local featured = hand[#hand]
-	for i, id in hand do
-		if slots[i] then
-			ShopDisplay.BuildPlaque(m, slots[i], id, id == featured)
+	if not shop then
+		-- A home: a table with two stools by the fire instead of a counter.
+		Props.make("Table", m, {
+			Size = Vector3.new(5, 0.4, 3),
+			CFrame = f * CFrame.new(0, 2.6, back + 7),
+			Color = LOG,
+			Material = Enum.Material.WoodPlanks,
+		})
+		for _, x in { -1.8, 1.8 } do
+			Props.make("TableLeg", m, {
+				Size = Vector3.new(0.4, 2.4, 0.4),
+				CFrame = f * CFrame.new(x, 1.2, back + 7),
+				Color = LOG_DARK,
+				Material = Enum.Material.Wood,
+			})
 		end
+		for _, x in { -3.6, 3.6 } do
+			Props.make("Stool", m, {
+				Shape = Enum.PartType.Cylinder,
+				Size = Vector3.new(1.6, 1.4, 1.4),
+				CFrame = f * CFrame.new(x, 0.8, back + 7) * CFrame.Angles(0, 0, math.rad(90)),
+				Color = LOG_DARK,
+				Material = Enum.Material.Wood,
+			})
+		end
+		Props.make("Rug", m, {
+			Size = Vector3.new(9, 0.1, 6),
+			CFrame = f * CFrame.new(0, 0.25, back + 7),
+			Color = Color3.fromRGB(176, 72, 60),
+			Material = Enum.Material.Fabric,
+			Solid = false,
+		})
 	end
+	if shop then
+		local toolIds, keeper = shop.ToolIds, shop.Keeper
+		-- Counter beside the door, the shopkeeper behind it.
+		local counterX = if room.DoorX < 0 then halfW - 6 else -halfW + 6
+		local counterCf = f * CFrame.new(counterX, 0, halfD - 6)
+		local counter = Props.make("Counter", m, {
+			Size = Vector3.new(7, 3.4, 2.4),
+			CFrame = counterCf * CFrame.new(0, 1.7, 0),
+			Color = LOG_DARK,
+			Material = Enum.Material.WoodPlanks,
+		})
+		Props.make("CounterTop", m, {
+			Size = Vector3.new(7.4, 0.3, 2.8),
+			CFrame = counterCf * CFrame.new(0, 3.55, 0),
+			Color = LOG,
+			Material = Enum.Material.Wood,
+		})
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.Name = "OpenShopPrompt"
+		prompt.ObjectText = title
+		prompt.ActionText = "Browse all"
+		prompt.KeyboardKeyCode = Enum.KeyCode.F
+		prompt.MaxActivationDistance = 10
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = counter
+		Props.npc(m, counterCf * CFrame.new(0, 0, -2.6) * CFrame.Angles(0, math.pi, 0), keeper, Color3.fromRGB(70, 110, 170))
 
-	-- Mowers parked on the lawn beside the cabin (clear of porch and beds).
-	ShopDisplay.Park(m, ground * CFrame.new(halfW + 5, 0, room.FrontOutside - 2), mowers, 3)
+		-- Tools on big plaques: two flanking the fireplace, two on each side
+		-- wall. The most expensive one gets the featured gold frame.
+		local hand, mowers = ShopDisplay.Split(toolIds)
+		local y = math.min(5.6, room.Height - 4)
+		local sideZ = math.min(7.2, halfD - 4) -- clear of the side windows
+		local slots = {
+			f * CFrame.new(-(3.25 + 4.2), y, back + 0.1),
+			f * CFrame.new(3.25 + 4.2, y, back + 0.1),
+			f * CFrame.new(-halfW + 0.1, y, -sideZ) * CFrame.Angles(0, math.rad(90), 0),
+			f * CFrame.new(-halfW + 0.1, y, sideZ) * CFrame.Angles(0, math.rad(90), 0),
+			f * CFrame.new(halfW - 0.1, y, -sideZ) * CFrame.Angles(0, -math.rad(90), 0),
+			f * CFrame.new(halfW - 0.1, y, sideZ) * CFrame.Angles(0, -math.rad(90), 0),
+		}
+		local featured = hand[#hand]
+		for i, id in hand do
+			if slots[i] then
+				ShopDisplay.BuildPlaque(m, slots[i], id, id == featured)
+			end
+		end
+
+		-- Mowers parked on the lawn beside the cabin (clear of porch and beds).
+		ShopDisplay.Park(m, ground * CFrame.new(halfW + 5, 0, room.FrontOutside - 2), mowers, 3)
+	end
 
 	-- Big sign hanging under the front edge of the porch roof, between the
 	-- posts, facing the path: nothing in front of it.
@@ -513,10 +559,21 @@ local function furnish(m: Instance, room: Room, toolIds: { string }, title: stri
 	end
 end
 
+-- A walk-in shop (not used by the island map any more: tools are sold at
+-- FarmerStand; kept for other places/layouts).
 function ShopInterior.Build(parent: Instance, cf: CFrame, toolIds: { string }, title: string, keeper: string)
 	local m = Props.model("ShopBuilding", parent)
 	local room = logShell(m, cf)
-	furnish(m, room, toolIds, title, keeper)
+	furnish(m, room, title, { ToolIds = toolIds, Keeper = keeper })
+	m:SetAttribute("Entrance", room.Entrance.Position)
+	return m
+end
+
+-- The player's base: the same cabin as a home (no counter, no tools).
+function ShopInterior.BuildHome(parent: Instance, cf: CFrame, title: string)
+	local m = Props.model("PlayerBase", parent)
+	local room = logShell(m, cf)
+	furnish(m, room, title, nil)
 	m:SetAttribute("Entrance", room.Entrance.Position)
 	return m
 end

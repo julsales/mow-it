@@ -1,16 +1,20 @@
 --!strict
--- Grass clippings. The grass itself is Terrain (GrassService): tall Grass
--- with wind-swayed blades, mowed cells turn into striped short lawn, and
--- Terrain edits replicate on their own. This script only adds the juice:
--- a spray of green clippings where the local player's swing mowed cells
--- (positions arrive in CutFeedback), thrown away from the player.
+-- Grass visuals on the client. The grass itself is Terrain (GrassService):
+-- tall Grass with wind-swayed blades, mowed cells turn into striped short
+-- lawn, and Terrain edits replicate on their own. On top of it:
+--   * GrassTufts draws each area's own blades (and the rare patches);
+--   * this script sprays clippings, in the grass's color, where the local
+--     player's swing mowed cells (positions arrive in CutFeedback).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local GrassTufts = require(script.Parent:WaitForChild("GrassTufts"))
+
 local player = Players.LocalPlayer
+GrassTufts.Start()
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 local POOL_SIZE = 120
@@ -55,7 +59,8 @@ local function throw(from: Vector3, away: Vector3)
 	local peak = start + fling * 0.5 + Vector3.new(0, 1.5 + math.random() * 1.5, 0)
 	local landing = start + fling + Vector3.new(0, -0.3, 0)
 
-	bit.Color = GREENS[math.random(#GREENS)]
+	local own = GrassTufts.ColorAt(from)
+	bit.Color = if own and math.random() < 0.7 then own else GREENS[math.random(#GREENS)]
 	bit.Transparency = 0
 	bit.CFrame = CFrame.new(start) * spin
 	local rise = TweenService:Create(bit, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {

@@ -98,7 +98,9 @@ local function slot(parent: Instance, toolId: string, at: CFrame, tagHeight: num
 
 	local tag = Instance.new("BillboardGui")
 	tag.Name = "PriceTag"
-	tag.Size = UDim2.fromOffset(120, 44)
+	-- Sized in studs (not pixels): tags of neighbouring tools never grow
+	-- into each other when seen from further away.
+	tag.Size = UDim2.fromScale(2.4, 0.9)
 	tag.StudsOffsetWorldSpace = Vector3.new(0, tagHeight, 0)
 	tag.MaxDistance = 28
 	tag.LightInfluence = 0

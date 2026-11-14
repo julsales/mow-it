@@ -15,25 +15,33 @@ Each player SHALL own a persistent land that is loaded as their own property in 
 - **THEN** their land presents those three expansions joined together, with later expansions still closed off
 
 ### Requirement: Open, organic land layout
-The land SHALL be laid out as an open, organic map: a home base at its center and expansions opening outward from it, with irregular lawn shapes, winding paths and irregularly placed props, never a grid or maze. Areas SHALL be separated by fences backed by invisible walls with one gate each, and locked areas SHALL remain visible beyond their fence.
+The land SHALL be laid out as a chain of islands in open water, one island per expansion in unlock order, never a grid or maze: the home base (the player's base, where they spawn) on the first, small island, and every next island clearly bigger than the previous one. Islands SHALL have organic coastlines (beaches, rocks, cliffs) and large, irregular lawns covering most of their area. Each island SHALL be joined to the next by a bridge that carries that expansion's gate, backed by invisible walls, so there are no fence lines on land; the next island SHALL always be visible across the water. Each island SHALL have its sell pad next to the bridge arrival and a farmer's tool stand off to the side. The edge of the world SHALL never be visible: water and haze reach the horizon, with invisible walls just offshore.
 
 #### Scenario: Next goal in sight
-- **WHEN** a player stands at the edge of their last unlocked area
-- **THEN** they can see the next locked area past its fence but cannot walk into it
+- **WHEN** a player stands on their last unlocked island
+- **THEN** they can see the next locked island across the water and its gate on the bridge, but cannot cross the gate
+
+#### Scenario: Crossing a bridge
+- **WHEN** a player unlocks an expansion and crosses its bridge
+- **THEN** they arrive next to that island's sell pad, with the island's farmer selling its tools nearby
+
+#### Scenario: No visible map edge
+- **WHEN** a player looks out to sea, from the ground or from the zoomed-out camera, anywhere on the land
+- **THEN** they see water fading into the horizon, and the offshore walls stop them from leaving
 
 ### Requirement: Grass type per area with lucky patches
-Each area SHALL grow its own grass type with higher health and value than the previous area and a distinct look, and rarer grass types from later areas SHALL spawn sparsely, by chance, in earlier areas.
+Each area SHALL grow its own grass type with higher health and value than the previous area and a distinct look (color, height and blade shape), and rarer grass types (lucky, golden, or the next area's grass) SHALL spawn sparsely, by chance, as small noticeable patches in earlier areas.
 
 #### Scenario: Lucky patch
 - **WHEN** grass regrows in an early area
-- **THEN** a small fraction of cells may regrow as a rarer, more valuable grass type
+- **THEN** a small fraction of cells may regrow as a small patch of a rarer, more valuable grass type that looks different from the area's own grass
 
 ### Requirement: Physical selling at stalls
-Players SHALL sell carried grass by stepping onto a sell stall's pad in an unlocked area; remote selling SHALL only be available through Auto-Sell or a dedicated pass.
+Players SHALL sell carried grass by stepping onto an island's sell pad in an unlocked area (no buyer NPC); remote selling SHALL only be available through Auto-Sell or a dedicated pass.
 
 #### Scenario: Storage full
 - **WHEN** a player's storage is full
-- **THEN** they are told so and shown the way to the nearest unlocked sell stall
+- **THEN** they are told so and shown the way to the nearest unlocked sell pad
 
 ### Requirement: Land expansions unlock in order
 A player SHALL only be able to unlock an expansion when every previous expansion is unlocked, they meet the required Company Level, and they pay the expansion's Coin price.
@@ -51,7 +59,7 @@ A player SHALL only be able to unlock an expansion when every previous expansion
 - **THEN** the purchase is refused
 
 ### Requirement: Physical shops per expansion
-Each expansion SHALL contain a physical shop selling that expansion's tools, storage and buffs, priced in Coins, and the shop SHALL only sell content whose required expansion the player has unlocked.
+Each expansion SHALL contain a physical shop (a farmer's tool stand on its island) selling that expansion's tools, storage and buffs, priced in Coins, and the shop SHALL only sell content whose required expansion the player has unlocked.
 
 #### Scenario: Buying where you play
 - **WHEN** a player visits the Sunny Farm shop after unlocking Sunny Farm

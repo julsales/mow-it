@@ -10,9 +10,11 @@
 -- stripes. Regrowth swaps it back. Terrain edits replicate on their own.
 --
 -- Grass types (Shared/Config/GrassTypes.luau): most cells grow the area's
--- normal grass; by luck (chances per area in MapLayout.luau) a cell grows
--- a rarer type that yields more. Rare cells get a sparkle marker
--- (Workspace/RareGrass) so players can spot and chase them.
+-- own grass; by luck (chances per area in MapLayout.luau `Patches`) a
+-- regrown cell starts a small patch of a rarer type: Lucky Clover, Golden
+-- Grass, or the next area's grass. Non-normal cells get a marker part
+-- (Workspace/RareGrass, attributes GrassType + Look): clients draw their
+-- blades from it, lucky/golden ones also sparkle so players can chase them.
 --
 -- Cutting is grid math (a dictionary lookup per cell), never raycasts.
 
@@ -23,6 +25,7 @@ local Zones = require(Shared.Config.Zones)
 local GameConfig = require(Shared.Config.GameConfig)
 local GrassTypes = require(Shared.Config.GrassTypes)
 local MapLayout = require(Shared.Config.MapLayout)
+local LawnCells = require(Shared.LawnCells)
 
 local GrassService = {}
 
@@ -35,8 +38,12 @@ export type Cell = {
 	Region: Region3,
 	MowedMaterial: Enum.Material,
 	TypeId: string,
+	Look: string, -- GrassTypes.Looks key the clients draw
 	Yield: number, -- grass gained when this cell is cut
-	Marker: BasePart?, -- sparkle for rare types
+	Marker: BasePart?, -- for non-normal types (clients read it)
+	Pending: GrassTypes.GrassType?, -- patch type to grow next time
+	Ix: number,
+	Iz: number,
 }
 
 local CELL = 4 -- Terrain voxel size; GameConfig.GrassCellSize documents it
@@ -61,16 +68,30 @@ local function paintColors()
 	-- map), so hand-tuned colors in Studio are never overwritten here.
 end
 
--- Picks this cell's grass type (normal, or a lucky rare one).
-local function rollType(zoneId: string): GrassTypes.GrassType
+-- The next area in the ladder (for "next" patches), or nil for the last.
+local function nextZoneId(zoneId: string): string?
+	local nextZone = Zones.List[(Zones.IndexById[zoneId] or #Zones.List) + 1]
+	return nextZone and nextZone.Id
+end
+
+-- A patch type that can grow here, rolled rarest first, or nil (normal).
+local function rollPatch(zoneId: string): GrassTypes.GrassType?
 	local def = MapLayout.Areas[zoneId]
-	local roll = rng:NextNumber()
-	if def and roll < def.GoldenChance then
-		return GrassTypes.ById.golden
-	elseif def and roll < def.GoldenChance + def.LuckyChance then
-		return GrassTypes.ById.lucky
+	if not def then
+		return nil
 	end
-	return GrassTypes.ById.normal
+	local roll = rng:NextNumber()
+	for _, typeId in GrassTypes.PatchOrder do
+		local chance = def.Patches[typeId] or 0
+		if typeId == "next" and not nextZoneId(zoneId) then
+			chance = 0
+		end
+		if roll < chance then
+			return GrassTypes.ById[typeId]
+		end
+		roll -= chance
+	end
+	return nil
 end
 
 local function setMarker(cell: Cell, grassType: GrassTypes.GrassType)
@@ -78,7 +99,7 @@ local function setMarker(cell: Cell, grassType: GrassTypes.GrassType)
 		cell.Marker:Destroy()
 		cell.Marker = nil
 	end
-	if not grassType.Color then
+	if grassType.Id == "normal" then
 		return
 	end
 	local marker = Instance.new("Part")
@@ -91,31 +112,85 @@ local function setMarker(cell: Cell, grassType: GrassTypes.GrassType)
 	marker.Transparency = 1
 	marker.Size = Vector3.new(CELL, 0.2, CELL)
 	marker.Position = cell.Center + Vector3.new(0, 0.6, 0)
-	local sparkle = Instance.new("ParticleEmitter")
-	sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	sparkle.Color = ColorSequence.new(grassType.Color)
-	sparkle.LightEmission = 1
-	sparkle.Size = NumberSequence.new(0.5, 0)
-	sparkle.Lifetime = NumberRange.new(0.8, 1.4)
-	sparkle.Rate = 5
-	sparkle.Speed = NumberRange.new(1, 2.5)
-	sparkle.SpreadAngle = Vector2.new(25, 25)
-	sparkle.EmissionDirection = Enum.NormalId.Top
-	sparkle.Parent = marker
+	-- Sparkles: lucky/golden shine in their own color; next-area patches
+	-- glint softly in that area's theme color.
+	local look = GrassTypes.Looks[cell.Look]
+	local glint = if look and look.Sparkle then look.Sparkle elseif grassType.Id == "next" and Zones.ById[cell.Look] then Zones.ById[cell.Look].ThemeColor else nil
+	if glint then
+		local sparkle = Instance.new("ParticleEmitter")
+		sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		sparkle.Color = ColorSequence.new(glint)
+		sparkle.LightEmission = 1
+		sparkle.Size = NumberSequence.new(0.9, 0)
+		sparkle.Lifetime = NumberRange.new(0.9, 1.6)
+		sparkle.Rate = if look and look.Sparkle then 4 else 1.5
+		sparkle.Speed = NumberRange.new(1.5, 3.5)
+		sparkle.SpreadAngle = Vector2.new(25, 25)
+		sparkle.EmissionDirection = Enum.NormalId.Top
+		sparkle.Parent = marker
+	end
 	marker:SetAttribute("GrassType", grassType.Id)
+	marker:SetAttribute("Look", cell.Look)
 	marker.Parent = markers
 	cell.Marker = marker
 end
 
-local function grow(cell: Cell)
+-- Gives a standing cell its grass type: health, yield, look, marker.
+local function applyType(cell: Cell, grassType: GrassTypes.GrassType)
 	local zone = Zones.ById[cell.ZoneId]
-	local grassType = rollType(cell.ZoneId)
+	local health, value, look = zone.GrassHealth, zone.GrassValue, cell.ZoneId
+	local yield = grassType.Yield
+	if grassType.Id == "next" then
+		local nextId = nextZoneId(cell.ZoneId)
+		local nextZone = nextId and Zones.ById[nextId]
+		if nextZone then
+			health, look = nextZone.GrassHealth, nextZone.Id
+			yield = math.max(grassType.Yield, math.round(nextZone.GrassValue / value))
+		end
+	elseif grassType.Look then
+		look = grassType.Look
+	end
 	cell.TypeId = grassType.Id
-	cell.Yield = grassType.Yield
-	cell.MaxHealth = zone.GrassHealth * grassType.HealthMultiplier
+	cell.Look = look
+	cell.Yield = yield
+	cell.MaxHealth = health * grassType.HealthMultiplier
 	cell.Health = cell.MaxHealth
-	cell.Cut = false
 	setMarker(cell, grassType)
+end
+
+-- Spreads a patch type over the cells around `origin` (ragged, not round).
+-- Standing normal cells change now; cut ones grow it when they regrow.
+local function spreadPatch(origin: Cell, grassType: GrassTypes.GrassType)
+	local r = grassType.PatchRadius
+	local reach = math.ceil(r)
+	for dx = -reach, reach do
+		for dz = -reach, reach do
+			local other = cells[LawnCells.Key(origin.Ix + dx, origin.Iz + dz)]
+			local inside = dx * dx + dz * dz <= r * r and rng:NextNumber() < 0.85
+			if other and other ~= origin and inside and other.ZoneId == origin.ZoneId and other.TypeId == "normal" then
+				if other.Cut then
+					other.Pending = grassType
+				else
+					applyType(other, grassType)
+				end
+			end
+		end
+	end
+end
+
+local function grow(cell: Cell)
+	cell.Cut = false
+	local pending = cell.Pending
+	cell.Pending = nil
+	if pending then
+		applyType(cell, pending)
+		return
+	end
+	local patch = rollPatch(cell.ZoneId)
+	applyType(cell, patch or GrassTypes.ById.normal)
+	if patch then
+		spreadPatch(cell, patch)
+	end
 end
 
 local function regrowLater(cell: Cell)
@@ -169,76 +244,48 @@ function GrassService.Damage(cell: Cell, power: number): boolean
 	return true
 end
 
--- Lawn cell centers from the contract parts: every 4x4 voxel column whose
--- center lies inside a "GrassArea" part under Workspace/Zones/<ZoneId>
--- (built by MapService, or baked and hand-edited in Studio). The lawn's
--- surface is the bottom of the part.
-local function collectLawnCells(): { [string]: { Vector3 } }
-	local result: { [string]: { Vector3 } } = {}
-	local zones = Workspace:FindFirstChild("Zones")
-	if not zones then
-		return result
-	end
-	local seen: { [string]: boolean } = {}
-	for _, zoneFolder in zones:GetChildren() do
-		for _, part in zoneFolder:GetDescendants() do
-			if part.Name ~= "GrassArea" or not part:IsA("BasePart") then
-				continue
-			end
-			local cf, size = part.CFrame, part.Size
-			local half = size / 2
-			local reach = Vector3.new(size.X, 0, size.Z).Magnitude / 2
-			local y = cf.Position.Y - half.Y
-			for ix = math.floor((cf.X - reach) / CELL), math.floor((cf.X + reach) / CELL) do
-				for iz = math.floor((cf.Z - reach) / CELL), math.floor((cf.Z + reach) / CELL) do
-					local center = Vector3.new(ix * CELL + CELL / 2, y, iz * CELL + CELL / 2)
-					local p = cf:PointToObjectSpace(Vector3.new(center.X, cf.Y, center.Z))
-					local k = ix .. "," .. iz
-					if math.abs(p.X) <= half.X and math.abs(p.Z) <= half.Z and not seen[k] then
-						seen[k] = true
-						result[zoneFolder.Name] = result[zoneFolder.Name] or {}
-						table.insert(result[zoneFolder.Name], center)
-					end
-				end
-			end
-		end
-	end
-	return result
-end
-
 function GrassService.Init()
 	paintColors()
 	markers = Instance.new("Folder")
 	markers.Name = "RareGrass"
 	markers.Parent = Workspace
 
-	for zoneId, centers in collectLawnCells() do
-		if not Zones.ById[zoneId] then
+	-- Create every cell first, then grow them, so patches can spread over
+	-- their neighbours.
+	local created: { Cell } = {}
+	for _, lawn in LawnCells.Collect(Workspace:FindFirstChild("Zones")) do
+		if not Zones.ById[lawn.ZoneId] then
 			continue
 		end
-		for _, center in centers do
-			local ix, iz = math.floor(center.X / CELL), math.floor(center.Z / CELL)
-			local half = Vector3.new(CELL / 2, 4, CELL / 2)
-			local cell: Cell = {
-				ZoneId = zoneId,
-				MaxHealth = 1,
-				Health = 1,
-				Cut = false,
-				Center = center,
-				Region = Region3.new(center - half, center + half):ExpandToGrid(CELL),
-				MowedMaterial = if math.floor(ix / STRIPE) % 2 == 0 then MOWED_LIGHT else MOWED_DARK,
-				TypeId = "normal",
-				Yield = 1,
-			}
-			-- Hand-moved lawns: make sure the ground under them is lawn.
-			terrain:ReplaceMaterial(cell.Region, CELL, Enum.Material.LeafyGrass, TALL)
-			terrain:ReplaceMaterial(cell.Region, CELL, cell.MowedMaterial, TALL)
+		local zoneId, center, ix, iz = lawn.ZoneId, lawn.Center, lawn.Ix, lawn.Iz
+		local half = Vector3.new(CELL / 2, 4, CELL / 2)
+		local cell: Cell = {
+			ZoneId = zoneId,
+			MaxHealth = 1,
+			Health = 1,
+			Cut = false,
+			Center = center,
+			Region = Region3.new(center - half, center + half):ExpandToGrid(CELL),
+			MowedMaterial = if math.floor(ix / STRIPE) % 2 == 0 then MOWED_LIGHT else MOWED_DARK,
+			TypeId = "normal",
+			Look = zoneId,
+			Yield = 1,
+			Ix = ix,
+			Iz = iz,
+		}
+		-- Hand-moved lawns: make sure the ground under them is lawn.
+		terrain:ReplaceMaterial(cell.Region, CELL, Enum.Material.LeafyGrass, TALL)
+		terrain:ReplaceMaterial(cell.Region, CELL, cell.MowedMaterial, TALL)
+		cells[LawnCells.Key(ix, iz)] = cell
+		table.insert(created, cell)
+		cellCount += 1
+		if cellCount % 400 == 0 then
+			task.wait()
+		end
+	end
+	for _, cell in created do
+		if cell.TypeId == "normal" then -- a neighbour's patch may have reached it
 			grow(cell)
-			cells[ix .. "," .. iz] = cell
-			cellCount += 1
-			if cellCount % 400 == 0 then
-				task.wait()
-			end
 		end
 	end
 	if GameConfig.Verbose then

@@ -9,6 +9,7 @@
 
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Props = {}
 
@@ -201,6 +202,14 @@ local function tree(parent: Instance, cf: CFrame, x: number, z: number, scale: n
 	ball("Leaves", m, cf, 6 * s, x + 2.2 * s, 11.5 * s, z - 1 * s, COLORS.DarkLeaves, Enum.Material.Grass)
 end
 
+local function bush(parent: Instance, cf: CFrame, x: number, z: number, scale: number?)
+	local s = scale or 1
+	local m = model("Bush", parent)
+	ball("Leaves", m, cf, 4.2 * s, x, 1.4 * s, z, COLORS.Leaves, Enum.Material.Grass)
+	ball("Leaves", m, cf, 3.2 * s, x + 1.6 * s, 1.1 * s, z + 0.6 * s, COLORS.DarkLeaves, Enum.Material.Grass)
+	ball("Leaves", m, cf, 2.8 * s, x - 1.4 * s, 1 * s, z - 0.7 * s, COLORS.DarkLeaves, Enum.Material.Grass)
+end
+
 local function sign(parent: Instance, cf: CFrame, x: number, z: number, text: string, accent: Color3)
 	local m = model("ZoneSign", parent)
 	local board = box("Board", m, cf, Vector3.new(16, 5, 0.5), x, z, COLORS.White, nil, 3)
@@ -212,7 +221,7 @@ local function sign(parent: Instance, cf: CFrame, x: number, z: number, text: st
 end
 
 -- Physical shop stall (spec: each expansion has its own physical shop).
-local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: Color3): Model
+local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: Color3, title: string?): Model
 	local m = model("ShopStall", parent)
 	box("Counter", m, cf, Vector3.new(12, 3.2, 2.5), x, z + 2, COLORS.Wood, Enum.Material.WoodPlanks)
 	box("Awning", m, cf, Vector3.new(14, 0.4, 7), x, z + 1, accent, nil, 8)
@@ -220,13 +229,12 @@ local function shop(parent: Instance, cf: CFrame, x: number, z: number, accent: 
 		box("Post", m, cf, Vector3.new(0.6, 8, 0.6), x + dx, z - 2.2, COLORS.DarkWood, Enum.Material.Wood)
 	end
 	local board = box("Sign", m, cf, Vector3.new(10, 2.4, 0.4), x, z + 1, COLORS.White, nil, 8.4)
-	label(board, Enum.NormalId.Back, "SHOP")
+	label(board, Enum.NormalId.Back, title or "SHOP")
 	return m
 end
 
--- The grass buyer: a farmer NPC (default R15 body, colored clothes, a
--- straw hat built from parts) standing still behind the stall counter.
--- No dialog: stepping on the pad sells instantly, he is the face of it.
+-- A farmer NPC (default R15 body, colored clothes, a straw hat built from
+-- parts) standing still, e.g. behind a FarmerStand counter. No dialog.
 local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
 	task.spawn(function()
 		local description = Instance.new("HumanoidDescription")
@@ -241,7 +249,7 @@ local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
 			return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
 		end)
 		if not ok or not npc then
-			warn("[MowIt][Graybox] Could not build the grass buyer NPC:", npc)
+			warn("[MowIt][Map] Could not build the NPC:", npc)
 			return
 		end
 		npc.Name = "Npc"
@@ -291,8 +299,8 @@ local function npc(parent: Instance, at: CFrame, title: string, shirt: Color3)
 end
 
 -- Market stall behind the sell pad: counter with grass bales, striped
--- awning, a "WE BUY GRASS" board and the buyer NPC. Local -Z is away from
--- the lawn, so the stall sits behind the pad facing the player.
+-- awning and a "SELL GRASS" board (no NPC: stepping on the pad sells).
+-- Local -Z is away from the lawn, so the stall sits behind the pad.
 local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 	local m = model("SellStall", parent)
 	local back = z - 7.5
@@ -310,8 +318,7 @@ local function sellStall(parent: Instance, cf: CFrame, x: number, z: number)
 		box("Awning", m, cf, Vector3.new(1.55, 0.35, 4.2), x - 3.9 + i * 1.55, back + 0.6, color, Enum.Material.Fabric, 7.5)
 	end
 	local board = box("Board", m, cf, Vector3.new(7, 1.6, 0.3), x, back + 2.75, COLORS.White, nil, 7.9)
-	label(board, Enum.NormalId.Back, "WE BUY GRASS", Color3.fromRGB(90, 60, 0))
-	npc(m, at(cf, x, 0, back - 1) * CFrame.Angles(0, math.pi, 0), "Farmer Joe · Grass Buyer", Color3.fromRGB(196, 64, 52))
+	label(board, Enum.NormalId.Back, "SELL GRASS", Color3.fromRGB(90, 60, 0))
 end
 
 local function sellPad(parent: Instance, cf: CFrame, x: number, z: number)
@@ -431,6 +438,74 @@ local function kind(radius: number, build: (Instance, CFrame) -> ()): Kind
 	return { Radius = radius, Build = build }
 end
 
+-- Prop library: audited Creator Store models (docs/ASSETS.md) saved in the
+-- place under ServerStorage/MapProps/<KindName>/ (one or more variant
+-- models). When a kind has library models, they replace the Part-built
+-- fallback below. Optional attribute `Scale` on a variant = its base scale.
+local function libraryVariants(name: string): { Model }
+	local library = ServerStorage:FindFirstChild("MapProps")
+	local folder = library and library:FindFirstChild(name)
+	local variants = {}
+	if folder then
+		for _, child in folder:GetChildren() do
+			if child:IsA("Model") then
+				table.insert(variants, child)
+			end
+		end
+	end
+	return variants
+end
+
+-- Places a library model with its footprint centered on `cf` and its
+-- bottom on cf's height. Returns nil when the kind has no library models.
+function Props.fromLibrary(name: string, parent: Instance, cf: CFrame, scale: number?): Model?
+	local variants = libraryVariants(name)
+	if #variants == 0 then
+		return nil
+	end
+	local p = cf.Position
+	local pick = Random.new(math.floor(p.X * 7.3) * 92821 + math.floor(p.Z * 3.1)):NextInteger(1, #variants)
+	local m = variants[pick]:Clone()
+	local base = m:GetAttribute("Scale")
+	local factor = (if type(base) == "number" then base else 1) * (scale or 1)
+	if math.abs(factor - 1) > 0.01 then
+		m:ScaleTo(m:GetScale() * factor)
+	end
+	m:PivotTo(cf)
+	local box, size = m:GetBoundingBox()
+	local bottom = Vector3.new(box.X, box.Y - size.Y / 2, box.Z)
+	m:PivotTo(cf + (p - bottom))
+	for _, d in m:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.Anchored = true
+		end
+	end
+	m.Parent = parent
+	return m
+end
+
+-- Small scattered things (trees, bushes, rocks) by name, with a scale:
+-- library model if there is one, else the Part-built look.
+local scatter: { [string]: (Instance, CFrame, number) -> () } = {
+	Tree = function(parent, cf, scale)
+		tree(parent, cf, 0, 0, scale)
+	end,
+	Bush = function(parent, cf, scale)
+		bush(parent, cf, 0, 0, scale)
+	end,
+	Rock = function(parent, cf, scale)
+		ball("Rock", model("Rock", parent), cf, 3 * scale, 0, 0.6 * scale, 0, COLORS.Curb, Enum.Material.Slate)
+	end,
+}
+function Props.place(name: string, parent: Instance, cf: CFrame, scale: number)
+	if not Props.fromLibrary(name, parent, cf, scale) then
+		local build = scatter[name]
+		if build then
+			build(parent, cf, scale)
+		end
+	end
+end
+
 Props.Kinds = {
 	Tree = kind(5, function(p, cf)
 		tree(p, cf, 0, 0, 0.8 + math.random() * 0.5)
@@ -455,6 +530,13 @@ Props.Kinds = {
 	end),
 	Planters = kind(8, function(p, cf)
 		planters(p, cf, 0, 0)
+	end),
+	Mailbox = kind(2, function(p, cf)
+		local m = model("Mailbox", p)
+		box("Post", m, cf, Vector3.new(0.4, 3.6, 0.4), 0, 0, COLORS.DarkWood, Enum.Material.Wood)
+		local b = box("Box", m, cf, Vector3.new(1.2, 1.1, 1.9), 0, 0, Color3.fromRGB(70, 120, 190), Enum.Material.Metal, 3.6)
+		b.Shape = Enum.PartType.Block
+		box("Flag", m, cf, Vector3.new(0.1, 0.9, 0.3), 0.65, -0.4, COLORS.BarnRed, nil, 4.1)
 	end),
 	Hay = kind(8, function(p, cf)
 		hay(p, cf, 0, 0)
@@ -481,6 +563,110 @@ Props.Kinds = {
 		turbine(p, cf, 0, 0)
 	end),
 }
+
+-- Library models replace the Part-built kinds that have them.
+for name, k in Props.Kinds do
+	local build = k.Build
+	k.Build = function(parent: Instance, cf: CFrame)
+		if not Props.fromLibrary(name, parent, cf) then
+			build(parent, cf)
+		end
+	end
+end
+
+-- An arch over a bridge gate: two posts, a beam and the area's name.
+function Props.gateArch(parent: Instance, frame: CFrame, width: number, height: number, title: string, accent: Color3)
+	local m = model("GateArch", parent)
+	local postH = height + 2
+	for _, side in { -1, 1 } do
+		make("ArchPost", m, {
+			Size = Vector3.new(1.4, postH, 1.4),
+			CFrame = frame * CFrame.new(side * (width / 2 + 0.4), postH / 2, 0),
+			Color = COLORS.DarkWood,
+			Material = Enum.Material.Wood,
+		})
+		make("ArchCap", m, {
+			Size = Vector3.new(1.9, 0.6, 1.9),
+			CFrame = frame * CFrame.new(side * (width / 2 + 0.4), postH + 0.3, 0),
+			Color = accent,
+			Material = Enum.Material.Wood,
+		})
+	end
+	-- Deeper than the posts, so the posts never cover the ends of the name.
+	local beam = make("ArchBeam", m, {
+		Size = Vector3.new(width + 3.4, 2.2, 1.8),
+		CFrame = frame * CFrame.new(0, postH - 1.4, 0),
+		Color = COLORS.Wood,
+		Material = Enum.Material.WoodPlanks,
+	})
+	label(beam, Enum.NormalId.Front, title)
+	label(beam, Enum.NormalId.Back, title)
+	make("ArchStripe", m, {
+		Size = Vector3.new(width + 3.6, 0.35, 1.9),
+		CFrame = frame * CFrame.new(0, postH - 0.15, 0),
+		Color = accent,
+	})
+	return m
+end
+
+-- Flat look: these base materials get a texture-less MaterialVariant
+-- (MaterialService override), so terrain and parts render as clean flat
+-- color, matching the low-poly props instead of Roblox's stock textures.
+local FLAT_MATERIALS = {
+	Enum.Material.Grass, -- uncut lawn
+	Enum.Material.LeafyGrass, -- wild ground
+	Enum.Material.Ground, -- mowed stripe, dirt paths
+	Enum.Material.Mud, -- mowed stripe
+	Enum.Material.Sand,
+	Enum.Material.Rock,
+	Enum.Material.Slate,
+	Enum.Material.Cobblestone,
+	Enum.Material.Wood,
+	Enum.Material.WoodPlanks,
+	Enum.Material.Brick,
+	Enum.Material.Fabric,
+}
+
+function Props.UseFlatMaterials()
+	local MaterialService = game:GetService("MaterialService")
+	local folder = MaterialService:FindFirstChild("MowItFlat")
+	if not folder then
+		folder = Instance.new("Folder")
+		folder.Name = "MowItFlat"
+		folder.Parent = MaterialService
+	end
+	for _, material in FLAT_MATERIALS do
+		local name = "Flat" .. material.Name
+		if not folder:FindFirstChild(name) then
+			local variant = Instance.new("MaterialVariant")
+			variant.Name = name
+			variant.BaseMaterial = material
+			variant.Parent = folder
+		end
+		-- Only when nobody chose another override in Studio.
+		if MaterialService:GetBaseMaterialOverride(material) == "" then
+			MaterialService:SetBaseMaterialOverride(material, name)
+		end
+	end
+end
+
+-- Terrain and water colors (saved with a baked map; tune them in Studio
+-- under Terrain > MaterialColors and they stay). One warm, saturated
+-- cartoon palette for every island.
+function Props.PaintTerrain(terrain: Terrain)
+	Props.UseFlatMaterials()
+	terrain:SetMaterialColor(Enum.Material.LeafyGrass, Color3.fromRGB(88, 150, 62)) -- wild ground
+	terrain:SetMaterialColor(Enum.Material.Grass, Color3.fromRGB(104, 178, 64)) -- uncut lawn
+	terrain:SetMaterialColor(Enum.Material.Ground, Color3.fromRGB(156, 210, 96)) -- mowed stripe
+	terrain:SetMaterialColor(Enum.Material.Mud, Color3.fromRGB(124, 188, 76)) -- mowed stripe
+	terrain:SetMaterialColor(Enum.Material.Sand, Color3.fromRGB(240, 218, 160)) -- beaches
+	terrain:SetMaterialColor(Enum.Material.Rock, Color3.fromRGB(150, 140, 128)) -- cliffs, sea rocks
+	terrain.WaterColor = Color3.fromRGB(40, 170, 196)
+	terrain.WaterTransparency = 0.55
+	terrain.WaterReflectance = 0.5
+	terrain.WaterWaveSize = 0.15
+	terrain.WaterWaveSpeed = 9
+end
 
 Props.Colors = COLORS
 Props.make = make
@@ -534,12 +720,13 @@ function Props.BuildAmbience()
 	end)
 
 	local atmosphere = effect("Atmosphere", "Atmosphere") :: Atmosphere
-	atmosphere.Density = 0.32
-	atmosphere.Offset = 0.2
+	-- Thick enough that the far sea melts into the sky (no visible map edge).
+	atmosphere.Density = 0.45
+	atmosphere.Offset = 0.12
 	atmosphere.Color = Color3.fromRGB(255, 214, 172)
 	atmosphere.Decay = Color3.fromRGB(176, 120, 96)
 	atmosphere.Glare = 0.35
-	atmosphere.Haze = 1.4
+	atmosphere.Haze = 2.2
 
 	local grading = effect("ColorCorrectionEffect", "WarmGrade") :: ColorCorrectionEffect
 	grading.Saturation = 0.15
