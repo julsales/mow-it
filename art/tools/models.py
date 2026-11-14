@@ -338,15 +338,17 @@ def combine():
     box("Seat", (0, 3.025, -0.14), (1.5, 0.35, 1.22), bevel=0.14)
     box("Seat", (0, 3.725, 0.595), (1.5, 1.75, 0.25), bevel=0.12)
     box("Dark", (0, 2.5, -0.2), (1.0, 0.7, 0.8), bevel=0.06)
+    # the cab reaches well past the steering wheel
     for x in (-1.3, 1.3):
-        cyl("Dark", (x, 2.2, -1.9), (x, 7.1, -1.9), 0.09, verts=6)
+        cyl("Dark", (x, 2.2, -2.7), (x, 7.1, -2.7), 0.09, verts=6)
         cyl("Dark", (x, 2.2, 0.8), (x, 7.1, 0.8), 0.09, verts=6)
-    box("Glass", (0, 4.6, -1.9), (2.5, 4.6, 0.08), bevel=0)
-    box("Glass", (-1.3, 4.6, -0.55), (0.08, 4.6, 2.6), bevel=0)
-    box("Glass", (1.3, 4.6, -0.55), (0.08, 4.6, 2.6), bevel=0)
-    box("Accent", (0, 7.25, -0.55), (3.0, 0.3, 3.2), bevel=0.1)
+    box("Dark", (0, 2.05, -2.0), (2.7, 0.2, 1.6), bevel=0.05)  # cab floor in front of the seat
+    box("Glass", (0, 4.6, -2.7), (2.5, 4.6, 0.08), bevel=0)
+    box("Glass", (-1.3, 4.6, -0.95), (0.08, 4.6, 3.4), bevel=0)
+    box("Glass", (1.3, 4.6, -0.95), (0.08, 4.6, 3.4), bevel=0)
+    box("Accent", (0, 7.25, -0.95), (3.0, 0.3, 4.0), bevel=0.1)
     for x in (-1.0, -0.35, 0.35, 1.0):
-        cyl("Light", (x, 7.2, -2.12), (x, 7.2, -2.25), 0.13, verts=8)
+        cyl("Light", (x, 7.2, -2.92), (x, 7.2, -3.05), 0.13, verts=8)
     cyl("Dark", (0, 2.2, -2.05), (0, 4.1, -1.8), 0.1, verts=8)
     ring("SteeringWheel", (0, 4.15, -1.77), (0, 0.9, 0.42), 0.5, 0.07, seg=14, minor_seg=6)
     # header
