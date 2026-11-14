@@ -23,7 +23,7 @@ local RunService = game:GetService("RunService")
 
 type Piece = { Weld: Weld, Base: CFrame }
 type Rig = { Name: string, Pieces: { Piece }, Radius: number, Angle: number }
-type Entry = { Model: Model, Rigs: { Rig }, ScannedAt: number }
+type Entry = { Model: Model, Rigs: { Rig }, Dirty: boolean, Connection: RBXScriptConnection? }
 
 local SNIP_TIME = 0.28 -- seconds for one open-close
 local BUZZ_TIME = 0.45
@@ -47,7 +47,12 @@ local function scan(model: Model): Entry
 			rig.Radius = math.max(rig.Radius, (part :: BasePart).Size.Y / 2)
 		end
 	end
-	return { Model = model, Rigs = rigs, ScannedAt = os.clock() }
+	local entry: Entry = { Model = model, Rigs = rigs, Dirty = false, Connection = nil }
+	-- Big models replicate in pieces: rescan when more pieces arrive.
+	entry.Connection = model.DescendantAdded:Connect(function()
+		entry.Dirty = true
+	end)
+	return entry
 end
 
 local function startsWith(s: string, prefix: string): boolean
@@ -137,8 +142,10 @@ RunService.RenderStepped:Connect(function(dt)
 		local model = character and character:FindFirstChild("ToolModel")
 		if model and model:IsA("Model") then
 			local entry = entries[model]
-			if not entry or (#entry.Rigs == 0 and os.clock() - entry.ScannedAt > 1) then
-				-- (Re)scan: pieces may still be arriving from the server.
+			if not entry or entry.Dirty then
+				if entry and entry.Connection then
+					entry.Connection:Disconnect()
+				end
 				entry = scan(model)
 				entries[model] = entry
 			end
