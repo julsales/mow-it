@@ -174,13 +174,23 @@ function EconomyService.Init(remoteFolder: Folder)
 				local character = player.Character
 				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 				if root then
+					-- Riding something big: the player sits high up and the
+					-- machine is wide, so count the pad as reached when the
+					-- machine is over it (not only the player's feet).
+					local reach, height = 2, 8
+					local ride = (character :: Model):FindFirstChild("ToolModel")
+					if ride and ride:IsA("Model") and ride:GetAttribute("Ground") then
+						local _, size = ride:GetBoundingBox()
+						reach += math.min(size.X, size.Z) / 2
+						height += size.Y
+					end
 					for _, pad in pads do
 						local localPosition = pad.CFrame:PointToObjectSpace(root.Position)
 						local zone = pad:FindFirstAncestorWhichIsA("Folder")
 						if (not zone or not Zones.ById[zone.Name] or LandService.IsUnlocked(zone.Name))
-							and math.abs(localPosition.X) <= pad.Size.X / 2 + 2
-							and math.abs(localPosition.Z) <= pad.Size.Z / 2 + 2
-							and math.abs(localPosition.Y) < 8 then
+							and math.abs(localPosition.X) <= pad.Size.X / 2 + reach
+							and math.abs(localPosition.Z) <= pad.Size.Z / 2 + reach
+							and math.abs(localPosition.Y) < height then
 							local profile = ProfileService.Get(player)
 							if profile and profile.Fuel < Tuning.FuelCapacity then
 								profile.Fuel = Tuning.FuelCapacity; emptyFuel[player] = nil
