@@ -4,7 +4,10 @@
 -- user ids and members of the game's group at MinGroupRank or above.
 
 return {
-	UserIds = { 4304640820 }, -- julsales
+	UserIds = {
+		4304640820, -- julsales
+		49156076, -- Drakonbr90
+	},
 	GroupId = 152627407, -- owner of the experience
 	MinGroupRank = 254,
 	Coins = { 1_000, 1_000_000, 1_000_000_000, 1_000_000_000_000 }, -- the coin buttons
