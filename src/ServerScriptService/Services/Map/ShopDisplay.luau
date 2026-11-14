@@ -72,6 +72,109 @@ local function anchorAll(model: Model)
 	end
 end
 
+-- Corners of every part of `model`, in `frame` space: (min, max).
+local function bounds(model: Model, frame: CFrame): (Vector3, Vector3)
+	local lo, hi = Vector3.one * math.huge, -Vector3.one * math.huge
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			local half = d.Size / 2
+			for _, sx in { -1, 1 } do
+				for _, sy in { -1, 1 } do
+					for _, sz in { -1, 1 } do
+						local p = frame:PointToObjectSpace(d.CFrame * Vector3.new(sx * half.X, sy * half.Y, sz * half.Z))
+						lo, hi = lo:Min(p), hi:Max(p)
+					end
+				end
+			end
+		end
+	end
+	return lo, hi
+end
+
+-- Mounts a hand tool (built at the origin) flat on a board. `face`: the
+-- board's front face, +Z out toward the player. The tool points down the
+-- board, turned by `tilt` degrees, with its flat side against the board
+-- and its top toward the player (never into the wall), scaled to fit a
+-- `fitW` x `fitH` area centred at `center` (face space), standing just
+-- off the face.
+local function mount(model: Model, face: CFrame, center: Vector2, fitW: number, fitH: number, tilt: number)
+	local _, size = model:GetBoundingBox()
+	-- Model axes in face space: -Z (the tool's point) goes down; the
+	-- thinner of X/Y faces the player, so we see the tool's wide side.
+	local back = Vector3.new(0, 1, 0)
+	local up = if size.X < size.Y then Vector3.new(1, 0, 0) else Vector3.new(0, 0, 1)
+	local right = up:Cross(back)
+	local turn = CFrame.Angles(0, 0, math.rad(tilt)) * CFrame.fromMatrix(Vector3.zero, right, up, back)
+	model:PivotTo(face * turn)
+	local lo, hi = bounds(model, face)
+	local extent = hi - lo
+	model:ScaleTo(model:GetScale() * math.min(fitW / extent.X, fitH / extent.Y))
+	lo, hi = bounds(model, face)
+	local mid = (lo + hi) / 2
+	local offset = Vector3.new(center.X - mid.X, center.Y - mid.Y, 0.06 - lo.Z)
+	model:PivotTo(model:GetPivot() + face:VectorToWorldSpace(offset))
+end
+
+-- Hand tools on a pegboard, in a grid of up to 4 columns, each under its
+-- price tag. `boardCenter`: the pegboard's centre (its slab is 0.25 thick).
+-- Returns each tool's hook (where its tag/prompt goes).
+local function hang(folder: Instance, boardCenter: CFrame, boardW: number, boardH: number, hand: { string }): { CFrame }
+	local face = boardCenter * CFrame.new(0, 0, 0.125)
+	local columns = math.min(#hand, 4)
+	local rows = math.ceil(#hand / columns)
+	local cellW, cellH = boardW / columns, boardH / rows
+	local hooks = {}
+	for i, id in hand do
+		local col = (i - 1) % columns
+		local row = math.floor((i - 1) / columns)
+		local x = (col - (columns - 1) / 2) * cellW
+		local top = boardH / 2 - row * cellH
+		hooks[i] = boardCenter * CFrame.new(x, top - 0.35 * cellH, 0.35)
+		-- Area under the tag; long tools lie along its diagonal.
+		local fitW, fitH = cellW * 0.82, cellH * 0.62
+		local model = ToolModels.Build(id)
+		anchorAll(model)
+		local _, size = model:GetBoundingBox()
+		local long = math.max(size.X, size.Y, size.Z) / math.max(math.min(size.X, size.Y, size.Z), 0.1)
+		local tilt = if long > 3 then math.deg(math.atan2(fitW, fitH)) * 0.75 else 0
+		mount(model, face, Vector2.new(x, top - cellH + 0.12 + fitH / 2), fitW, fitH, tilt)
+		model.Name = "Display_" .. id
+		model.Parent = folder
+	end
+	return hooks
+end
+
+-- The tool on a wall plaque: diagonal, filling the board.
+local function mountPlaque(plaque: Instance, board: BasePart, toolId: string)
+	local model = ToolModels.Build(toolId)
+	anchorAll(model)
+	local face = board.CFrame * CFrame.new(0, 0, board.Size.Z / 2)
+	mount(model, face, Vector2.zero, board.Size.X * 0.82, board.Size.Y * 0.78, 145)
+	model.Name = "Display_" .. toolId
+	model.Parent = plaque
+end
+
+-- Parks a ground tool (built at the origin) with the mower itself on `spot`
+-- (+Z of spot toward the player). Returns its footprint.
+local function park(folder: Instance, id: string, spot: CFrame): Model
+	local model = ToolModels.Build(id)
+	anchorAll(model)
+	model:PivotTo(spot)
+	local lo, hi = bounds(model, spot)
+	local mid = (lo + hi) / 2
+	model:PivotTo(model:GetPivot() + spot:VectorToWorldSpace(Vector3.new(-mid.X, -lo.Y, -mid.Z)))
+	model.Name = "Display_" .. id
+	model.Parent = folder
+	return model
+end
+
+local function parkedWidth(id: string): number
+	local probe = ToolModels.Build(id)
+	local _, size = probe:GetBoundingBox()
+	probe:Destroy()
+	return size.X
+end
+
 -- The prompt + tag holder for one item.
 local function slot(parent: Instance, toolId: string, at: CFrame, tagHeight: number): Part
 	local def = Tools.ById[toolId]
@@ -169,21 +272,8 @@ function ShopDisplay.Build(parent: Instance, frame: CFrame, toolIds: { string },
 				Material = Enum.Material.Wood,
 			})
 		end
-		local columns = math.min(#hand, 4)
-		local rows = math.ceil(#hand / columns)
-		for i, id in hand do
-			local col = (i - 1) % columns
-			local row = math.floor((i - 1) / columns)
-			local x = (col - (columns - 1) / 2) * (boardW / columns)
-			local y = boardH / 2 - (row + 0.35) * (boardH / rows)
-			local hook = boardCenter * CFrame.new(x, y, 0.35)
-			local model = ToolModels.Build(id)
-			anchorAll(model)
-			-- Hang it: grip at the hook, tool pointing down the board.
-			model:PivotTo(hook * CFrame.Angles(-math.rad(90), 0, 0))
-			model.Name = "Display_" .. id
-			model.Parent = folder
-			slot(folder, id, hook * CFrame.new(0, -0.8, 0.6), 1.4)
+		for i, hook in hang(folder, boardCenter, boardW, boardH, hand) do
+			slot(folder, hand[i], hook * CFrame.new(0, -0.8, 0.6), 1.4)
 		end
 	end
 
@@ -194,16 +284,10 @@ function ShopDisplay.Build(parent: Instance, frame: CFrame, toolIds: { string },
 		if i > (o.MaxParked or 3) then
 			break
 		end
-		local model = ToolModels.Build(id)
-		anchorAll(model)
-		local _, footprint = model:GetBoundingBox()
-		local spot = frame * CFrame.new(cursor + footprint.X / 2, 0, parkZ) * CFrame.Angles(0, math.rad(180), 0)
-		cursor += footprint.X + 2
-		-- Ground models are built with the player standing at the origin and
-		-- the mower in front (-Z); park it so the mower itself sits on `spot`.
-		model:PivotTo(spot * CFrame.new(0, 0, footprint.Z / 2))
-		model.Name = "Display_" .. id
-		model.Parent = folder
+		local width = parkedWidth(id)
+		local spot = frame * CFrame.new(cursor + width / 2, 0, parkZ) * CFrame.Angles(0, math.rad(180), 0)
+		cursor += width + 2
+		park(folder, id, spot)
 		slot(folder, id, spot * CFrame.new(0, 1.5, 0), 3)
 	end
 	return folder
@@ -252,34 +336,7 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	})
 	Props.label(sign, Enum.NormalId.Back, def.DisplayName:upper(), Color3.fromRGB(90, 56, 30))
 
-	-- Mount the tool flat on the board, tilted, centered by its bounding box.
-	local model = ToolModels.Build(toolId)
-	anchorAll(model)
-	-- Display size: fill the plaque whatever size the tool is in the hand.
-	local _, rawSize = model:GetBoundingBox()
-	model:ScaleTo(model:GetScale() * 4.3 / math.max(rawSize.X, rawSize.Y, rawSize.Z))
-	model:PivotTo(frame * CFrame.Angles(0, 0, math.rad(-35)) * CFrame.Angles(math.rad(90), 0, 0))
-	-- Center it on the board, then push it out just enough that its back
-	-- sits in front of the board face: nothing goes into the wall.
-	local box = model:GetBoundingBox()
-	model:PivotTo(model:GetPivot() + (frame.Position - box.Position))
-	local deepest = math.huge
-	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") then
-			local half = d.Size / 2
-			for _, sx in { -1, 1 } do
-				for _, sy in { -1, 1 } do
-					for _, sz in { -1, 1 } do
-						local corner = d.CFrame * Vector3.new(sx * half.X, sy * half.Y, sz * half.Z)
-						deepest = math.min(deepest, frame:PointToObjectSpace(corner).Z)
-					end
-				end
-			end
-		end
-	end
-	model:PivotTo(model:GetPivot() + frame.LookVector * -(0.3 - deepest))
-	model.Name = "Display_" .. toolId
-	model.Parent = plaque
+	mountPlaque(plaque, plaque:FindFirstChild("Board") :: BasePart, toolId)
 
 	-- Price tag: holds the prompt and the per-player status text.
 	local tag = Props.make("ShopItem", plaque, {
@@ -327,14 +384,10 @@ function ShopDisplay.Park(parent: Instance, frame: CFrame, toolIds: { string }, 
 		if i > (maxCount or 3) then
 			break
 		end
-		local model = ToolModels.Build(id)
-		anchorAll(model)
-		local _, footprint = model:GetBoundingBox()
-		local spot = frame * CFrame.new(cursor + footprint.X / 2, 0, 0) * CFrame.Angles(0, math.rad(180), 0)
-		cursor += footprint.X + 2
-		model:PivotTo(spot * CFrame.new(0, 0, footprint.Z / 2))
-		model.Name = "Display_" .. id
-		model.Parent = folder
+		local width = parkedWidth(id)
+		local spot = frame * CFrame.new(cursor + width / 2, 0, 0) * CFrame.Angles(0, math.rad(180), 0)
+		cursor += width + 2
+		park(folder, id, spot)
 		slot(folder, id, spot * CFrame.new(0, 1.5, 0), 3)
 	end
 	return folder
@@ -361,6 +414,55 @@ function ShopDisplay.ToolsForZone(zoneIndex: number): { string }
 		end
 	end
 	return ids
+end
+
+-- Rebuilds every tool display already in the world (baked into the place
+-- or built earlier) with the current models: hand tools re-hung on their
+-- pegboard or plaque, mowers re-parked where they stood. Tags, prompts and
+-- boards stay. Lets new tool art show up without re-baking the map.
+function ShopDisplay.Refresh()
+	local byParent: { [Instance]: { Model } } = {}
+	for _, d in workspace:GetDescendants() do
+		if d:IsA("Model") and string.match(d.Name, "^Display_") and d.Parent then
+			local list = byParent[d.Parent :: Instance] or {}
+			table.insert(list, d)
+			byParent[d.Parent :: Instance] = list
+		end
+	end
+	local order: { [string]: number } = {}
+	for i, def in Tools.List do
+		order[def.Id] = i
+	end
+	for parent, displays in byParent do
+		local hand: { string } = {}
+		for _, old in displays do
+			local id = string.sub(old.Name, #"Display_" + 1)
+			if not Tools.ById[id] then
+				continue
+			end
+			if ToolModels.Kinds[ToolModels.KindOf(id)].Ground then
+				local pivot = old:GetPivot()
+				local spot = CFrame.new(pivot.Position) * CFrame.fromOrientation(0, select(2, pivot:ToOrientation()), 0)
+				local lo, hi = bounds(old, spot)
+				local mid = (lo + hi) / 2
+				old:Destroy()
+				park(parent, id, spot * CFrame.new(mid.X, lo.Y, mid.Z))
+			else
+				table.insert(hand, id)
+				old:Destroy()
+			end
+		end
+		table.sort(hand, function(a, b)
+			return order[a] < order[b]
+		end)
+		local pegboard = parent:FindFirstChild("Pegboard")
+		local board = parent:FindFirstChild("Board")
+		if pegboard and pegboard:IsA("BasePart") and #hand > 0 then
+			hang(parent, pegboard.CFrame, pegboard.Size.X, pegboard.Size.Y, hand)
+		elseif board and board:IsA("BasePart") and #hand == 1 then
+			mountPlaque(parent, board, hand[1])
+		end
+	end
 end
 
 return ShopDisplay

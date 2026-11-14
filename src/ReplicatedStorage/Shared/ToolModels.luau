@@ -1,13 +1,13 @@
 --!strict
--- Placeholder 3D models for the tool ladder, built from Parts (the Asset
--- Picker's pick for tools: no free mower with a clear license exists, so
--- simulator tools are built in Studio from Parts). A few shapes ("kinds")
--- cover all 48 tools; color and scale change per tool, so every upgrade
--- looks different.
---
--- Override any tool with a real model: put a Model named after the tool id
--- in ReplicatedStorage/Assets/Tools (repo: assets/Tools/<ToolId>.rbxm,
--- see assets/README.md). It replaces the built one, no code change.
+-- 3D models for the tool ladder. Where each look comes from, first match:
+--   1. ReplicatedStorage/Assets/Tools/<ToolId> (repo assets/Tools/*.rbxm):
+--      a hand-made model for one tool (assets/README.md).
+--   2. The low-poly Blender art (art/tools/, Config/ToolArt): 15 base
+--      meshes loaded at startup by ToolArtService into
+--      ReplicatedStorage/ToolArt, painted and sized per tool.
+--   3. ServerStorage/ToolOverrides/<ToolId> (legacy place-file models).
+--   4. Placeholder shapes built from Parts below (when the art isn't
+--      uploaded or failed to load), so the game always runs.
 --
 -- Model contract (what ToolVisualService and the client rely on):
 --   * PrimaryPart "Root": for hand kinds = the grip; for ground kinds = a
@@ -22,6 +22,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Tools = require(script.Parent.Config.Tools)
+local ToolArt = require(script.Parent.Config.ToolArt)
 
 local ToolModels = {}
 
@@ -158,11 +159,12 @@ local function rod(b: Builder, name: string, a: Vector3, c: Vector3, thickness: 
 	return part(b, name, Vector3.new(thickness, thickness, length), CFrame.lookAt((a + c) / 2, c), color, Enum.Material.Metal)
 end
 
-local function handle(b: Builder, deckBackZ: number, deckTopY: number, color: Color3)
+local function handle(b: Builder, deckBackZ: number, deckTopY: number, color: Color3, halfWidth: number?)
 	-- part() multiplies positions by Scale, so undo it for the fitted grip.
 	local gripY = if b.Fit then b.Fit.GripY / b.Scale else 2.2
 	local gripZ = if b.Fit then b.Fit.GripZ / b.Scale else -1.7
-	for _, x in { -0.8, 0.8 } do
+	local w = halfWidth or 0.8
+	for _, x in { -w, w } do
 		rod(b, "HandleBar", Vector3.new(x, deckTopY, deckBackZ), Vector3.new(x * 0.8, gripY, gripZ), 0.18, color)
 	end
 	rod(b, "HandleGrip", Vector3.new(-0.75, gripY, gripZ), Vector3.new(0.75, gripY, gripZ), 0.26, DARK)
@@ -305,7 +307,12 @@ local function addGrips(model: Model)
 		return
 	end
 	-- The model is still at the origin facing -Z, so its left is world -X.
-	local spread = if handle then handle.Size.Z * 0.32 else host.Size.Y * 0.4
+	-- Spread the hands over the bar/wheel's width along X.
+	local r = host.CFrame.RightVector
+	local u = host.CFrame.UpVector
+	local l = host.CFrame.LookVector
+	local width = math.abs(r.X) * host.Size.X + math.abs(u.X) * host.Size.Y + math.abs(l.X) * host.Size.Z
+	local spread = width * (if handle then 0.32 else 0.4)
 	for name, side in { GripL = -1, GripR = 1 } do
 		local a = Instance.new("Attachment")
 		a.Name = name
@@ -401,12 +408,119 @@ local function fromOverride(template: Model, kind: string): (Model, BasePart)
 	return model, root
 end
 
+-- The Blender art: a loaded base mesh (ReplicatedStorage/ToolArt/<Model>),
+-- painted, trimmed to the tool's extras and put back where it was
+-- authored (grip / player at the origin), then sized for this tool.
+local function largest(v: Vector3): number
+	return math.max(v.X, v.Y, v.Z)
+end
+
+local function artTemplate(toolId: string): (Model?, ToolArt.ToolLook?, ToolArt.ModelDef?)
+	local look = ToolArt.Tools[toolId]
+	local def = look and ToolArt.Models[look.Model]
+	local folder = ReplicatedStorage:FindFirstChild("ToolArt")
+	local template = folder and look and folder:FindFirstChild(look.Model)
+	if template and template:IsA("Model") then
+		return template, look, def
+	end
+	return nil, nil, nil
+end
+
+-- Paint one mesh piece by its name ("Group" or "Group.Extra").
+local function paint(piece: BasePart, look: ToolArt.ToolLook)
+	if piece.Name == "Accent" then
+		piece.Color = look.Color
+		piece.Material = Enum.Material.SmoothPlastic
+	elseif piece.Name == "Accent2" then
+		piece.Color = look.Color2
+		piece.Material = Enum.Material.SmoothPlastic
+	else
+		local spec = ToolArt.Pieces[piece.Name]
+		if spec then
+			piece.Color = spec.Color
+			piece.Material = spec.Material
+			piece.Transparency = spec.Transparency or 0
+		end
+	end
+	if piece:IsA("MeshPart") then
+		piece.TextureID = ""
+	end
+	local appearance = piece:FindFirstChildOfClass("SurfaceAppearance")
+	if appearance then
+		appearance:Destroy() -- the importer's material would hide the paint
+	end
+end
+
+local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.ModelDef, toolId: string, kind: string, fit: Fit?): (Model, BasePart, number)
+	local model = Instance.new("Model")
+	local root = newRoot(model)
+	local copy = template:Clone()
+	-- 1. Back to the authored size and place (the bounding box covers every
+	--    piece, extras included, exactly like art/tools/out/meta.json).
+	local box, size = copy:GetBoundingBox()
+	copy:ScaleTo(copy:GetScale() * largest(def.Size) / largest(size))
+	box = copy:GetBoundingBox()
+	copy:PivotTo(CFrame.new(def.Center) * box:ToObjectSpace(copy:GetPivot()))
+	-- 2. Keep the extras this tool lists, paint everything.
+	local keep: { [string]: boolean } = {}
+	for _, extra in look.Extras or {} do
+		keep[extra] = true
+	end
+	for _, d in copy:GetDescendants() do
+		if d:IsA("Script") or d:IsA("LocalScript") or d:IsA("ModuleScript") then
+			d:Destroy()
+		elseif d:IsA("BasePart") then
+			local group, extra = string.match(d.Name, "^([^%.]+)%.(.+)$")
+			if group and extra then
+				if keep[extra] then
+					d.Name = group
+				else
+					d:Destroy()
+					continue
+				end
+			end
+			paint(d, look)
+		end
+	end
+	for _, child in copy:GetChildren() do
+		child.Parent = model
+	end
+	copy:Destroy()
+	-- 3. Size for this tool, around the grip / the player (the origin).
+	local info = KINDS[kind]
+	local scale = if info.Ground then (look.Scale or 1) else (def.HoldLength or largest(def.Size)) / largest(def.Size)
+	model.WorldPivot = CFrame.identity
+	if math.abs(scale - 1) > 1e-3 then
+		model:ScaleTo(scale)
+	end
+	-- 4. Push mowers: the handle is built to fit the player's arms.
+	if def.Handle then
+		local builder: Builder = { Model = model, Root = root, Scale = scale, Fit = fit }
+		handle(builder, def.Handle.Z, def.Handle.Y, look.Color, def.Handle.X)
+	end
+	return model, root, scale
+end
+
 -- Builds the model for a tool at the origin (Root at CFrame.identity).
 function ToolModels.Build(toolId: string, fit: Fit?): Model
 	local kind = ToolModels.KindOf(toolId)
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local overrides = assets and assets:FindFirstChild("Tools")
 	local template = overrides and overrides:FindFirstChild(toolId)
+	local art, look, def = artTemplate(toolId)
+	if not template and art and look and def then
+		local model, root, scale = fromArt(art, look, def, toolId, kind, fit)
+		model.Name = "ToolModel"
+		model:SetAttribute("ToolId", toolId)
+		if KINDS[kind].Ground then
+			addGrips(model) -- hand tools hold by the origin; GripL/R would turn on the two-hand pose
+		end
+		finish(model, root, kind)
+		if KINDS[kind].RideLift > 0 and def.RideLift then
+			model:SetAttribute("RideLift", def.RideLift * scale)
+		end
+		return model
+	end
 	if not template and RunService:IsServer() then
 		-- Models Rojo can't carry (Unions, MeshParts) live in the place file:
 		-- ServerStorage/ToolOverrides/<ToolId> (see assets/README.md).

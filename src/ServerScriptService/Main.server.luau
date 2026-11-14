@@ -27,6 +27,7 @@ local LobbyService = require(Services.LobbyService)
 local GrayboxService = require(Services.GrayboxService)
 local MapService = require(Services.MapService)
 local ToolVisualService = require(Services.ToolVisualService)
+local ToolArtService = require(Services.ToolArtService)
 
 -- Remotes -------------------------------------------------------------------
 -- Created by the server in ReplicatedStorage/Remotes so client and server
@@ -103,7 +104,9 @@ ProfileService.OnChanged(syncProfile)
 
 -- Boot ------------------------------------------------------------------------
 if isLandPlace then
+	ToolArtService.Init() -- tool meshes first: the shop displays use them
 	MapService.BuildIfMissing()
+	require(Services.Map.ShopDisplay).Refresh() -- baked displays get the current tool art
 	LandService.Init()
 	GrassService.Init()
 	LevelService.Init(remotes)
