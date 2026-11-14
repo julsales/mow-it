@@ -35,22 +35,28 @@ local Bases = {
 	Beach = 8,
 
 	-- The bridge from the home island (narrower than the island bridges).
-	Bridge = { Width = 8, Inland = 9 }, -- `Inland`: how far in from the base's coast the deck lands (on the grass)
+	-- `Inland`: how far in from the base's coast the deck lands (on the
+	-- grass); `HomeInland`: the same on the home island (on its promenade).
+	Bridge = { Width = 8, Inland = 9, HomeInland = 19 },
 
 	-- What stands on it (base frame).
-	Cabin = { Offset = CFrame.new(-10, 0, -24), Scale = 0.85, Title = "My Base" },
+	Cabin = { Offset = CFrame.new(10, 0, -24), Scale = 0.85, Title = "My Loft" },
 	-- The yard's own frame has the machines along X and the player in front
-	-- (+Z); here it is turned to face the walkway that runs down the middle.
-	Yard = { Offset = CFrame.new(-13, 0, 22) * CFrame.Angles(0, math.rad(90), 0) },
+	-- (+Z). It stands on the left as a yard of its own, facing the middle
+	-- of the island with grass between it and the walkway, its silo at the
+	-- back, a short walk from the jetty the customers arrive at.
+	Yard = { Offset = CFrame.new(-17, 0, 10) * CFrame.Angles(0, math.rad(90), 0) },
 	Spawn = v3(0, 0, 40), -- where the owner appears, facing their cabin
 	-- The jetty at the back, with the owner's boat: quick travel leaves from
 	-- here and the silo's customers arrive here.
-	Jetty = { Length = 24, Side = 22, Inland = 16 }, -- `Side`: studs off the island's middle line; `Inland`: where its deck starts
+	Jetty = { Length = 24, Side = -22, Inland = 16 }, -- `Side`: studs off the island's middle line; `Inland`: where its deck starts
 	-- The name board by the bridge: "<Name>'s Island", or VacantText.
 	Sign = { At = v3(10, 0, 45), Size = v3(9, 2.4, 0.4), Height = 4.2 },
 	VacantText = "FOR RENT",
 	OwnerText = "%s's Island",
-	Walkway = { Width = 5 }, -- dirt path from the bridge to the cabin's steps
+	CabinText = "%s's Loft", -- the sign over the cabin's porch
+	-- The dirt path from the bridge to the cabin's steps: an S through `Via`.
+	Walkway = { Width = 5, Via = { v3(8, 0, 32), v3(0, 0, 14) } },
 	-- The owner's picture and name floating over the base (BaseService).
 	Tag = {
 		At = v3(0, 34, 0),
@@ -62,16 +68,16 @@ local Bases = {
 	},
 	-- A little lawn of the home island's grass (contract parts "GrassArea").
 	Lawns = {
-		{ Center = v3(15, 0, 22), Size = v3(16, 0, 38) },
-		{ Center = v3(27, 0, 10), Size = v3(8, 0, 22) },
+		{ Center = v3(18, 0, 26), Size = v3(11, 0, 24) },
+		{ Center = v3(22, 0, 6), Size = v3(12, 0, 14) },
 	},
 
 	Trees = {
-		{ Kind = "Tree", At = v3(-33, 0, -6), Scale = 0.9 },
-		{ Kind = "Tree", At = v3(33, 0, -12), Scale = 0.8 },
-		{ Kind = "Bush", At = v3(31, 0, 26), Scale = 0.7 },
+		{ Kind = "Tree", At = v3(33, 0, -6), Scale = 0.9 },
+		{ Kind = "Tree", At = v3(-33, 0, -12), Scale = 0.8 },
+		{ Kind = "Bush", At = v3(-29, 0, 30), Scale = 0.7 },
 		{ Kind = "Flora", At = v3(-9, 0, 47), Scale = 0.8 },
-		{ Kind = "Bush", At = v3(-28, 0, 38), Scale = 0.6 },
+		{ Kind = "Bush", At = v3(28, 0, 38), Scale = 0.6 },
 	} :: { TreeSpot },
 
 	-- Promenade on the home island: a dirt path along the coast, `Inland`

@@ -35,6 +35,8 @@ export type Kit = {
 	BridgeDeck: (parent: Instance, a: Vector3, b: Vector3, width: number?) -> (),
 	-- Invisible walls along both sides of a lane from a to b.
 	Corridor: (parent: Instance, a: Vector3, b: Vector3, width: number) -> (),
+	-- A smooth curve through the points, for Path.
+	Spline: (points: { Vector3 }) -> { Vector3 },
 	-- A dirt path through the points.
 	Path: (parent: Instance, points: { Vector3 }, width: number) -> (),
 	-- A jetty with a moored boat leaving the coast at `coast` toward `dir`;
@@ -298,7 +300,7 @@ local function buildBase(kit: Kit, parent: Instance, slot: Slot): Model
 
 	-- Bridge from the top of the home island's beach to the top of this one's.
 	local bridge = Props.model("Bridge", base)
-	local a = slot.BridgeStart - slot.Out * (MapLayout.Beach - 2)
+	local a = slot.BridgeStart - slot.Out * Config.Bridge.HomeInland
 	local b = slot.BridgeEnd + slot.Out * Config.Bridge.Inland
 	kit.BridgeDeck(bridge, a, b, Config.Bridge.Width)
 	kit.Corridor(bridge, slot.BridgeStart - slot.Out * 6, slot.BridgeEnd + slot.Out * 4, Config.Bridge.Width)
@@ -314,7 +316,12 @@ local function buildBase(kit: Kit, parent: Instance, slot: Slot): Model
 	local entrance = cabin:GetAttribute("Entrance") :: Vector3?
 	local steps = if entrance then flat(cabinAt.Position + (entrance - cabinAt.Position) * Config.Cabin.Scale) else flat(cabinAt.Position) - slot.Out * 12
 	local path = Props.model("Path", base)
-	kit.Path(path, { b, (b + steps) / 2, steps }, Config.Walkway.Width)
+	local route = { b }
+	for _, via in Config.Walkway.Via do
+		table.insert(route, flat(inBase(slot, CFrame.new(via)).Position))
+	end
+	table.insert(route, steps)
+	kit.Path(path, kit.Spline(route), Config.Walkway.Width)
 
 	-- Hay yard. Its customers arrive at the jetty.
 	local yard = HayYard.Build(base, inBase(slot, Config.Yard.Offset))
@@ -323,7 +330,8 @@ local function buildBase(kit: Kit, parent: Instance, slot: Slot): Model
 	jetty.Name = "Jetty"
 	local customerSpawn = yard and yard:FindFirstChild("CustomerSpawn")
 	if customerSpawn and customerSpawn:IsA("BasePart") then
-		local at = jettyCoast + jettyDir * (Config.Jetty.Length - 4)
+		-- They step off the boat at the land end of the jetty: a short walk.
+		local at = jettyCoast - jettyDir * (Config.Jetty.Inland - 3)
 		customerSpawn.CFrame = CFrame.new(at.X, GROUND_TOP + 1, at.Z)
 	end
 

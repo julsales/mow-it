@@ -753,6 +753,7 @@ function kit(): Bases.Kit
 		BridgeDeck = buildBridgeDeck,
 		Corridor = buildCorridor,
 		Path = buildPath,
+		Spline = spline,
 		Dock = buildDock,
 		Spawn = buildSpawn,
 		SurfaceAt = surfaceAt,

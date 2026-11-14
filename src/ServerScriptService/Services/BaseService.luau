@@ -27,7 +27,7 @@ local STRAY = 40 -- a fresh character further than this from its pad is carried 
 local function paint(base: Model, ownerName: string?)
 	local texts = {
 		OwnerSign = if ownerName then Config.OwnerText:format(ownerName) else Config.VacantText,
-		ShopSign = if ownerName then ownerName:upper() else Config.VacantText,
+		ShopSign = if ownerName then Config.CabinText:format(ownerName) else Config.VacantText,
 	}
 	for _, d in base:GetDescendants() do
 		local text = texts[d.Name]
