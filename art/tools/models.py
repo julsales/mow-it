@@ -220,7 +220,7 @@ def rider():
     box("Accent2", (0, 2.47, -2.55), (0.4, 0.05, 2.0), bevel=0.02)
     # seat
     box("Seat", (0, 2.225, 0.6), (1.6, 0.35, 1.2), bevel=0.15)  # the player sits here (Config/ToolArt Seat)
-    box("Seat", (0, 3.0, 1.15), (1.6, 1.3, 0.3), bevel=0.14, rot=[("x", -12)])
+    box("Seat", (0, 3.05, 1.08), (1.6, 1.3, 0.25), bevel=0.12)  # backrest on the cushion's back edge
     box("Dark", (0, 1.7, 0.6), (1.0, 0.7, 0.8), bevel=0.06)
     # column + wheel
     cyl("Dark", (0, 1.9, -1.55), (0, 3.15, -1.05), 0.1, verts=8)
@@ -241,14 +241,14 @@ def rider():
 def zeroturn():
     # Zero-turn: low and wide, big rear tyres, two lap bars, wide front deck.
     box("Dark", (0, 0.9, -0.2), (2.4, 0.5, 4.0), bevel=0.12)
-    box("Accent", (0, 1.4, 1.3), (2.8, 0.9, 1.6), bevel=0.25)  # engine cover
-    box("Accent2", (0, 1.88, 1.3), (1.8, 0.08, 1.2), bevel=0.03)
+    box("Accent", (0, 1.4, 1.08), (2.8, 0.9, 2.0), bevel=0.25)  # engine cover, the seat sits on it
+    box("Accent2", (0, 1.88, 1.6), (1.8, 0.08, 0.9), bevel=0.03)
     box("Seat", (0, 2.0, 0.4), (1.5, 0.3, 1.0), bevel=0.12)
-    box("Seat", (0, 2.7, 0.95), (1.5, 1.1, 0.28), bevel=0.12, rot=[("x", -10)])
+    box("Seat", (0, 2.7, 0.78), (1.5, 1.1, 0.25), bevel=0.12)
     box("Dark", (0, 0.95, -1.2), (2.0, 0.15, 1.6), bevel=0.04)
     for x in (-0.7, 0.7):
-        cyl("Dark", (x * 1.4, 1.4, -0.2), (x * 1.4, 3.0, -0.7), 0.07, verts=6)
-        cyl("Dark", (x * 1.4, 3.0, -0.7), (x * 0.3, 3.0, -0.95), 0.07, verts=6)
+        cyl("Dark", (x * 1.55, 1.2, -0.3), (x * 1.55, 3.0, -0.7), 0.07, verts=6)
+        cyl("Dark", (x * 1.55, 3.0, -0.7), (x * 0.3, 3.0, -0.95), 0.07, verts=6)
     cyl("SteeringWheel", (-0.85, 3.0, -0.95), (0.85, 3.0, -0.95), 0.1, verts=8)
     # wide deck, front casters
     box("Accent", (0, 0.55, -2.6), (5.0, 0.45, 2.0), bevel=0.18)
@@ -285,7 +285,8 @@ def tractor():
         box("Accent", (x, 3.0, 0.9), (0.9, 0.25, 2.6), bevel=0.1)
         box("Accent", (x, 2.5, 2.05), (0.9, 1.0, 0.25), bevel=0.08)
     box("Seat", (0, 2.9, 0.6), (1.5, 0.35, 1.1), bevel=0.14)
-    box("Seat", (0, 3.75, 1.15), (1.5, 1.4, 0.3), bevel=0.14, rot=[("x", -10)])
+    box("Seat", (0, 3.775, 1.03), (1.5, 1.4, 0.25), bevel=0.12)
+    box("Dark", (0, 2.4, 0.6), (1.0, 0.7, 0.8), bevel=0.06)  # seat post
     cyl("Dark", (0, 2.3, -1.4), (0, 4.0, -0.95), 0.11, verts=8)
     ring("SteeringWheel", (0, 4.05, -0.92), (0, 0.9, 0.42), 0.6, 0.08, seg=14, minor_seg=6)
     cyl("SteeringWheel", (0, 4.05, -0.92), (0, 4.13, -0.88), 0.15, verts=8)
@@ -329,7 +330,7 @@ def combine():
     box("Dark", (0, 1.9, -0.5), (3.0, 0.5, 3.0), bevel=0.1)
     # cab: the player sits inside (Seat), tall enough for the head
     box("Seat", (0, 3.025, -0.2), (1.5, 0.35, 1.1), bevel=0.14)
-    box("Seat", (0, 3.9, 0.35), (1.5, 1.4, 0.3), bevel=0.14, rot=[("x", -10)])
+    box("Seat", (0, 3.9, 0.23), (1.5, 1.4, 0.25), bevel=0.12)
     box("Dark", (0, 2.5, -0.2), (1.0, 0.7, 0.8), bevel=0.06)
     for x in (-1.3, 1.3):
         cyl("Dark", (x, 2.2, -1.9), (x, 7.1, -1.9), 0.09, verts=6)
