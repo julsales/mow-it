@@ -23,6 +23,7 @@ export type ModelDef = {
 	RideLift: number?, -- riders: height of the deck the player stands on
 	Handle: Vector3?, -- push/reel mowers: the game adds the fitted handle from (±X, Y, Z)
 	Snip: { Pivot: Vector3, Axis: Vector3, Angle: number }?, -- blades/lever: hinge and how far they open (degrees)
+	Seat: Vector3?, -- ride-ons the player SITS on: top-centre of the seat (authored); the game moves the seat under the player
 }
 
 export type ToolLook = {
@@ -56,9 +57,9 @@ local Models: { [string]: ModelDef } = {
 	string_trimmer = { AssetId = 90620380495865, Center = Vector3.new(0, -0.083, -1.55), Size = Vector3.new(1.2, 1.834, 5.8), HoldLength = 4.8 },
 	reel = { AssetId = 78655685328069, Center = Vector3.new(0, 0.8, -2.789), Size = Vector3.new(3.02, 1.6, 2.021), Handle = Vector3.new(1.0, 1.0, -2.2) },
 	push = { AssetId = 127384897680211, Center = Vector3.new(0, 1.25, -3.687), Size = Vector3.new(3.55, 2.5, 4.275), Handle = Vector3.new(0.9, 1.2, -2.4) },
-	rider = { AssetId = 133849751211282, Center = Vector3.new(0, 1.696, -0.776), Size = Vector3.new(4.455, 3.62, 6.007), RideLift = 1.35 },
-	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3 },
-	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.141, -2.23), Size = Vector3.new(6.05, 6.718, 10.14), RideLift = 2.25 },
+	rider = { AssetId = 133849751211282, Center = Vector3.new(0, 1.696, -0.776), Size = Vector3.new(4.455, 3.62, 6.007), RideLift = 1.35, Seat = Vector3.new(0, 1.975, 0.6) },
+	zeroturn = { AssetId = 108957789542568, Center = Vector3.new(-0.032, 2.3, -1.007), Size = Vector3.new(5.115, 4.869, 6.385), RideLift = 1.3, Seat = Vector3.new(0, 2.15, 0.4) },
+	tractor = { AssetId = 82571445593930, Center = Vector3.new(0, 3.141, -2.23), Size = Vector3.new(6.05, 6.718, 10.14), RideLift = 2.25, Seat = Vector3.new(0, 3.075, 0.6) },
 	combine = { AssetId = 139488875639096, Center = Vector3.new(-0.602, 2.895, 0.179), Size = Vector3.new(9.054, 6.211, 9.998), RideLift = 2.2 },
 	drone = { AssetId = 130688639158553, Center = Vector3.new(0, 1.778, -0.4), Size = Vector3.new(6.058, 3.415, 6.058), RideLift = 2.3 },
 	mega_push = { AssetId = 121793856419832, Center = Vector3.new(0, 3.25, -7.072), Size = Vector3.new(9.23, 6.5, 16.545), RideLift = 2.2 },

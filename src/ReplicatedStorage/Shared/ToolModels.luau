@@ -548,6 +548,10 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 			paint(d, look)
 		end
 	end
+	-- Seated ride-ons: slide the machine so its seat is under the player.
+	if def.Seat then
+		copy:PivotTo(copy:GetPivot() - Vector3.new(0, 0, def.Seat.Z))
+	end
 	for _, child in copy:GetChildren() do
 		child.Parent = model
 	end
@@ -560,6 +564,9 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 		model:ScaleTo(scale)
 	end
 	applyFinish(model, look)
+	if def.Seat then
+		model:SetAttribute("SeatHeight", def.Seat.Y * scale) -- ToolVisualService sits the player here
+	end
 	-- Hinge of the blades / lever, for the open-close animation.
 	if def.Snip then
 		model:SetAttribute("SnipPivot", def.Snip.Pivot * scale)

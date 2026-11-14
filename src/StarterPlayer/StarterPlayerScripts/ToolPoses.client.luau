@@ -7,6 +7,8 @@
 --     chops down on each swing (CutFeedback).
 -- R15 uses IKControl (arms reach the targets, walking animation keeps the
 -- legs). R6 has no IK chain, so its shoulders are angled via Motor6D C0.
+--   * Ride-ons: the avatar's own sit animation (seated ones, SeatHeight)
+--     or idle (standing platforms) loops over the walk: no walking legs.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,7 +21,13 @@ local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local HOLD_OFFSET = Vector3.new(0.9, -0.4, -1.7)
 local SWING_OFFSET = Vector3.new(0.3, -1.3, -1.5)
 
-type Pose = { Cleanup: { Instance }, Restore: { [Motor6D]: CFrame }, Target: Attachment? }
+type Pose = { Cleanup: { Instance }, Restore: { [Motor6D]: CFrame }, Target: Attachment?, Tracks: { AnimationTrack } }
+
+-- Roblox's default sit animations, when the avatar's Animate script has none.
+local SIT_R15 = "rbxassetid://2506281703"
+local SIT_R6 = "rbxassetid://178130996"
+local IDLE_R15 = "rbxassetid://507766388"
+local IDLE_R6 = "rbxassetid://180435571"
 local poses: { [Model]: Pose } = {}
 
 local function clearPose(character: Model)
@@ -28,6 +36,9 @@ local function clearPose(character: Model)
 		return
 	end
 	poses[character] = nil
+	for _, track in pose.Tracks do
+		track:Stop(0.2)
+	end
 	for _, instance in pose.Cleanup do
 		instance:Destroy()
 	end
@@ -76,8 +87,28 @@ local function applyPose(character: Model)
 	if not model or not humanoid or not hrp then
 		return
 	end
-	local pose: Pose = { Cleanup = {}, Restore = {}, Target = nil }
+	local pose: Pose = { Cleanup = {}, Restore = {}, Target = nil, Tracks = {} }
 	poses[character] = pose
+	-- Riding: no walking legs. Seated ride-ons loop the avatar's sit
+	-- animation, standing platforms (VOID, drones, blimp…) its idle.
+	local animator = humanoid:FindFirstChildOfClass("Animator")
+	local seated = model:GetAttribute("SeatHeight") ~= nil
+	local riding = seated or ((model:GetAttribute("RideLift") :: number?) or 0) > 0
+	if riding and animator then
+		local r15 = humanoid.RigType == Enum.HumanoidRigType.R15
+		local animate = character:FindFirstChild("Animate")
+		local slot = animate and animate:FindFirstChild(if seated then "sit" else "idle")
+		local own = slot and slot:FindFirstChildOfClass("Animation")
+		local animation = Instance.new("Animation")
+		animation.AnimationId = if own and own.AnimationId ~= "" then own.AnimationId
+			elseif seated then (if r15 then SIT_R15 else SIT_R6)
+			else (if r15 then IDLE_R15 else IDLE_R6)
+		local track = animator:LoadAnimation(animation)
+		track.Priority = Enum.AnimationPriority.Action
+		track.Looped = true
+		track:Play(0.2)
+		table.insert(pose.Tracks, track)
+	end
 	local r15 = humanoid.RigType == Enum.HumanoidRigType.R15
 	local gripL = model:FindFirstChild("GripL", true) :: Attachment?
 	local gripR = model:FindFirstChild("GripR", true) :: Attachment?
