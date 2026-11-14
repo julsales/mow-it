@@ -22,13 +22,13 @@ local ToolVisualService = {}
 -- Tilt of hand tools relative to the hand. ToolPoses.client.luau (IK)
 -- holds the hand forward with the fingers 30 degrees below the horizon,
 -- so a negative tilt aims the tool further down at the grass. The long
--- trimmers get just enough for the head to skim the ground (measured in
--- Play: a steeper tilt buries the head).
+-- trimmers stay in line with the hand: that already brings the head down
+-- to skim the ground (measured in Play; any steeper buries it).
 local HAND_TILT: { [string]: number } = {
 	clipper = -10,
 	scissors = -10,
 	sickle = -20,
-	trimmer = -11,
+	trimmer = 0,
 }
 
 local GROUND_LIFT = 0.35
