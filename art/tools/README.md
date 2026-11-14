@@ -43,8 +43,18 @@ have no handle in the mesh: the game builds one fitted to the avatar.
 ## Uploading
 
 Each `out/<model>.fbx` is uploaded as a **Model** owned by the game's group
-(Studio MCP `open_cloud_invoke` → `POST /assets/v1/assets`; the `out/`
-folder must be approved in Studio's Assistant → MCP Permissions). Put the
-asset id and the `out/meta.json` box into `Config/ToolArt.Models`.
+(152627407) with Studio MCP `open_cloud_invoke`: `POST /assets/v1/assets`
+for a new one, `PATCH /assets/v1/assets/<id>` for a new version of an
+existing one (keeps the id). Studio runs in Vinegar and only sees
+`~/Documents`, approved in Assistant → Settings → MCP Permissions as
+`Z:/home/julia/Documents`, so the files go through
+`~/Documents/MowItToolArt/` and the upload path is written
+`Z:/home/julia/Documents/MowItToolArt/<model>.fbx`. Record new ids in
+`out/assets.json`, then `python3 art/tools/sync_config.py` writes ids and
+the `out/meta.json` boxes into `Config/ToolArt.Models`.
+
+The importer turns FBX files 180° around Y; `build.py` bakes the opposite
+turn into the export, so in the game −Z stays forward. Units are 1:1
+(one Blender unit = one stud).
 `ToolArtService` loads them with InsertService at startup; a model with
 `AssetId = 0` keeps the old Part-built look.

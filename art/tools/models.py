@@ -164,7 +164,7 @@ def reel():
 
 @model
 def push():
-    z = -3.4
+    z = -4.0  # deck well ahead of the player: the handle slants back to the hands
     # dome deck
     ball("Accent", (0, 0.95, z), (3.1, 1.0, 3.2), seg=14, rings=6)
     box("Accent", (0, 0.65, z), (3.0, 0.45, 3.1), bevel=0.2)
@@ -180,7 +180,7 @@ def push():
     box("Metal", (-0.55, 1.75, z + 0.35), (0.35, 0.5, 0.4), bevel=0.06)
     cyl("Chrome", (0.7, 1.7, z + 0.2), (0.7, 1.7, z + 0.75), 0.1, verts=8)
     # grass bag
-    box("Fabric.Bag", (0, 1.3, z + 1.95), (1.8, 1.2, 1.0), bevel=0.25)
+    box("Fabric.Bag", (0, 1.3, z + 1.95), (1.45, 1.2, 1.0), bevel=0.25)
     box("Dark.Bag", (0, 1.0, z + 1.5), (1.5, 0.4, 0.2), bevel=0.04)
     # Deluxe: headlights, racing stripe, chrome spoiler
     for x in (-0.8, 0.8):

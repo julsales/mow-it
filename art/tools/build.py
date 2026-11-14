@@ -1,10 +1,10 @@
 # Builds every base model, exports one FBX per model to out/, and renders
 # a preview PNG per model (Workbench, flat colours) to out/preview/.
 #
-#   flatpak run --cwd=$PWD org.blender.Blender -b --factory-startup \
-#       --python art/tools/build.py -- [model names…]
+#   flatpak run org.blender.Blender -b --factory-startup \
+#       --python $PWD/art/tools/build.py -- [model names…]
 #
-# (art/tools/build.sh wraps this.)
+# (The flatpak needs the script's absolute path.)
 
 import json
 import math
