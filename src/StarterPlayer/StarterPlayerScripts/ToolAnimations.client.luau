@@ -142,6 +142,15 @@ local function animate(entry: Entry, hrp: BasePart?, now: number, dt: number)
 	end
 end
 
+-- Download every tool mesh up front, so a machine never shows up with
+-- pieces missing while its bigger meshes are still loading.
+task.spawn(function()
+	local art = game:GetService("ReplicatedStorage"):WaitForChild("ToolArt", 30)
+	if art then
+		game:GetService("ContentProvider"):PreloadAsync({ art })
+	end
+end)
+
 RunService.RenderStepped:Connect(function(dt)
 	local now = workspace:GetServerTimeNow()
 	for i, piece in CollectionService:GetTagged("RainbowPiece") do
