@@ -207,8 +207,8 @@ def rider():
     # Classic lawn tractor. The player stands at the origin (RideLift 1.4):
     # foot deck under them, seat behind, wheel in front.
     box("Dark", (0, 0.95, -0.9), (2.6, 0.5, 5.4), bevel=0.12)
-    box("Accent", (0, 1.25, 1.0), (3.0, 0.3, 1.8), bevel=0.12)  # rear fender deck
-    box("Dark", (0, 1.25, -0.6), (2.2, 0.2, 1.6), bevel=0.05)  # foot plate
+    box("Accent", (0, 1.2, 1.2), (3.0, 0.3, 1.4), bevel=0.12)  # rear fender deck
+    box("Dark", (0, 1.25, -0.9), (2.2, 0.2, 1.4), bevel=0.05)  # foot plate
     # hood
     box("Accent", (0, 1.85, -2.55), (2.4, 1.2, 2.2), bevel=0.35)
     wedge("Accent", (0, 2.3, -2.05), (2.3, 0.45, 1.1), rot=[("y", 180)])
@@ -219,8 +219,9 @@ def rider():
         cyl("Light", (x, 2.2, -3.62), (x, 2.2, -3.78), 0.2, verts=10)
     box("Accent2", (0, 2.47, -2.55), (0.4, 0.05, 2.0), bevel=0.02)
     # seat
-    box("Seat", (0, 1.8, 0.6), (1.6, 0.35, 1.2), bevel=0.15)  # the player sits here (Config/ToolArt Seat)
-    box("Seat", (0, 2.6, 1.15), (1.6, 1.3, 0.3), bevel=0.14, rot=[("x", -12)])
+    box("Seat", (0, 2.225, 0.6), (1.6, 0.35, 1.2), bevel=0.15)  # the player sits here (Config/ToolArt Seat)
+    box("Seat", (0, 3.0, 1.15), (1.6, 1.3, 0.3), bevel=0.14, rot=[("x", -12)])
+    box("Dark", (0, 1.7, 0.6), (1.0, 0.7, 0.8), bevel=0.06)
     # column + wheel
     cyl("Dark", (0, 1.9, -1.55), (0, 3.15, -1.05), 0.1, verts=8)
     ring("SteeringWheel", (0, 3.2, -1.02), (0, 0.9, 0.42), 0.55, 0.08, seg=14, minor_seg=6)
@@ -244,11 +245,11 @@ def zeroturn():
     box("Accent2", (0, 1.88, 1.3), (1.8, 0.08, 1.2), bevel=0.03)
     box("Seat", (0, 2.0, 0.4), (1.5, 0.3, 1.0), bevel=0.12)
     box("Seat", (0, 2.7, 0.95), (1.5, 1.1, 0.28), bevel=0.12, rot=[("x", -10)])
-    box("Dark", (0, 1.2, -1.2), (2.0, 0.15, 1.6), bevel=0.04)
+    box("Dark", (0, 0.95, -1.2), (2.0, 0.15, 1.6), bevel=0.04)
     for x in (-0.7, 0.7):
-        cyl("Dark", (x * 1.4, 1.4, -0.2), (x * 1.4, 2.7, -0.7), 0.07, verts=6)
-        cyl("Dark", (x * 1.4, 2.7, -0.7), (x * 0.3, 2.7, -0.95), 0.07, verts=6)
-    cyl("SteeringWheel", (-0.85, 2.7, -0.95), (0.85, 2.7, -0.95), 0.1, verts=8)
+        cyl("Dark", (x * 1.4, 1.4, -0.2), (x * 1.4, 3.0, -0.7), 0.07, verts=6)
+        cyl("Dark", (x * 1.4, 3.0, -0.7), (x * 0.3, 3.0, -0.95), 0.07, verts=6)
+    cyl("SteeringWheel", (-0.85, 3.0, -0.95), (0.85, 3.0, -0.95), 0.1, verts=8)
     # wide deck, front casters
     box("Accent", (0, 0.55, -2.6), (5.0, 0.45, 2.0), bevel=0.18)
     box("Dark", (0, 0.32, -2.6), (5.05, 0.12, 2.05), bevel=0.03)
@@ -279,7 +280,7 @@ def tractor():
         cyl("Light", (x, 3.05, -4.66), (x, 3.05, -4.84), 0.22, verts=10)
     box("Accent2", (0, 3.45, -3.1), (0.45, 0.05, 3.0), bevel=0.02)
     # cab platform, fenders, seat
-    box("Dark", (0, 2.1, 0.4), (2.6, 0.25, 2.6), bevel=0.05)
+    box("Dark", (0, 1.95, 0.4), (2.6, 0.25, 2.6), bevel=0.05)
     for x in (-1.45, 1.45):
         box("Accent", (x, 3.0, 0.9), (0.9, 0.25, 2.6), bevel=0.1)
         box("Accent", (x, 2.5, 2.05), (0.9, 1.0, 0.25), bevel=0.08)
@@ -305,8 +306,8 @@ def tractor():
     # canopy (bigger tractors)
     for x in (-1.3, 1.3):
         for z in (-0.2, 2.0):
-            cyl("Dark.Canopy", (x, 2.2, z), (x, 6.3, z), 0.09, verts=6)
-    box("Accent2.Canopy", (0, 6.4, 0.9), (3.2, 0.2, 3.0), bevel=0.08)
+            cyl("Dark.Canopy", (x, 2.2, z), (x, 7.0, z), 0.09, verts=6)
+    box("Accent2.Canopy", (0, 7.1, 0.9), (3.2, 0.2, 3.0), bevel=0.08)
     # Longhorn: bull horns on the hood
     for side in (-1, 1):
         cyl("Teeth.Horns", (side * 0.9, 3.4, -4.1), (side * 1.7, 3.6, -4.2), 0.18, verts=8, r2=0.1)
@@ -323,21 +324,24 @@ def tractor():
 def combine():
     # Combine harvester: tall body, glass cab around the player, wide
     # header with a spinning reel in front, unloading auger on the side.
-    box("Accent", (0, 3.0, 2.4), (3.6, 3.4, 4.6), bevel=0.35)
-    box("Accent2", (0, 4.75, 2.4), (3.2, 0.12, 4.0), bevel=0.03)
-    box("Dark", (0, 1.9, -0.2), (3.0, 0.5, 2.4), bevel=0.1)
-    # cab (glass + roof); the player stands inside at the origin
-    for x in (-1.25, 1.25):
-        cyl("Dark", (x, 2.2, -1.2), (x, 5.4, -1.2), 0.09, verts=6)
-        cyl("Dark", (x, 2.2, 0.8), (x, 5.4, 0.8), 0.09, verts=6)
-    box("Glass", (0, 3.8, -1.2), (2.4, 3.0, 0.08), bevel=0)
-    box("Glass", (-1.25, 3.8, -0.2), (0.08, 3.0, 1.9), bevel=0)
-    box("Glass", (1.25, 3.8, -0.2), (0.08, 3.0, 1.9), bevel=0)
-    box("Accent", (0, 5.55, -0.2), (2.9, 0.3, 2.5), bevel=0.1)
+    box("Accent", (0, 3.0, 3.0), (3.6, 3.4, 4.6), bevel=0.35)
+    box("Accent2", (0, 4.75, 3.0), (3.2, 0.12, 4.0), bevel=0.03)
+    box("Dark", (0, 1.9, -0.5), (3.0, 0.5, 3.0), bevel=0.1)
+    # cab: the player sits inside (Seat), tall enough for the head
+    box("Seat", (0, 3.025, -0.2), (1.5, 0.35, 1.1), bevel=0.14)
+    box("Seat", (0, 3.9, 0.35), (1.5, 1.4, 0.3), bevel=0.14, rot=[("x", -10)])
+    box("Dark", (0, 2.5, -0.2), (1.0, 0.7, 0.8), bevel=0.06)
+    for x in (-1.3, 1.3):
+        cyl("Dark", (x, 2.2, -1.9), (x, 7.1, -1.9), 0.09, verts=6)
+        cyl("Dark", (x, 2.2, 0.8), (x, 7.1, 0.8), 0.09, verts=6)
+    box("Glass", (0, 4.6, -1.9), (2.5, 4.6, 0.08), bevel=0)
+    box("Glass", (-1.3, 4.6, -0.55), (0.08, 4.6, 2.6), bevel=0)
+    box("Glass", (1.3, 4.6, -0.55), (0.08, 4.6, 2.6), bevel=0)
+    box("Accent", (0, 7.25, -0.55), (3.0, 0.3, 3.2), bevel=0.1)
     for x in (-1.0, -0.35, 0.35, 1.0):
-        cyl("Light", (x, 5.5, -1.42), (x, 5.5, -1.55), 0.13, verts=8)
-    cyl("Dark", (0, 2.2, -0.9), (0, 3.6, -0.75), 0.1, verts=8)
-    ring("SteeringWheel", (0, 3.65, -0.75), (0, 0.9, 0.42), 0.5, 0.07, seg=14, minor_seg=6)
+        cyl("Light", (x, 7.2, -2.12), (x, 7.2, -2.25), 0.13, verts=8)
+    cyl("Dark", (0, 2.2, -2.05), (0, 4.1, -1.8), 0.1, verts=8)
+    ring("SteeringWheel", (0, 4.15, -1.77), (0, 0.9, 0.42), 0.5, 0.07, seg=14, minor_seg=6)
     # header
     box("Dark", (0, 0.9, -3.3), (7.5, 1.1, 1.8), bevel=0.15)
     box("Accent", (-3.8, 1.2, -3.3), (0.25, 1.6, 2.0), bevel=0.08)
@@ -352,11 +356,11 @@ def combine():
             cyl("Accent2", (-3.6, y, z), (3.6, y, z), 0.07, verts=6, bevel=0)
             cyl("Accent2", (-3.0, 1.7, -3.9), (-3.0, y, z), 0.05, verts=5, bevel=0)
             cyl("Accent2", (3.0, 1.7, -3.9), (3.0, y, z), 0.05, verts=5, bevel=0)
-    box("Dark", (0, 1.6, -1.9), (1.4, 1.0, 1.4), bevel=0.1)
+    box("Dark", (0, 1.4, -2.3), (1.4, 1.0, 1.0), bevel=0.1)
     # auger pipe
-    cyl("Accent", (-1.6, 4.4, 3.4), (-4.6, 5.4, 3.0), 0.28, verts=10)
-    cyl("Accent", (-4.6, 5.4, 3.0), (-4.9, 4.7, 3.0), 0.28, verts=10)
-    cyl("Chrome", (1.2, 4.7, 4.0), (1.2, 6.0, 4.0), 0.18, verts=8)
+    cyl("Accent", (-1.6, 4.4, 4.0), (-4.6, 5.4, 3.6), 0.28, verts=10)
+    cyl("Accent", (-4.6, 5.4, 3.6), (-4.9, 4.7, 3.6), 0.28, verts=10)
+    cyl("Chrome", (1.2, 4.7, 4.6), (1.2, 6.0, 4.6), 0.18, verts=8)
     wheel((-1.95, 1.55, 0.1), 3.1, 1.0, hub="Accent2", tread=True)
     wheel((1.95, 1.55, 0.1), 3.1, 1.0, hub="Accent2", tread=True)
     wheel((-1.7, 0.85, 4.2), 1.7, 0.6, hub="Accent2", tread=True)
@@ -420,7 +424,7 @@ def mowzilla():
         box("Accent2", (x, 4.7, -4.3), (1.3, 0.25, 0.5), bevel=0.08, rot=[("z", -12 if x < 0 else 12)])
     # spikes on the back
     for i in range(5):
-        z = 0.8 + i * 0.6
+        z = 1.3 + i * 0.55
         cyl("Accent2", (0, 3.85, z), (0, 4.9 - i * 0.12, z + 0.3), 0.35, verts=5, r2=0.03)
     # exhausts with flames
     for x in (-1.9, 1.9):
@@ -457,17 +461,17 @@ def fortress():
     # Field Fortress: a combine turned into a little castle on wheels.
     combine()
     for x in (-1.8, 1.8):
-        for z in (0.3, 4.5):
+        for z in (0.9, 5.1):
             cyl("Stone", (x, 3.0, z), (x, 6.6, z), 0.7, verts=10, bevel=0.05)
             cyl("Accent", (x, 6.6, z), (x, 8.2, z), 0.85, verts=10, r2=0.05)
             cyl("Dark", (x, 8.0, z), (x, 9.0, z), 0.04, verts=4, bevel=0)
             prism("Accent2", [(0, 0), (0.8, -0.2), (0, -0.45)], (x, 9.0, z), (1, 0, 0), (0, 1, 0), 0.04, bevel=0)
     for i in range(7):
-        box("Stone", (-1.8 + i * 0.6, 5.2, 4.6), (0.35, 0.5, 0.35), bevel=0.04)
-        box("Stone", (-1.8 + i * 0.6, 5.2, 0.2), (0.35, 0.5, 0.35), bevel=0.04)
-    box("Wood", (0, 1.4, -2.55), (2.6, 0.2, 1.4), bevel=0.04, rot=[("x", -25)])  # drawbridge ramp
+        box("Stone", (-1.8 + i * 0.6, 5.0, 5.2), (0.35, 0.5, 0.35), bevel=0.04)
+        box("Stone", (-1.8 + i * 0.6, 5.0, 0.9), (0.35, 0.5, 0.35), bevel=0.04)
+    box("Wood", (0, 1.2, -2.85), (2.6, 0.2, 1.2), bevel=0.04, rot=[("x", -25)])  # drawbridge ramp
     for x in (-1.2, 1.2):
-        cyl("Dark", (x, 2.0, -2.0), (x, 3.2, -1.6), 0.04, verts=4, bevel=0)
+        cyl("Dark", (x, 1.6, -2.4), (x, 2.3, -1.95), 0.04, verts=4, bevel=0)
 
 
 @model
@@ -518,17 +522,17 @@ def airship():
     box("Accent", (0, 2.6, -2.3), (2.6, 0.9, 0.15), bevel=0.04)
     for x in (-1.2, 1.2):
         for z in (-2.2, 1.0):
-            cyl("Dark", (x, 2.2, z), (x * 0.7, 6.4, z * 0.8), 0.04, verts=4, bevel=0)
-    ball("Accent2", (0, 8.2, -0.4), (4.6, 3.6, 9.0), seg=16, rings=10)
+            cyl("Dark", (x, 2.2, z), (x * 0.7, 8.4, z * 0.8), 0.04, verts=4, bevel=0)
+    ball("Accent2", (0, 10.2, -0.4), (4.6, 3.6, 9.0), seg=16, rings=10)
     for z in (-2.6, 0.2, 2.8):
-        cyl("Accent", (0, 8.2, z - 0.15), (0, 8.2, z + 0.15), 2.0 if abs(z) < 1 else 1.6, verts=16, bevel=0.02)
+        cyl("Accent", (0, 10.2, z - 0.15), (0, 10.2, z + 0.15), 2.0 if abs(z) < 1 else 1.6, verts=16, bevel=0.02)
     for rot in (0, 90):
-        prism("Accent", [(0, 0), (1.6, 0.0), (1.9, 1.4), (0.6, 1.4)], (0, 8.2, 3.6), (0, 0, 1), (0, 1, 0) if rot == 0 else (1, 0, 0), 0.1)
-        prism("Accent", [(0, 0), (1.6, 0.0), (1.9, -1.4), (0.6, -1.4)], (0, 8.2, 3.6), (0, 0, 1), (0, 1, 0) if rot == 0 else (1, 0, 0), 0.1)
+        prism("Accent", [(0, 0), (1.6, 0.0), (1.9, 1.4), (0.6, 1.4)], (0, 10.2, 3.6), (0, 0, 1), (0, 1, 0) if rot == 0 else (1, 0, 0), 0.1)
+        prism("Accent", [(0, 0), (1.6, 0.0), (1.9, -1.4), (0.6, -1.4)], (0, 10.2, 3.6), (0, 0, 1), (0, 1, 0) if rot == 0 else (1, 0, 0), 0.1)
     with rig("Prop"):  # tail propeller, spins around Z
         for k in range(3):
-            box("Metal", (0, 8.2, 5.0), (0.25, 1.6, 0.06), bevel=0, rot=[("z", k * 60)])
-        cyl("Chrome", (0, 8.2, 4.85), (0, 8.2, 5.15), 0.18, verts=8)
+            box("Metal", (0, 10.2, 5.0), (0.25, 1.6, 0.06), bevel=0, rot=[("z", k * 60)])
+        cyl("Chrome", (0, 10.2, 4.85), (0, 10.2, 5.15), 0.18, verts=8)
     cyl("Dark", (0, 2.0, -0.6), (0, 0.6, -0.6), 0.1, verts=6)
     with rig("Rotor0"):
         cyl("Metal", (0, 0.45, -0.6), (0, 0.55, -0.6), 1.8, verts=16, bevel=0.02)
