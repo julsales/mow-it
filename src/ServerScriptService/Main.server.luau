@@ -28,6 +28,7 @@ local GrayboxService = require(Services.GrayboxService)
 local MapService = require(Services.MapService)
 local ToolVisualService = require(Services.ToolVisualService)
 local ToolArtService = require(Services.ToolArtService)
+local AdminService = require(Services.AdminService)
 
 -- Remotes -------------------------------------------------------------------
 -- Created by the server in ReplicatedStorage/Remotes so client and server
@@ -117,6 +118,7 @@ if isLandPlace then
 	require(Services.ToolBackpackService).Init()
 	require(Services.MovementService).Init()
 	ShopService.Init(remotes)
+	AdminService.Init(remotes)
 	require(Services.Map.ShopDisplay).Init(ShopService.BuyTool)
 	require(Services.Map.Gates).Init(ShopService.UnlockZone);
 	(remotes:WaitForChild("SellRequest") :: RemoteEvent).OnServerEvent:Connect(function(player)
