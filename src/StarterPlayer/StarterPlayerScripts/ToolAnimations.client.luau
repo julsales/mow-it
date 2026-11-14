@@ -4,6 +4,7 @@
 -- mesh names "…#Rig", see Config/ToolArt):
 --   Spin*/Reel  roll with the ground speed (wheels, reel-mower blades)
 --   Drum        turns all the time (MOWZILLA cutter, combine header reel)
+--   JawTop/JawBottom chomp open and shut while the machine drives (MOWZILLA)
 --   Rotor*/Head spin fast around their own Y (propellers, trimmer string)
 --   Portal      turns slowly around its own Y (VOID portal)
 --   Prop/Drill  spin around their own Z (blimp propeller, drill nose)
@@ -73,6 +74,15 @@ local function animate(entry: Entry, hrp: BasePart?, now: number, dt: number)
 			rig.Angle -= speed / rig.Radius * dt
 			each(function(p)
 				return p.Base * CFrame.Angles(rig.Angle, 0, 0)
+			end)
+		elseif name == "JawTop" or name == "JawBottom" then
+			-- Chomps faster the faster you drive; shut when standing still.
+			local moving = math.clamp(math.abs(speed) / 12, 0, 1)
+			rig.Angle += (4 + 8 * moving) * dt
+			local open = moving * 0.35 * (0.5 + 0.5 * math.sin(rig.Angle * 2))
+			local dy = if name == "JawTop" then open else -open
+			each(function(p)
+				return p.Base + Vector3.new(0, dy, 0)
 			end)
 		elseif name == "Drum" then
 			rig.Angle -= 7 * dt

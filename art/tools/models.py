@@ -416,10 +416,15 @@ def mowzilla():
             wheel((x + side * 0.6, 1.05, -3.9 + i * 1.45), 1.5, 0.3, hub="Accent2", spokes=4)
     # mouth + teeth
     box("Dark", (0, 1.65, -4.68), (4.0, 1.1, 0.2), bevel=0.1)
-    for i in range(9):
-        x = -1.8 + i * 0.45
-        cyl("Teeth", (x, 2.2, -4.75), (x, 1.6, -4.85), 0.2, verts=4, r2=0.02)
-        cyl("Teeth", (x + 0.22, 1.1, -4.75), (x + 0.22, 1.6, -4.85), 0.17, verts=4, r2=0.02)
+    # teeth: top and bottom rows chomp while it drives (ToolAnimations)
+    with rig("JawTop"):
+        for i in range(9):
+            x = -1.8 + i * 0.45
+            cyl("Teeth", (x, 2.2, -4.75), (x, 1.6, -4.85), 0.2, verts=4, r2=0.02)
+    with rig("JawBottom"):
+        for i in range(9):
+            x = -1.8 + i * 0.45
+            cyl("Teeth", (x + 0.22, 1.1, -4.75), (x + 0.22, 1.6, -4.85), 0.17, verts=4, r2=0.02)
     # eyes
     for x in (-1.2, 1.2):
         ball("Eye", (x, 4.0, -4.2), (1.6, 1.6, 1.1), seg=12, rings=8)
