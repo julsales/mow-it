@@ -19,14 +19,16 @@ local ProfileService = require(script.Parent.ProfileService)
 
 local ToolVisualService = {}
 
--- Tilt of hand tools relative to the forearm. The arm is held forward and
--- down by ToolPoses.client.luau (IK), so a negative tilt aims the tool
--- further down at the grass; the trimmer is steepest so its head reaches.
+-- Tilt of hand tools relative to the hand. ToolPoses.client.luau (IK)
+-- holds the hand forward with the fingers 30 degrees below the horizon,
+-- so a negative tilt aims the tool further down at the grass. The long
+-- trimmers get just enough for the head to skim the ground (measured in
+-- Play: a steeper tilt buries the head).
 local HAND_TILT: { [string]: number } = {
 	clipper = -10,
 	scissors = -10,
 	sickle = -20,
-	trimmer = -35,
+	trimmer = -11,
 }
 
 local GROUND_LIFT = 0.35

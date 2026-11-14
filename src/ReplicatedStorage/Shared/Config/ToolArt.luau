@@ -38,8 +38,9 @@ export type ToolLook = {
 
 export type Finish = {
 	Color: Color3, -- replaces the Accent paint
-	Color2: Color3, -- Accent2 / Glow, always neon
+	Color2: Color3, -- Accent2 / Glow
 	Material: Enum.Material,
+	Material2: Enum.Material?, -- Accent2 (default Neon; big white pieces would blind)
 	Rainbow: boolean?, -- Accent cycles through the rainbow (ToolAnimations.client)
 	Particle: { Texture: string, Color: ColorSequence, Rate: number, Size: number, LightEmission: number },
 	Light: Color3,
@@ -81,7 +82,7 @@ export type Piece = { Color: Color3, Material: Enum.Material, Transparency: numb
 local Pieces: { [string]: Piece } = {
 	Metal = { Color = rgb(196, 194, 188), Material = Enum.Material.Metal },
 	Chrome = { Color = rgb(240, 238, 232), Material = Enum.Material.Metal, Reflectance = 0.3 },
-	Dark = { Color = rgb(62, 56, 52), Material = Enum.Material.Metal },
+	Dark = { Color = rgb(84, 76, 70), Material = Enum.Material.Metal },
 	Rubber = { Color = rgb(40, 37, 35), Material = Enum.Material.Rubber },
 	Tread = { Color = rgb(96, 92, 88), Material = Enum.Material.DiamondPlate }, -- foot plates and decks to stand on
 	Wood = { Color = rgb(168, 106, 60), Material = Enum.Material.Wood },
@@ -173,8 +174,9 @@ local Finishes: { [string]: Finish } = {
 	},
 	Rainbow = {
 		Color = rgb(255, 80, 80),
-		Color2 = rgb(255, 255, 255),
+		Color2 = rgb(255, 250, 240),
 		Material = Enum.Material.SmoothPlastic,
+		Material2 = Enum.Material.SmoothPlastic,
 		Rainbow = true,
 		Particle = { Texture = "rbxassetid://9289210113", Color = ColorSequence.new(rgb(255, 255, 255)), Rate = 12, Size = 0.7, LightEmission = 0.6 },
 		Light = rgb(200, 200, 255),

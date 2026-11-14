@@ -17,8 +17,13 @@ local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 
--- Hand tools: where the right hand rests, relative to the HumanoidRootPart.
+-- Hand tools: where the right hand rests, relative to the HumanoidRootPart,
+-- and how it is turned: fingers pointing forward and HOLD_PITCH degrees
+-- below the horizon, palm inward. Fixing the turn too (not only the
+-- place) makes every avatar and idle animation hold a tool at the same
+-- angle; ToolVisualService HAND_TILT aims each kind of tool from there.
 local HOLD_OFFSET = Vector3.new(0.9, -0.4, -1.7)
+local HOLD_PITCH = 30
 local SWING_OFFSET = Vector3.new(0.3, -1.3, -1.5)
 
 type Pose = { Cleanup: { Instance }, Restore: { [Motor6D]: CFrame }, Target: Attachment?, Tracks: { AnimationTrack } }
@@ -127,11 +132,12 @@ local function applyPose(character: Model)
 		if r15 then
 			local target = Instance.new("Attachment")
 			target.Name = "ToolPoseTarget"
-			target.Position = HOLD_OFFSET
+			-- R15 hands hang with the fingers along -Y: pitch them forward.
+			target.CFrame = CFrame.new(HOLD_OFFSET) * CFrame.Angles(math.rad(90 - HOLD_PITCH), 0, 0)
 			target.Parent = hrp
 			table.insert(pose.Cleanup, target)
 			pose.Target = target
-			ik(humanoid, character, "Right", target, pose)
+			ik(humanoid, character, "Right", target, pose, true)
 		else
 			r6Shoulder(character, "Right Shoulder", math.rad(55), pose)
 		end
