@@ -129,6 +129,64 @@ def bounds():
     return {"center": [round((lo[i] + hi[i]) / 2, 3) for i in range(3)], "size": [round(hi[i] - lo[i], 3) for i in range(3)]}
 
 
+# Where the rider's body goes, per model (roblox coords): ("stand", deck
+# height) for platforms, ("sit", (x, seat top, z)) for seats. clearance()
+# reports every mesh that pokes into that space (head, torso or legs).
+RIDERS = {
+    "rider": ("sit", (0, 2.4, 0.6)),
+    "zeroturn": ("sit", (0, 2.15, 0.4)),
+    "tractor": ("sit", (0, 3.075, 0.6)),
+    "combine": ("sit", (0, 3.2, -0.2)),
+    "fortress": ("sit", (0, 3.2, -0.2)),
+    "mega_push": ("stand", 2.2),
+    "drone": ("stand", 2.28),
+    "swarm": ("stand", 2.28),
+    "void": ("stand", 2.2),
+    "airship": ("stand", 2.2),
+    "drill": ("stand", 3.15),
+    "mowzilla": ("stand", 3.9),
+}
+ALLOWED = {"SteeringWheel", "Seat"}
+
+
+def _box_tree(lo, hi):
+    from mathutils.bvhtree import BVHTree
+
+    (x0, y0, z0), (x1, y1, z1) = lo, hi
+    corners = [lib.R(x, y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)]
+    faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    return BVHTree.FromPolygons(corners, faces)
+
+
+def clearance(name):
+    spec = RIDERS.get(name)
+    if not spec:
+        return []
+    from mathutils.bvhtree import BVHTree
+
+    kind, where = spec
+    if kind == "stand":
+        boxes = {"body": ((-0.85, where + 0.15, -0.55), (0.85, where + 5.4, 0.55))}
+    else:
+        x, y, z = where
+        boxes = {
+            "body": ((x - 0.85, y + 0.1, z - 0.45), (x + 0.85, y + 3.7, z + 0.45)),
+            "legs": ((x - 0.8, y - 0.95, z - 1.5), (x + 0.8, y + 0.5, z - 0.45)),  # feet rest 1 stud under the seat
+        }
+    hits = []
+    for o in bpy.context.scene.objects:
+        if o.type != "MESH" or o.name.split("#")[0].split(".")[0] in ALLOWED:
+            continue
+        world = [o.matrix_world @ v.co for v in o.data.vertices]
+        tree = BVHTree.FromPolygons(world, [tuple(p.vertices) for p in o.data.polygons])
+        for part, (lo, hi) in boxes.items():
+            box = _box_tree(lo, hi)
+            inside = any(all(lo[i] - 1e-3 <= (v.x, v.z, -v.y)[i] <= hi[i] + 1e-3 for i in range(3)) for v in world)
+            if inside or tree.overlap(box):
+                hits.append(f"{o.name}->{part}")
+    return hits
+
+
 def main():
     path = os.path.join(OUT, "meta.json")
     meta = json.load(open(path)) if os.path.exists(path) else {}
@@ -138,6 +196,8 @@ def main():
         MODELS[name]()
         lib.finish(name)
         meta[name] = bounds()
+        hits = clearance(name)
+        print(f"CLEAR {name}: " + (", ".join(hits) if hits else "ok"))
         export(name)
         preview(name)
     json.dump(meta, open(path, "w"), indent=1, sort_keys=True)
