@@ -11,6 +11,7 @@
 
 local Config = require(script.Parent.Config.HayYard)
 local GrassBag = require(script.Parent.GrassBag)
+local Zones = require(script.Parent.Config.Zones)
 
 export type Bale = { Id: number, Value: number, Golden: boolean }
 export type State = {
@@ -47,6 +48,28 @@ end
 function Hay.Level(profile: any): Config.Level
 	local levels = Config.Levels
 	return levels[math.clamp(Hay.State(profile).Level, 1, #levels)]
+end
+
+-- The level the baler can be upgraded to next and its number, or nil at
+-- the top of the ladder.
+function Hay.NextLevel(profile: any): (Config.Level?, number)
+	local index = math.clamp(Hay.State(profile).Level, 1, #Config.Levels) + 1
+	return Config.Levels[index], index
+end
+
+-- Whether the next level can be bought now; when not, why (player-facing).
+function Hay.CanUpgrade(profile: any): (boolean, string)
+	local nextLevel = Hay.NextLevel(profile)
+	if not nextLevel then
+		return false, "Max level"
+	end
+	if Zones.HighestUnlockedIndex(profile.UnlockedZoneIds) < nextLevel.RequiredZone then
+		return false, ("Unlock %s first"):format(Zones.List[nextLevel.RequiredZone].DisplayName)
+	end
+	if profile.Coins < nextLevel.Price then
+		return false, "Not enough Coins"
+	end
+	return true, ""
 end
 
 -- Bales the stack holds before the baler has to wait.

@@ -5,10 +5,10 @@
 --
 -- Contract (docs/EDITING.md): one Model "HayYard" inside the home island,
 -- holding the Models "Baler", "BaleStack" and "Silo" (drag each one
--- freely: the animations read where they stand), "LoadSquare" (the square
--- outlined on the ground where grass is handed in, with the invisible
--- contract part "SellPad" inside it), "Ground" (packed dirt) and the
--- invisible "CustomerSpawn" marker customers walk in from.
+-- freely: the animations read where they stand), "Ground" (packed dirt),
+-- the invisible contract part "SellPad" on the baler's loading deck (where
+-- grass is handed in) and the invisible "CustomerSpawn" marker customers
+-- walk in from.
 --
 -- Frame `cf`: origin on the ground, +Z = the front (where players stand).
 
@@ -93,29 +93,15 @@ function HayYard.BuildGround(yard: Model, cf: CFrame)
 	ground.WorldPivot = cf
 end
 
--- The square outlined on the ground in front of the baler: step into it
--- and your grass is loaded. Only the outline is drawn; the contract part
--- "SellPad" inside is invisible (EconomyService adds its own reach around
--- it, so it is smaller than the square).
-function HayYard.BuildLoadSquare(yard: Model, cf: CFrame): Model
-	local spec = Config.LoadSquare
-	local square = Props.model("LoadSquare", yard)
-	local at = cf * CFrame.new(spec.Center)
-	local half = spec.Side / 2 - spec.Line / 2
-	for _, side in { -1, 1 } do
-		for _, alongX in { true, false } do
-			Props.make("Line", square, {
-				Size = if alongX then Vector3.new(spec.Side, 0.14, spec.Line) else Vector3.new(spec.Line, 0.14, spec.Side - 2 * spec.Line),
-				CFrame = at * CFrame.new(if alongX then 0 else side * half, 0.2, if alongX then side * half else 0),
-				Color = spec.Color,
-				Solid = false,
-			})
-		end
+-- Contract part "SellPad": standing on the baler's loading deck loads your
+-- grass. Invisible, inside the piece it belongs to, so it moves with it.
+function HayYard.BuildLoadZone(yard: Model): BasePart?
+	local zone = Config.LoadZone
+	local host = yard:FindFirstChild(zone.Piece)
+	if not host or not host:IsA("Model") then
+		return nil
 	end
-	local reach = 3 -- EconomyService counts the pad as reached 2 studs around it
-	hidden("SellPad", square, at * CFrame.new(0, spec.Height / 2, 0), Vector3.new(spec.Side - reach, spec.Height, spec.Side - reach), false)
-	square.WorldPivot = at
-	return square
+	return hidden("SellPad", host, host:GetPivot() * CFrame.new(zone.Center), zone.Size, false)
 end
 
 -- The yard, or nil when its art isn't loaded (ids missing or offline).
@@ -132,7 +118,7 @@ function HayYard.Build(parent: Instance, cf: CFrame): Model?
 	for name, def in Config.Pieces do
 		buildPiece(yard, name, def, cf * def.Offset)
 	end
-	HayYard.BuildLoadSquare(yard, cf)
+	HayYard.BuildLoadZone(yard)
 	hidden("CustomerSpawn", yard, cf * CFrame.new(Config.CustomerSpawn + Vector3.new(0, 0.5, 0)), Vector3.new(2, 1, 2), false)
 	return yard
 end

@@ -6,6 +6,8 @@
 --   press     the baler turns hopper grass into bales, one every
 --             Level.BaleSeconds, while the stack has room
 --   Sell      the player clicks a bale: Coins now, the bale goes to the silo
+--   Upgrade   the player buys the next baler level (more stack room, more
+--             bales per press), capped by the islands they have unlocked
 --   customers while the silo has stock, customers walk up and buy bales;
 --             their tip lands when they reach the counter
 --
@@ -89,17 +91,25 @@ local function press(player: Player, profile: any, now: number)
 		return
 	end
 	local state = Hay.State(profile)
-	local take = math.min(state.Units, Hay.BaleUnits(profile))
-	local value = state.Value * take / state.Units
-	state.Units -= take
-	state.Value -= value
-	if state.Units <= 0 then
-		state.Units, state.Value = 0, 0
+	-- One press: up to `Batch` bales, while there is grass and room.
+	for _ = 1, level.Batch do
+		if state.Units <= 0 or Hay.IsStackFull(profile) then
+			break
+		end
+		local take = math.min(state.Units, Hay.BaleUnits(profile))
+		local value = state.Value * take / state.Units
+		state.Units -= take
+		state.Value -= value
+		if state.Units <= 0 then
+			state.Units, state.Value = 0, 0
+		end
+		local golden = rng:NextNumber() < Config.GoldenChance
+		if golden then
+			value *= Config.GoldenMultiplier
+		end
+		table.insert(state.Bales, { Id = state.NextId, Value = value, Golden = golden })
+		state.NextId += 1
 	end
-	local golden = rng:NextNumber() < Config.GoldenChance
-	value *= level.ValueMultiplier * (if golden then Config.GoldenMultiplier else 1)
-	table.insert(state.Bales, { Id = state.NextId, Value = value, Golden = golden })
-	state.NextId += 1
 	nextBaleAt[player] = now + level.BaleSeconds
 	ProfileService.NotifyChanged(player)
 end
@@ -136,6 +146,26 @@ function HayService.Sell(player: Player, baleId: number)
 			return
 		end
 	end
+end
+
+-- The player asked to upgrade the baler (prompt on the machine).
+function HayService.Upgrade(player: Player)
+	local profile = ProfileService.Get(player)
+	if not profile or not nearYard(player) then
+		return
+	end
+	local notify = remotes:FindFirstChild("Notify") :: RemoteEvent
+	local ok, why = Hay.CanUpgrade(profile)
+	local nextLevel, index = Hay.NextLevel(profile)
+	if not ok or not nextLevel then
+		notify:FireClient(player, ("Baler: %s"):format(why))
+		return
+	end
+	profile.Coins -= nextLevel.Price
+	Hay.State(profile).Level = index
+	ProfileService.NotifyChanged(player)
+	notify:FireClient(player, ("Baler level %d! Stack holds %d bales, %d per press."):format(index, Hay.MaxStack(profile), nextLevel.Batch));
+	(remotes:FindFirstChild("BuyFeedback") :: RemoteEvent):FireClient(player, "Baler")
 end
 
 local function customers(player: Player, profile: any, now: number)
@@ -194,6 +224,8 @@ function HayService.Init(remoteFolder: Folder)
 		lastAction[player] = now
 		if action == "Sell" and type(baleId) == "number" then
 			HayService.Sell(player, baleId)
+		elseif action == "Upgrade" then
+			HayService.Upgrade(player)
 		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)

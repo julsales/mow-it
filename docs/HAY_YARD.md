@@ -8,8 +8,8 @@ the plan: what exists, how it is put together and what comes next.
 ## The loop
 
 1. **Cut** grass until storage is full (unchanged).
-2. **Load**: step into the small square outlined on the ground in front
-   of the baler at the base. All carried
+2. **Load**: step onto the baler's loading deck at the base (it glows
+   with an outline). All carried
    grass flies into the hopper. On the other islands the old sell pads are
    **drop-off pads**: they send the grass to the same hopper, so you don't
    have to walk home to empty your storage (fuel is refilled at both).
@@ -18,7 +18,8 @@ the plan: what exists, how it is put together and what comes next.
    always about six bales, so bigger storage means richer bales, not more
    clicking. Now and then a bale comes out **golden** (worth 5x). When the
    stack is full the baler waits (red lamp).
-4. **Sell**: click a bale. Coins are paid at once, the bale hops onto the
+4. **Sell**: click a bale (the waiting bales are outlined; clicking works
+   with a tool in the hand). Coins are paid at once, the bale hops onto the
    elevator, rides up and drops into the **silo**.
 5. **Customers**: while the silo has stock, customers walk up to its
    counter (they arrive at the dock), take 1 or 2 bales and pay a tip (10% of what those bales sold
@@ -33,6 +34,14 @@ exhaust puffs and gauge on the baler; grass thrown into the hopper and the
 heap sinking; bales squeezing out, hopping, dropping when one below is
 sold; the elevator belt, the silo hatch, the weather vane; customers
 walking in, picking the bales up and carrying them away; coin pop-ups.
+
+## Baler upgrades
+
+A prompt on the baler buys its next level (`Config.Levels`, state in
+`profile.Hay.Level`): each level gives the stack more room (6 bales per
+layer) and, from level 3 on, more bales per press. A level can only be
+bought once its `RequiredZone` island is unlocked, so the machine grows
+with the land: level 2 at the base, then one level per island.
 
 ## Where things live
 
@@ -57,17 +66,13 @@ their own bales.
 
 In the place, the yard is one Model `HayYard` inside the home island with
 the Models `Baler`, `BaleStack`, `Silo` and `Ground` (the packed dirt),
-`LoadSquare` (the outlined square where grass is handed in, with the
-invisible contract part `SellPad` inside it) and the invisible part
-`CustomerSpawn` (where customers walk in from). Code finds them by
+plus two invisible parts: `SellPad` (inside `Baler`, on its loading
+deck) and `CustomerSpawn` (where customers walk in from). Code finds them by
 name and reads where they stand, so each can be dragged by hand
 (docs/EDITING.md).
 
 ## Later (designed for, not built)
 
-- **Baler upgrades**: `Config.Levels` already has three levels (faster,
-  more value, taller stack); `profile.Hay.Level` picks one. Missing: a way
-  to buy levels (a prompt on the baler or a Shop tab).
 - **Conveyor to the silo**: automation that sells without the click: call
   `HayService.Sell` for the oldest bale on a timer when the player owns it.
 - **Truck**: a big customer that empties the silo for a bonus, same event

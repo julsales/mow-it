@@ -49,7 +49,7 @@ local REMOTE_NAMES = {
 	"QueueUpdated",
 	"CutFeedback", -- server -> client: (stored, storageFull, cellsHit, cutPositions) after each swing
 	"SellFeedback", -- server -> client: (coinsEarned, baleId?) after a sale
-	"HayAction", -- client -> server: ("Sell", baleId) a click on a bale
+	"HayAction", -- client -> server: ("Sell", baleId) a click on a bale; ("Upgrade") the next baler level
 	"HayLoaded", -- server -> client: (units) grass went into the baler's hopper
 	"HayCustomer", -- server -> client: (bales, walkSeconds) a customer is coming to the silo
 	"HayTip", -- server -> client: (coins) the customer paid at the counter

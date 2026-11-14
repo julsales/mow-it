@@ -4,8 +4,11 @@
 --   * the baler works while it has grass: flywheel, rattling body, the
 --     press stomping, exhaust puffs, the grass heap sinking in the hopper;
 --   * every new bale slides out of the chamber and hops onto the stack;
---   * click a bale to sell it: it hops onto the elevator, rides up and
---     drops into the silo, coins pop up;
+--   * click a bale to sell it (works with a tool in the hand: we cast our
+--     own ray, ClickDetectors are off while a Tool is equipped): it hops
+--     onto the elevator, rides up and drops into the silo, coins pop up;
+--   * the loading deck and the bales waiting to be sold glow with an
+--     outline; a prompt on the baler buys its next level;
 --   * customers walk up to the silo's counter and carry bales away.
 -- Bales and the machine state come from the profile (ClientState);
 -- customers and tips from HayCustomer / HayTip.
@@ -16,6 +19,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -184,7 +188,7 @@ local function nextStep(profile: any): string?
 	elseif os.clock() - lastSaleAt < 6 then
 		return "All sold! Customers buy your hay at the silo. Go mow more grass!"
 	elseif GrassBag.Total(profile) > 0 then
-		return "Step into the yellow square to load your grass"
+		return "Step onto the baler's glowing deck to load your grass"
 	end
 	return nil
 end
@@ -218,7 +222,11 @@ type View = {
 	OnBelt: number,
 	NearHatch: number,
 	Ejecting: boolean,
-	Highlight: Highlight,
+	Highlight: Highlight, -- the bale under the mouse
+	Waiting: Model, -- holds the bales waiting to be sold, outlined as one
+	WaitingGlow: Highlight,
+	DeckGlow: Highlight,
+	Upgrade: ProximityPrompt,
 	Connection: RBXScriptConnection?,
 }
 
@@ -244,6 +252,32 @@ local function createView(yard: Model, baler: Model, pallet: Model, silo: Model)
 	highlight.DepthMode = Enum.HighlightDepthMode.Occluded
 	highlight.Enabled = false
 	highlight.Parent = folder
+	-- Outlines: the loading deck (where to stand) and the waiting bales
+	-- (what to click). One Highlight each.
+	local function outline(adornee: Instance?): Highlight
+		local glow = Instance.new("Highlight")
+		glow.FillTransparency = 1
+		glow.FillColor = Config.Outline
+		glow.OutlineColor = Config.Outline
+		glow.DepthMode = Enum.HighlightDepthMode.Occluded
+		glow.Adornee = adornee
+		glow.Parent = folder
+		return glow
+	end
+	local waiting = Instance.new("Model")
+	waiting.Name = "WaitingBales"
+	waiting.Parent = folder
+	-- The upgrade prompt, on the machine's front.
+	local upgrade = Instance.new("ProximityPrompt")
+	upgrade.Name = "BalerUpgradePrompt"
+	upgrade.KeyboardKeyCode = Enum.KeyCode.E
+	upgrade.HoldDuration = 0.4
+	upgrade.MaxActivationDistance = 11
+	upgrade.RequiresLineOfSight = false
+	upgrade.Triggered:Connect(function()
+		hayAction:FireServer("Upgrade")
+	end)
+	upgrade.Parent = anchor(at(baler, Vector3.new(0.7, 3.2, 2.6)))
 	local chaff = puffs(hopper, Color3.fromRGB(140, 196, 90), 0.5, 7, Vector3.new(0, -18, 0))
 	chaff.SpreadAngle = Vector2.new(40, 40)
 	chaff.Lifetime = NumberRange.new(0.4, 0.7)
@@ -276,6 +310,10 @@ local function createView(yard: Model, baler: Model, pallet: Model, silo: Model)
 		NearHatch = 0,
 		Ejecting = false,
 		Highlight = highlight,
+		Waiting = waiting,
+		WaitingGlow = outline(waiting),
+		DeckGlow = outline(baler:FindFirstChild(Config.DeckPiece)),
+		Upgrade = upgrade,
 		Connection = nil,
 	}
 end
@@ -302,25 +340,11 @@ local function eject(v: View, entry: Bales.Entry)
 end
 
 local function addBale(v: View, bale: Hay.Bale, instant: boolean)
-	local model, hit = Bales.Make(bale.Golden, folder)
+	local model, hit = Bales.Make(bale.Golden, v.Waiting)
+	hit:SetAttribute("BaleId", bale.Id) -- what a click on it sells
 	local entry: Bales.Entry = { Id = bale.Id, Model = model, Hit = hit, Golden = bale.Golden, Column = 1, Busy = 0 }
 	v.Entries[bale.Id] = entry
 	local slot = v.Stack:Add(entry)
-	local click = Instance.new("ClickDetector")
-	click.MaxActivationDistance = Config.SellDistance
-	click.MouseClick:Connect(function()
-		hayAction:FireServer("Sell", bale.Id)
-	end)
-	click.MouseHoverEnter:Connect(function()
-		v.Highlight.Adornee = model
-		v.Highlight.Enabled = true
-	end)
-	click.MouseHoverLeave:Connect(function()
-		if v.Highlight.Adornee == model then
-			v.Highlight.Enabled = false
-		end
-	end)
-	click.Parent = hit
 	if instant then
 		model:PivotTo(slot)
 		return
@@ -335,10 +359,9 @@ end
 -- Sold: off the stack, onto the elevator, up the belt and into the silo.
 local function sendToSilo(v: View, entry: Bales.Entry)
 	local model = entry.Model
-	local click = entry.Hit:FindFirstChildOfClass("ClickDetector")
-	if click then
-		click:Destroy()
-	end
+	entry.Hit:SetAttribute("BaleId", nil)
+	entry.Hit.CanQuery = false
+	model.Parent = folder -- sold: out of the outlined group
 	if v.Highlight.Adornee == model then
 		v.Highlight.Enabled = false
 	end
@@ -400,6 +423,13 @@ local function sync(v: View, profile: any, instant: boolean)
 	v.BalerGui.Enabled = units > 0
 	v.StackTag.Text = "Click the bales to sell"
 	v.StackGui.Enabled = count > 0
+	local nextLevel, index = Hay.NextLevel(profile)
+	local ok, why = Hay.CanUpgrade(profile)
+	v.Upgrade.Enabled = nextLevel ~= nil
+	if nextLevel then
+		v.Upgrade.ObjectText = ("Baler level %d: %d bale slots, %d per press"):format(index, nextLevel.Layers * #Config.Stack.Columns, nextLevel.Batch)
+		v.Upgrade.ActionText = if ok or why == "Not enough Coins" then ("Upgrade (%s)"):format(Format.Coins(nextLevel.Price)) else why
+	end
 	if v.SiloTag then
 		v.SiloTag.Text = if state.Stock > 0 then ("HAY FOR SALE\n%d in stock"):format(state.Stock) else "HAY FOR SALE"
 	end
@@ -466,6 +496,13 @@ local function step(v: View, profile: any, dt: number)
 			v.Lamp.Material = Enum.Material.SmoothPlastic
 		end
 	end
+
+	-- Outlines breathe while they are the next thing to do.
+	local pulse = 0.5 + 0.5 * math.sin(t * 5)
+	local carrying = GrassBag.Total(profile) > 0
+	v.DeckGlow.OutlineTransparency = if carrying then 0.4 * pulse else 0.55
+	v.DeckGlow.FillTransparency = if carrying then 0.7 + 0.25 * pulse else 1 -- a soft glow when it is the next step
+	v.WaitingGlow.OutlineTransparency = 0.45 * pulse
 
 	v.Hatch = approach(v.Hatch, if v.NearHatch > 0 then 1 else 0, dt * 5)
 	local silo = v.SiloRigs
@@ -590,6 +627,43 @@ RunService.RenderStepped:Connect(function(dt)
 		step(v, profile, dt)
 	end
 end);
+
+-- Clicking bales. A ClickDetector ignores clicks while a Tool is equipped
+-- (and the player always holds one), so we cast the ray ourselves, only
+-- against the waiting bales.
+local function baleAt(v: View, ray: Ray): Bales.Entry?
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { v.Waiting }
+	local hit = Workspace:Raycast(ray.Origin, ray.Direction * 300, params)
+	local id = hit and hit.Instance:GetAttribute("BaleId")
+	return if typeof(id) == "number" then v.Entries[id] else nil
+end
+
+UserInputService.InputBegan:Connect(function(input, processed)
+	local v, camera = view, Workspace.CurrentCamera
+	if processed or not v or not camera then
+		return
+	end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		local entry = baleAt(v, camera:ScreenPointToRay(input.Position.X, input.Position.Y))
+		if entry then
+			hayAction:FireServer("Sell", entry.Id)
+		end
+	end
+end)
+
+-- The bale under the mouse lights up.
+RunService.RenderStepped:Connect(function()
+	local v, camera = view, Workspace.CurrentCamera
+	if not v or not camera or not UserInputService.MouseEnabled then
+		return
+	end
+	local mouse = UserInputService:GetMouseLocation()
+	local entry = baleAt(v, camera:ViewportPointToRay(mouse.X, mouse.Y))
+	v.Highlight.Adornee = if entry then entry.Model else nil
+	v.Highlight.Enabled = entry ~= nil
+end)
 
 -- The hint follows the player: only at the yard, never over a menu.
 task.spawn(function()

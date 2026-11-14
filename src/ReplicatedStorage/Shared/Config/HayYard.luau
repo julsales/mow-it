@@ -16,8 +16,10 @@ local rgb = Color3.fromRGB
 local v3 = Vector3.new
 
 export type Level = {
-	BaleSeconds: number, -- time the baler needs per bale
-	ValueMultiplier: number, -- on every bale it presses
+	Price: number, -- Coins to reach this level
+	RequiredZone: number, -- island (index in Zones.luau) that must be unlocked first
+	BaleSeconds: number, -- time the baler needs per press
+	Batch: number, -- bales that come out of one press
 	Layers: number, -- bale layers the stack holds (6 bales per layer)
 }
 
@@ -67,12 +69,17 @@ local HayYard = {
 	CustomerWalkSeconds = 6, -- from the spawn marker to the counter; the tip lands then
 	CustomerSpeed = { Min = 7, Max = 16 }, -- studs/s limits when matching that time
 
-	-- Baler upgrades (profile.Hay.Level). Only level 1 is reachable for now;
-	-- buying levels, a conveyor to the silo and a truck come later.
+	-- Baler upgrades (profile.Hay.Level), bought at the baler. A level can
+	-- only be bought once the island `RequiredZone` (index in Zones.luau) is
+	-- unlocked, so the machine grows with the land.
 	Levels = {
-		{ BaleSeconds = 2.4, ValueMultiplier = 1, Layers = 2 },
-		{ BaleSeconds = 1.8, ValueMultiplier = 1.15, Layers = 3 },
-		{ BaleSeconds = 1.2, ValueMultiplier = 1.35, Layers = 4 },
+		{ Price = 0, RequiredZone = 1, BaleSeconds = 2.4, Batch = 1, Layers = 2 },
+		{ Price = 400, RequiredZone = 1, BaleSeconds = 2.2, Batch = 1, Layers = 3 },
+		{ Price = 4_000, RequiredZone = 2, BaleSeconds = 2.0, Batch = 2, Layers = 3 },
+		{ Price = 50_000, RequiredZone = 3, BaleSeconds = 1.8, Batch = 2, Layers = 4 },
+		{ Price = 400_000, RequiredZone = 4, BaleSeconds = 1.6, Batch = 3, Layers = 4 },
+		{ Price = 3_000_000, RequiredZone = 5, BaleSeconds = 1.4, Batch = 3, Layers = 5 },
+		{ Price = 20_000_000, RequiredZone = 6, BaleSeconds = 1.2, Batch = 4, Layers = 5 },
 	} :: { Level },
 
 	-- The stack on the pallet: columns across (X) and deep (Z), bale size.
@@ -99,8 +106,8 @@ local HayYard = {
 		Accent2 = { Color = rgb(250, 200, 70), Material = Enum.Material.SmoothPlastic },
 		Body = { Color = rgb(240, 228, 198), Material = Enum.Material.SmoothPlastic },
 		Roof = { Color = rgb(180, 64, 52), Material = Enum.Material.SmoothPlastic },
-		Hay = { Color = rgb(222, 196, 104), Material = Enum.Material.SmoothPlastic },
-		Straw = { Color = rgb(244, 224, 140), Material = Enum.Material.SmoothPlastic },
+		Hay = { Color = rgb(178, 196, 92), Material = Enum.Material.SmoothPlastic }, -- fresh-cut grass, not dry hay
+		Straw = { Color = rgb(214, 224, 128), Material = Enum.Material.SmoothPlastic },
 		Twine = { Color = rgb(128, 88, 54), Material = Enum.Material.Fabric },
 		Grass = { Color = rgb(112, 178, 72), Material = Enum.Material.SmoothPlastic },
 		Lamp = { Color = rgb(120, 110, 100), Material = Enum.Material.SmoothPlastic },
@@ -177,11 +184,13 @@ local HayYard = {
 		},
 	} :: { [string]: PieceDef },
 
-	-- Where the player hands grass in: a small square outlined on the ground
-	-- in front of the baler (Model "LoadSquare": four lines and the invisible
-	-- contract part "SellPad" inside them). Yard frame; `Side` is the square's
-	-- outer size, `Line` the width of its outline.
-	LoadSquare = { Center = v3(-12.6, 0, 7.4), Side = 4.5, Line = 0.35, Height = 5, Color = rgb(255, 214, 90) },
+	-- Where the player hands grass in: the contract part "SellPad", an
+	-- invisible box on the baler's loading deck (baler coordinates). It is
+	-- smaller than the deck because EconomyService counts a pad as reached 2
+	-- studs around it. The deck itself glows with an outline (HayYard.client).
+	LoadZone = { Piece = "Baler", Center = v3(-1.6, 2.6, 3.6), Size = v3(1.4, 5, 0.5) },
+	DeckPiece = "Wood", -- the baler mesh that is the loading deck
+	Outline = rgb(255, 214, 90), -- outline of the deck and of the bales waiting to be sold
 	-- Customers walk in from the invisible "CustomerSpawn" marker (drag it
 	-- in Studio); built this far from the silo's counter.
 	CustomerSpawn = v3(6, 0, 34),
@@ -194,7 +203,6 @@ local HayYard = {
 			{ Center = v3(-4.8, 0, 1.6), Size = v3(25.5, 0, 10) }, -- baler and stack
 			{ Center = v3(6.3, 0, -6.2), Size = v3(20, 0, 13) }, -- silo and elevator
 			{ Center = v3(9.5, 0, 2.6), Size = v3(10, 0, 7) }, -- in front of the counter
-			{ Center = v3(-12.6, 0, 6.6), Size = v3(8.5, 0, 8) }, -- under the load square
 		},
 	},
 	-- The yard stands this far from where an island's sell pad would be
