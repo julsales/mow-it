@@ -426,7 +426,7 @@ local function artTemplate(toolId: string): (Model?, ToolArt.ToolLook?, ToolArt.
 	return nil, nil, nil
 end
 
--- Paint one mesh piece by its name ("Group" or "Group.Extra").
+-- Paint one mesh piece by its group name (extra and rig already split off).
 local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	if piece.Name == "Accent" then
 		piece.Color = look.Color
@@ -434,6 +434,13 @@ local function paint(piece: BasePart, look: ToolArt.ToolLook)
 	elseif piece.Name == "Accent2" then
 		piece.Color = look.Color2
 		piece.Material = Enum.Material.SmoothPlastic
+	elseif piece.Name == "Glow" then
+		piece.Color = look.Color2
+		piece.Material = Enum.Material.Neon
+	elseif piece.Name == "Crystal" then
+		piece.Color = look.Color2
+		piece.Material = Enum.Material.Glass
+		piece.Transparency = 0.25
 	else
 		local spec = ToolArt.Pieces[piece.Name]
 		if spec then
@@ -470,6 +477,12 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 		if d:IsA("Script") or d:IsA("LocalScript") or d:IsA("ModuleScript") then
 			d:Destroy()
 		elseif d:IsA("BasePart") then
+			-- "Group.Extra#Rig": the rig is what ToolAnimations moves.
+			local name, rigName = string.match(d.Name, "^([^#]+)#(.+)$")
+			if name and rigName then
+				d.Name = name
+				d:SetAttribute("Rig", rigName)
+			end
 			local group, extra = string.match(d.Name, "^([^%.]+)%.(.+)$")
 			if group and extra then
 				if keep[extra] then
@@ -492,6 +505,12 @@ local function fromArt(template: Model, look: ToolArt.ToolLook, def: ToolArt.Mod
 	model.WorldPivot = CFrame.identity
 	if math.abs(scale - 1) > 1e-3 then
 		model:ScaleTo(scale)
+	end
+	-- Hinge of the blades / lever, for the open-close animation.
+	if def.Snip then
+		model:SetAttribute("SnipPivot", def.Snip.Pivot * scale)
+		model:SetAttribute("SnipAxis", def.Snip.Axis)
+		model:SetAttribute("SnipAngle", def.Snip.Angle)
 	end
 	-- 4. Push mowers: the handle is built to fit the player's arms.
 	if def.Handle then

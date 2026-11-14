@@ -10,7 +10,11 @@
 #   Eye, Teeth, Gold, Fabric, plus the special HandleGrip / SteeringWheel.
 # "Group.Extra" pieces are optional: the game keeps them only for tools
 # whose config lists that extra (e.g. "Chrome.Turbo").
+# "…#Rig" pieces move in the game (ToolAnimations.client): built inside a
+# `with rig("SnipL"):` block. Wheels get their own "Spin<n>" rig each, so
+# every wheel turns around its own centre.
 
+import contextlib
 import math
 
 import bmesh
@@ -33,8 +37,47 @@ def rotm(rot):
     return m
 
 
+_RIG = [None]
+_XFORM = [Matrix.Identity(4)]
+_SPIN = [0]
+
+
+@contextlib.contextmanager
+def rig(name):
+    """Pieces built inside move together as one animated part. Inside
+    another rig the outer one wins (a mini drone orbits as one piece)."""
+    old = _RIG[0]
+    _RIG[0] = old or name
+    try:
+        yield
+    finally:
+        _RIG[0] = old
+
+
+@contextlib.contextmanager
+def xform(scale=1.0, offset=(0, 0, 0)):
+    """Build pieces scaled around the origin, then moved (roblox coords)."""
+    old = _XFORM[0]
+    _XFORM[0] = old @ Matrix.Translation(R(*offset)) @ Matrix.Diagonal((scale, scale, scale, 1))
+    try:
+        yield
+    finally:
+        _XFORM[0] = old
+
+
+def next_spin():
+    _SPIN[0] += 1
+    return f"Spin{_SPIN[0]}"
+
+
+def reset_state():
+    _RIG[0] = None
+    _XFORM[0] = Matrix.Identity(4)
+    _SPIN[0] = 0
+
+
 def _place(o, matrix, group, bevel, smooth=False):
-    o.matrix_world = matrix
+    o.matrix_world = _XFORM[0] @ matrix
     bpy.context.view_layer.objects.active = o
     for ob in bpy.context.selected_objects:
         ob.select_set(False)
@@ -49,6 +92,8 @@ def _place(o, matrix, group, bevel, smooth=False):
         mod.harden_normals = False
         bpy.ops.object.modifier_apply(modifier=mod.name)
     o["grp"] = group
+    if _RIG[0]:
+        o["rig"] = _RIG[0]
     return o
 
 
@@ -141,7 +186,11 @@ def arc_pts(cx, cy, r, a0, a1, steps):
 
 
 def wheel(c, diameter, width, hub="Accent", tread=False, spokes=0, axis_x=True):
-    """Chunky cartoon wheel: rubber tyre, coloured rim, chrome cap."""
+    """Chunky cartoon wheel: rubber tyre, coloured rim, chrome cap. Gets
+    its own spin rig (unless built inside another rig)."""
+    if _RIG[0] is None:
+        with rig(next_spin()):
+            return wheel(c, diameter, width, hub, tread, spokes, axis_x)
     x, y, z = c
     hw = width / 2
     r = diameter / 2
@@ -164,7 +213,8 @@ def finish(name):
     groups = {}
     for o in list(bpy.context.scene.objects):
         if o.type == "MESH":
-            groups.setdefault(o.get("grp", "Dark"), []).append(o)
+            key = o.get("grp", "Dark") + (f"#{o['rig']}" if o.get("rig") else "")
+            groups.setdefault(key, []).append(o)
     for g, objs in groups.items():
         for ob in bpy.context.selected_objects:
             ob.select_set(False)

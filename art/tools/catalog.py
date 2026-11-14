@@ -26,7 +26,8 @@ for tool, model, r, g, b, r2, g2, b2, extras in rows:
     MODELS[model]()
     lib.finish(model)
     for o in list(bpy.context.scene.objects):
-        if "." in o.name and o.name.split(".", 1)[1] not in keep:
+        name = o.name.split("#")[0]
+        if "." in name and name.split(".", 1)[1] not in keep:
             bpy.data.objects.remove(o)
     build.COLORS["Accent"] = tuple(srgb(int(v)) for v in (r, g, b))
     build.COLORS["Accent2"] = tuple(srgb(int(v)) for v in (r2, g2, b2))
