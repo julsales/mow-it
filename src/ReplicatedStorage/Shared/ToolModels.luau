@@ -482,7 +482,7 @@ local function applyFinish(model: Model, look: ToolArt.ToolLook)
 				end
 			elseif d.Name == "Accent2" or d.Name == "Glow" then
 				d.Color = finish.Color2
-				d.Material = Enum.Material.Neon
+				d.Material = if d.Name == "Accent2" then finish.Material2 or Enum.Material.Neon else Enum.Material.Neon
 			end
 		end
 	end
