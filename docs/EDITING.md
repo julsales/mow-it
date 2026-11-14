@@ -54,23 +54,42 @@ on it is inside it, each piece its own Model:
 ```
 Workspace
 ├─ Zones (Folder)
-│  ├─ front_yard (Model: the home island)
-│  │  ├─ PlayerBase   the cabin; GameSpawn is inside it
-│  │  ├─ HayYard      Baler, BaleStack, Silo, Ground (each its own Model),
-│  │  │               the invisible CustomerSpawn marker; SellPad is inside Baler
+│  ├─ front_yard (Model: the home island, shared by everybody)
+│  │  ├─ GameSpawn    where a player without a base appears
 │  │  ├─ FarmerStand  farmer (Npc) + stand + tools on sale
-│  │  ├─ Dock         jetty + rowboat
 │  │  ├─ Yard         planters, mailbox
-│  │  ├─ Path         dirt paths + edge rocks
+│  │  ├─ Promenade    the dirt ring every bridge lands on + edge rocks
 │  │  ├─ Trees        trees, bushes, flowers, boulders
 │  │  ├─ ShoreWalls   invisible walls just offshore
 │  │  └─ Lawns        GrassArea parts (where grass grows)
-│  ├─ backyard (Model) ... same, with a SellStation (drop-off SellPad + its
-│  │                    stall) instead of the HayYard, plus
+│  ├─ backyard (Model) ... same, with a Path instead of the Promenade, a
+│  │                    SellStation (drop-off SellPad + its stall), plus
 │  │  └─ Bridge       the bridge onto this island: ZoneGate, ZoneWall, arch, side walls
 │  └─ ... one Model per island (mega_fields also has the Pier)
+├─ Bases (Folder)     the players' personal bases round the home island
+│  ├─ Base1 (Model)   one island per player (BaseService hands them out)
+│  │  ├─ Bridge       to the home island
+│  │  ├─ PlayerBase   the cabin
+│  │  ├─ HayYard      Baler, BaleStack, Silo, Ground (each its own Model),
+│  │  │               the invisible CustomerSpawn marker; SellPad is inside Baler
+│  │  ├─ Jetty        jetty + rowboat
+│  │  ├─ Lawns        GrassArea parts (home-island grass)
+│  │  ├─ BaseSpawn    where its owner appears
+│  │  ├─ OwnerBoard   the board that reads "<name>'s Island" (part OwnerSign)
+│  │  ├─ OwnerTag     invisible: the owner's picture and name float on it
+│  │  └─ Path, Trees, ShoreWalls
+│  └─ Base2 ... Base6
 └─ Sea (Folder)       FarSea plates, islets, the far island
 ```
+
+A base moves like an island: drag its Model, then run `Restamp()` so its
+ground follows (its `BakedPivot` attribute says where it was built). To
+change how many bases there are, their size or what stands where, edit
+`Shared/Config/Bases.luau`, delete `Workspace/Bases` and run
+`require(game.ServerScriptService.Services.MapService).BakeBases()`
+(clear the old bases' ground first with `Restamp()`). After changing one
+island's row in `MapLayout.luau` (say its `Radius` or `Wobble`),
+`MapService.RestampIsland("<ZoneId>")` redraws just that island's ground.
 
 - **Move a whole island:** click it in the viewport (a click selects the
   whole island Model), then move/rotate it. Its lawns, bridge, stand, pad
@@ -98,8 +117,9 @@ Workspace
 - **Don't** rename or ungroup the island Models (`Zones/<ZoneId>`), and keep
   these names: `GrassArea`, `SellPad`, `HayYard` (with `Baler`, `BaleStack`,
   `Silo`, `CustomerSpawn`), `ZoneGate`, `ZoneWall`, `FarmerStand`
-  (with its `Npc`), `GameSpawn`, and the island's `BakedPivot` attribute
-  (Restamp uses it to know how far the island moved).
+  (with its `Npc`), `GameSpawn`, on the bases `BaseSpawn`, `OwnerSign`,
+  `OwnerTag` and `Jetty`, and the `BakedPivot` attribute of islands and
+  bases (Restamp uses it to know how far they moved).
 
 ## What you can change freely
 
@@ -125,7 +145,8 @@ Code finds things by these names and attributes, never by position:
 | `Workspace/Zones/<ZoneId>` Models | ids from `Config/Zones.luau` | one island Model per area; everything below can sit anywhere inside it |
 | `GrassArea` (Part, any size/rotation) | inside `Zones/<ZoneId>` | grass grows on every 4×4 cell inside it; its bottom is the lawn surface. Move/resize/duplicate to reshape lawns |
 | `SellPad` (Part) | inside `Zones/<ZoneId>` | standing on it hands your grass in: it goes to the baler (the stall behind an island's pad is decoration; the baler's own pad is an invisible box on its loading deck) |
-| `HayYard` (Model) with `Baler`, `BaleStack`, `Silo` (Models) and `CustomerSpawn` (Part) | inside the home island | the selling line: bales come out of the Baler, stack on BaleStack, ride into the Silo; customers walk from CustomerSpawn to the Silo's counter. Don't rename the mesh pieces or remove their attributes (`Rig`, `Pivot_…`): they drive the animations |
+| `Workspace/Bases/<any name>` Models | built by `Map/Bases` | one personal base per player; attributes `OwnerUserId` / `OwnerName` are set at runtime |
+| `HayYard` (Model) with `Baler`, `BaleStack`, `Silo` (Models) and `CustomerSpawn` (Part) | inside every base | the selling line: bales come out of the Baler, stack on BaleStack, ride into the Silo; customers walk from CustomerSpawn to the Silo's counter. Don't rename the mesh pieces or remove their attributes (`Rig`, `Pivot_…`): they drive the animations |
 | `FarmerStand` (Model) with an `Npc` | inside `Zones/<ZoneId>` | the island's tool seller; its farmer is the quest contact (`QuestWorld`) |
 | `ZoneGate` (Part) | inside `Zones/<ZoneId>` | locked gate, opens for players who unlocked the zone. The game adds its "Unlock" prompt at runtime (`PromptAnchor` attachment, 4.5 studs above the gate's bottom edge); add your own `PromptAnchor` to place it elsewhere |
 | `ZoneWall` (Parts, invisible) | inside `Zones/<ZoneId>` | blocks climbing over the locked gate on the bridge |

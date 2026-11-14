@@ -149,9 +149,9 @@ end);
 
 -- Server pushes ----------------------------------------------------------------
 -- Zone gates (a "ZoneGate" anywhere under Workspace/Zones/<id>) are solid on the server.
--- Each client opens the gates of the expansions unlocked on the land of
--- this session (the host's, LandState). The server still refuses cutting
--- in locked expansions.
+-- Each client opens the gates of the islands its own player has unlocked
+-- (LandState), so one player walks through a gate that is still shut for
+-- another. The server still refuses cutting on locked islands.
 --
 -- The gate's "Unlock" prompt (Map/Gates on the server) is painted here for
 -- this player: what it costs, or what is still missing.
@@ -163,9 +163,7 @@ local function paintGatePrompt(gate: BasePart, zone, open: boolean)
 	local nextZone = Zones.NextLocked(LandState.Unlocked())
 	prompt.Enabled = not open
 	prompt.ObjectText = zone.DisplayName
-	if not LandState.IsHost() then
-		prompt.ActionText = ("Only %s can expand this land"):format(LandState.HostName())
-	elseif nextZone and nextZone.Id ~= zone.Id then
+	if nextZone and nextZone.Id ~= zone.Id then
 		prompt.ActionText = "Unlock " .. nextZone.DisplayName .. " first"
 	elseif (profile.Level or 1) < zone.RequiredLevel then
 		prompt.ActionText = ("Needs Company Level %d"):format(zone.RequiredLevel)

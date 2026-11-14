@@ -17,7 +17,8 @@ local GrassBag = require(Shared.GrassBag)
 local ProfileService = require(script.Parent.ProfileService)
 local GrassService = require(script.Parent.GrassService)
 local LevelService = require(script.Parent.LevelService)
-local LandService = require(script.Parent.LandService)
+local Bases = require(Shared.Bases)
+local LawnCells = require(Shared.LawnCells)
 local HayService = require(script.Parent.HayService)
 
 local Tuning = require(Shared.Config.Progression)
@@ -101,7 +102,11 @@ function EconomyService.Harvest(player: Player, position: Vector3, radius: numbe
 		if profile and EconomyService.CanSellAnywhere(player) then EconomyService.SellAll(player) end
 		return 0, 0, {}
 	end
-	local cells = GrassService.GetCellsInRadius(position, radius, LandService.IsUnlocked)
+	-- Everybody mows their own lawn (GrassService), on the islands they
+	-- have unlocked themselves.
+	local cells = GrassService.GetCellsInRadius(player, position, radius, function(zoneId)
+		return profile.UnlockedZoneIds[zoneId] == true
+	end)
 	local stored, harvested, xp, hit = 0, 0, 0, 0
 	-- Mature planted grass takes storage priority over the surrounding wild lawn.
 	if manual then stored = Plots.CutNear(player, position, radius) end
@@ -109,9 +114,9 @@ function EconomyService.Harvest(player: Player, position: Vector3, radius: numbe
 	for _, cell in cells do
 		if GrassBag.IsFull(profile) then break end
 		hit += 1
-		if GrassService.Damage(cell, power) then
+		local gain = GrassService.Damage(player, cell, power)
+		if gain then
 			if #cutAt < 40 then table.insert(cutAt, cell.Center) end
-			local gain = cell.Yield
 			if math.random() < critChance then gain *= 3 end
 			harvested += gain
 			stored += GrassBag.Add(profile, Weather.Variant(profile), gain)
@@ -119,6 +124,7 @@ function EconomyService.Harvest(player: Player, position: Vector3, radius: numbe
 			Progression.OnCut(player, cell.ZoneId, gain)
 		end
 	end
+	GrassService.Flush(player)
 	if harvested > 0 or stored > 0 then
 		profile.LifetimeGrass += harvested
 		LevelService.AddXp(player, xp)
@@ -152,7 +158,7 @@ end
 -- Standing on a SellPad: the grass goes to the baler (bales to sell at the
 -- base); without a hay yard it is paid out on the spot.
 local function handIn(player: Player)
-	if HayService.HasYard() then
+	if HayService.HasYard(player) then
 		HayService.Load(player)
 	else
 		EconomyService.SellAll(player)
@@ -167,9 +173,12 @@ function EconomyService.Init(remoteFolder: Folder)
 	-- Handing grass in is physical: name any Part "SellPad" in Studio and it works.
 	task.spawn(function()
 		local pads = {}
+		local padZone: { [BasePart]: string } = {}
 		for _, instance in workspace:GetDescendants() do
 			if instance:IsA("BasePart") and instance.Name == "SellPad" then
 				table.insert(pads, instance)
+				local zoneId = LawnCells.ZoneOf(instance)
+				padZone[instance] = if zoneId and not Bases.Containing(instance) then zoneId else nil
 			end
 		end
 		while true do
@@ -190,13 +199,16 @@ function EconomyService.Init(remoteFolder: Folder)
 					end
 					for _, pad in pads do
 						local localPosition = pad.CFrame:PointToObjectSpace(root.Position)
-						local zone = pad:FindFirstAncestorWhichIsA("Folder")
-						if (not zone or not Zones.ById[zone.Name] or LandService.IsUnlocked(zone.Name))
+						-- An island's pad works once this player unlocked the
+						-- island; a base's loading deck only for its owner.
+						local zoneId = padZone[pad]
+						local profile = ProfileService.Get(player)
+						if profile and (not zoneId or profile.UnlockedZoneIds[zoneId])
+							and not Bases.IsForeign(pad, player.UserId)
 							and math.abs(localPosition.X) <= pad.Size.X / 2 + reach
 							and math.abs(localPosition.Z) <= pad.Size.Z / 2 + reach
 							and math.abs(localPosition.Y) < height then
-							local profile = ProfileService.Get(player)
-							if profile and profile.Fuel < Tuning.FuelCapacity then
+							if profile.Fuel < Tuning.FuelCapacity then
 								profile.Fuel = Tuning.FuelCapacity; emptyFuel[player] = nil
 								ProfileService.NotifyChanged(player)
 							end

@@ -1,7 +1,8 @@
 # Hay yard: how grass is sold
 
-Selling is a small production line at the player's base instead of a pad
-on the ground. Behaviour is specified in
+Selling is a small production line at the player's own base (every
+player has a personal base island with their own yard: `Config/Bases`,
+`Map/Bases`, `BaseService`) instead of a pad on the ground. Behaviour is specified in
 `openspec/specs/core-mowing-loop/spec.md` ("Selling grass"); this file is
 the plan: what exists, how it is put together and what comes next.
 
@@ -64,7 +65,7 @@ player near the stack). Clients draw it from the profile they already
 receive; only customers and tips have their own events. Each player sees
 their own bales.
 
-In the place, the yard is one Model `HayYard` inside the home island with
+In the place, every personal base (`Workspace/Bases/Base<N>`) holds one Model `HayYard` with
 the Models `Baler`, `BaleStack`, `Silo` and `Ground` (the packed dirt),
 plus two invisible parts: `SellPad` (inside `Baler`, on its loading
 deck) and `CustomerSpawn` (where customers walk in from). Code finds them by

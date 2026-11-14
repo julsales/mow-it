@@ -5,7 +5,6 @@ local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config.Quests)
 local World = require(Shared.QuestWorld)
 local Profiles = require(script.Parent.ProfileService)
-local Land = require(script.Parent.LandService)
 local QuestService = {}
 local remotes: Folder
 local lastTalk = setmetatable({}, { __mode = "k" })
@@ -18,7 +17,7 @@ local function nearby(player: Player, id: string, distance: number): boolean
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	local npc = World.Find(id)
 	return def ~= nil and profile ~= nil and profile.UnlockedZoneIds[def.ZoneId] == true
-		and Land.IsUnlocked(def.ZoneId) and root ~= nil and humanoid ~= nil and humanoid.Health > 0
+		and root ~= nil and humanoid ~= nil and humanoid.Health > 0
 		and npc ~= nil and (root.Position - npc.Position).Magnitude <= distance
 end
 function QuestService.CanAccept(player: Player, id: string): boolean

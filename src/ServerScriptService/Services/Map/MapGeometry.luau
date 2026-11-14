@@ -43,11 +43,20 @@ MapGeometry.Order = {} :: { [string]: number }
 MapGeometry.Islands = {} :: { Island }
 MapGeometry.ById = {} :: { [string]: Island }
 
-local function coastRadius(island: Island, angle: number): number
+local function wobble(island: Island, angle: number): number
 	local a = math.rad(angle)
 	local p = island.Phases
-	local wobble = 0.11 * math.sin(3 * a + p[1]) + 0.07 * math.sin(5 * a + p[2]) + 0.04 * math.sin(9 * a + p[3])
-	return island.Def.Radius * (1 + wobble)
+	return 0.11 * math.sin(3 * a + p[1]) + 0.07 * math.sin(5 * a + p[2]) + 0.04 * math.sin(9 * a + p[3])
+end
+
+local function coastRadius(island: Island, angle: number): number
+	return island.Def.Radius * (1 + wobble(island, angle) * (island.Def.Wobble or 1))
+end
+
+-- The radius the chain of islands is laid out with: always the full
+-- wobble, so making one island rounder (`Wobble`) never moves the others.
+local function chainRadius(island: Island, angle: number): number
+	return island.Def.Radius * (1 + wobble(island, angle))
 end
 
 do
@@ -69,9 +78,9 @@ do
 		if previous then
 			-- Place it so the coasts are `Gap` apart along the heading.
 			local dir = MapGeometry.Direction(def.Heading)
-			local out = coastRadius(previous, def.Heading)
+			local out = chainRadius(previous, def.Heading)
 			island.Center = previous.Center + dir * out -- temporary, for its own radius
-			local back = coastRadius(island, def.Heading + 180)
+			local back = chainRadius(island, def.Heading + 180)
 			island.Center = previous.Center + dir * (out + def.Gap + back)
 		end
 		table.insert(MapGeometry.Islands, island)

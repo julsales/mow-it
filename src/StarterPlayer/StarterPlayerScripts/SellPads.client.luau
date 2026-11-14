@@ -2,8 +2,8 @@
 -- Makes the islands' drop-off pads (contract name "SellPad": stand on one
 -- and your grass is sent to the baler at your base) easy to spot without
 -- cluttering the screen: a small "DROP OFF" sign above each pad (visible within ~60 studs, not through
--- walls) and a faint gold light column. Only pads in expansions open on
--- this session's land (LandState) get them. Pads are found by their contract name "SellPad"
+-- walls) and a faint gold light column. Only pads on islands the local
+-- player has unlocked (LandState) get them. Pads are found by their contract name "SellPad"
 -- (streaming-safe); local only.
 
 local Workspace = game:GetService("Workspace")
@@ -34,7 +34,7 @@ end
 
 local function decorate(pad: BasePart)
 	-- The baler's own loading deck needs no sign: the machine is the sign.
-	if decorated[pad] or pad:FindFirstAncestor("HayYard") then
+	if decorated[pad] or pad:FindFirstAncestor("HayYard") then -- (on the personal bases)
 		return
 	end
 

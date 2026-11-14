@@ -1,7 +1,8 @@
 --!strict
--- Grass visuals on the client. The grass itself is Terrain (GrassService):
--- tall Grass with wind-swayed blades, mowed cells turn into striped short
--- lawn, and Terrain edits replicate on their own. On top of it:
+-- Grass visuals on the client. The grass itself is Terrain: tall Grass
+-- with wind-swayed blades. Every player has their own lawn (GrassService):
+--   * GrassState paints the local player's mowed cells into this client's
+--     terrain (striped short lawn) and keeps their rare patches;
 --   * GrassTufts draws each area's own blades (and the rare patches);
 --   * this script sprays clippings, in the grass's color, where the local
 --     player's swing mowed cells (positions arrive in CutFeedback).
@@ -12,8 +13,10 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local GrassTufts = require(script.Parent:WaitForChild("GrassTufts"))
+local GrassState = require(script.Parent:WaitForChild("GrassState"))
 
 local player = Players.LocalPlayer
+GrassState.Start() -- before the tufts: it creates the patch markers they read
 GrassTufts.Start()
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 

@@ -34,6 +34,9 @@ local ShopDisplay = require(script.Parent.Map.ShopDisplay)
 local ShopInterior = require(script.Parent.Map.ShopInterior)
 local FarmerStand = require(script.Parent.Map.FarmerStand)
 local HayYard = require(script.Parent.Map.HayYard)
+local Bases = require(script.Parent.Map.Bases)
+local BasesConfig = require(Shared.Config.Bases)
+local SharedBases = require(Shared.Bases)
 local Geo = require(script.Parent.Map.MapGeometry)
 local LawnCells = require(Shared.LawnCells)
 
@@ -207,7 +210,9 @@ end
 -- Surface height and material for a cell `edge` studs from a coast
 -- (negative inland). Flat lawns inland, a rise and rock cliffs at some
 -- coasts, sand beaches elsewhere, then the sea floor sloping away.
-local function surfaceAt(edge: number, cliff: number): (number, Enum.Material)
+-- `beach` = width of the sand band (default: MapLayout.Beach).
+local function surfaceAt(edge: number, cliff: number, beach: number?): (number, Enum.Material)
+	local BEACH = beach or BEACH
 	local cliffTop = GROUND_TOP + MapLayout.CliffHeight * cliff
 	if edge < -BEACH - 3 then
 		return GROUND_TOP, MapService.Materials.Wild
@@ -348,6 +353,15 @@ local function coastPlan(): Plan
 	minV = minV:Min(farCenter - Vector3.one * MapLayout.FarIsland.Radius)
 	maxV = maxV:Max(farCenter + Vector3.one * MapLayout.FarIsland.Radius)
 
+	-- The personal bases around the home island: their bridges open its
+	-- shore wall, and sea rocks and islets keep out of their water.
+	for _, opening in Bases.Openings() do
+		table.insert(openings, opening)
+	end
+	for _, slot in Bases.Slots do
+		table.insert(keepClear[Geo.Islands[1].Id], slot.Heading) -- no cliff where a base's bridge lands
+	end
+
 	-- Rocks in the shallows and wooded islets (own seeded Random, so the
 	-- same spots come back on every Restamp).
 	local r = Random.new(MapLayout.Seed + 7)
@@ -364,7 +378,7 @@ local function coastPlan(): Plan
 				nearOpening = true
 			end
 		end
-		if edge > 2 and not nearOpening then
+		if edge > 2 and not nearOpening and not Bases.Near(p, 14) then
 			table.insert(rocks, { IslandId = island.Id, Point = p, Radius = radius })
 		end
 	end
@@ -376,7 +390,7 @@ local function coastPlan(): Plan
 		local p = Vector3.new(minV.X - 150 + r:NextNumber() * (maxV.X - minV.X + 300), 0, minV.Z - 150 + r:NextNumber() * (maxV.Z - minV.Z + 300))
 		local radius, trees = 10 + r:NextNumber() * 16, r:NextInteger(1, 4)
 		local _, edge = Geo.Nearest(p)
-		local clear = edge > 60 and (p - farCenter).Magnitude > MapLayout.FarIsland.Radius + 60
+		local clear = edge > 60 and (p - farCenter).Magnitude > MapLayout.FarIsland.Radius + 60 and not Bases.Near(p, 50)
 		for _, island in Geo.Islands do
 			local bridge = Geo.BridgeTo(island)
 			if bridge then
@@ -404,10 +418,50 @@ local function coastPlan(): Plan
 	}
 end
 
+local kit: () -> Bases.Kit
+
+-- One island's ground columns. For every terrain cell around where the
+-- island now is, look up the baked spot it came from (inverse of the move
+-- `delta`) and copy that ground: grid-aligned, no gaps, works for turned
+-- islands. `done` = cells already filled (by an island stamped earlier).
+local function stampIsland(island: Geo.Island, delta: CFrame, plan: Plan, done: { [string]: boolean })
+	local filled = 0
+	local bottom = -MapLayout.WaterDepth - 6
+	local back = delta:Inverse()
+	local reach = island.Def.Radius * 1.3 + 30
+	local c = delta * island.Center
+	for ix = math.floor((c.X - reach) / CELL), math.floor((c.X + reach) / CELL) do
+		for iz = math.floor((c.Z - reach) / CELL), math.floor((c.Z + reach) / CELL) do
+			local k = ix .. "," .. iz
+			if done[k] then
+				continue
+			end
+			local center = Vector3.new(ix * CELL + CELL / 2, 0, iz * CELL + CELL / 2)
+			local source = back * center
+			local nearest, edge = Geo.Nearest(Vector3.new(source.X, 0, source.Z))
+			if nearest ~= island or edge > 34 then
+				continue
+			end
+			done[k] = true
+			local angle = Geo.AngleOf(source - nearest.Center)
+			local top, material = surfaceAt(edge, cliffAt(nearest, angle, plan.KeepClear[nearest.Id]))
+			top += delta.Position.Y
+			local height = top - SURFACE_LIFT - bottom
+			if height > 0 then
+				terrain:FillBlock(CFrame.new(center.X, bottom + height / 2, center.Z), Vector3.new(CELL, height, CELL), material)
+			end
+			filled += 1
+			if filled % 600 == 0 then
+				task.wait()
+			end
+		end
+	end
+end
+
 -- All the terrain: sea, islands, rocks, islets, then the lawns painted in
 -- under every GrassArea. `moved[islandId]` = how far that island's Model
 -- was moved since the bake (a CFrame); its ground is stamped there.
-local function stampTerrain(moved: { [string]: CFrame })
+local function stampTerrain(moved: { [string]: CFrame }, movedBases: { [string]: CFrame })
 	local plan = coastPlan()
 	terrain:Clear()
 	local minV, maxV = plan.Min, plan.Max
@@ -421,43 +475,9 @@ local function stampTerrain(moved: { [string]: CFrame })
 	local margin = MapLayout.SeaMargin
 	fillSea(minV.X - margin, maxV.X + margin, minV.Z - margin, maxV.Z + margin)
 
-	-- Island columns. For every terrain cell around where the island now
-	-- is, look up the baked spot it came from (inverse of the move) and
-	-- copy that ground: grid-aligned, no gaps, works for turned islands.
 	local done: { [string]: boolean } = {}
-	local filled = 0
-	local bottom = -MapLayout.WaterDepth - 6
 	for _, island in Geo.Islands do
-		local delta = moved[island.Id] or CFrame.identity
-		local back = delta:Inverse()
-		local reach = island.Def.Radius * 1.3 + 30
-		local c = delta * island.Center
-		for ix = math.floor((c.X - reach) / CELL), math.floor((c.X + reach) / CELL) do
-			for iz = math.floor((c.Z - reach) / CELL), math.floor((c.Z + reach) / CELL) do
-				local k = ix .. "," .. iz
-				if done[k] then
-					continue
-				end
-				local center = Vector3.new(ix * CELL + CELL / 2, 0, iz * CELL + CELL / 2)
-				local source = back * center
-				local nearest, edge = Geo.Nearest(Vector3.new(source.X, 0, source.Z))
-				if nearest ~= island or edge > 34 then
-					continue
-				end
-				done[k] = true
-				local angle = Geo.AngleOf(source - nearest.Center)
-				local top, material = surfaceAt(edge, cliffAt(nearest, angle, plan.KeepClear[nearest.Id]))
-				top += delta.Position.Y
-				local height = top - SURFACE_LIFT - bottom
-				if height > 0 then
-					terrain:FillBlock(CFrame.new(center.X, bottom + height / 2, center.Z), Vector3.new(CELL, height, CELL), material)
-				end
-				filled += 1
-				if filled % 600 == 0 then
-					task.wait()
-				end
-			end
-		end
+		stampIsland(island, moved[island.Id] or CFrame.identity, plan, done)
 	end
 	for _, rock in plan.SeaRocks do
 		local p = (moved[rock.IslandId] or CFrame.identity) * rock.Point
@@ -467,10 +487,11 @@ local function stampTerrain(moved: { [string]: CFrame })
 		isletTerrain(spot.Center, spot.Radius)
 	end
 	isletTerrain(plan.FarCenter, MapLayout.FarIsland.Radius)
+	Bases.Stamp(kit(), movedBases)
 
 	-- Lawns: wherever the GrassArea parts are now.
 	local painted = 0
-	for _, cell in LawnCells.Collect(Workspace:FindFirstChild("Zones")) do
+	for _, cell in LawnCells.Collect() do
 		terrain:ReplaceMaterial(columnRegion(cell.Center), CELL, MapService.Materials.Wild, MapService.Materials.Lawn)
 		painted += 1
 		if painted % 800 == 0 then
@@ -481,21 +502,25 @@ end
 
 -- Bridges and gates -------------------------------------------------------------------
 
-local function bridgeDeckY(t: number): number
-	-- A gentle arch: ends on the beaches, 2.5 studs higher in the middle.
-	return GROUND_TOP + 0.4 + math.sin(math.pi * math.clamp(t, 0, 1)) * 2.5
+local BRIDGE_ARCH = 2.5
+
+local function bridgeDeckY(t: number, arch: number?): number
+	-- A gentle arch: ends on the beaches, `arch` studs higher in the middle.
+	return GROUND_TOP + 0.4 + math.sin(math.pi * math.clamp(t, 0, 1)) * (arch or BRIDGE_ARCH)
 end
 
--- A wooden bridge from `a` to `b` (points at y = 0): deck, rails, posts, piles.
-local function buildBridgeDeck(folder: Instance, a: Vector3, b: Vector3)
-	local width = MapLayout.Bridge.Width
+-- A wooden bridge from `a` to `b` (points at y = 0): deck, rails, posts,
+-- piles; `deckWidth` defaults to the island bridges' width, `arch` to
+-- their rise in the middle (0 = a flat jetty).
+local function buildBridgeDeck(folder: Instance, a: Vector3, b: Vector3, deckWidth: number?, arch: number?)
+	local width = deckWidth or MapLayout.Bridge.Width
 	local dir = (b - a).Unit
 	local length = (b - a).Magnitude
 	local count = math.max(2, math.ceil(length / 4))
 	for i = 0, count - 1 do
 		local t0, t1 = i / count, (i + 1) / count
-		local p0 = a + dir * length * t0 + Vector3.new(0, bridgeDeckY(t0), 0)
-		local p1 = a + dir * length * t1 + Vector3.new(0, bridgeDeckY(t1), 0)
+		local p0 = a + dir * length * t0 + Vector3.new(0, bridgeDeckY(t0, arch), 0)
+		local p1 = a + dir * length * t1 + Vector3.new(0, bridgeDeckY(t1, arch), 0)
 		local frame = CFrame.lookAt((p0 + p1) / 2, p1)
 		local span = (p1 - p0).Magnitude
 		Props.make("Deck", folder, {
@@ -531,6 +556,24 @@ local function buildBridgeDeck(folder: Instance, a: Vector3, b: Vector3)
 	end
 end
 
+-- Invisible walls along both sides of a lane `width` wide from `wa` to
+-- `wb` (bridges: nobody jumps into the water).
+local function buildCorridor(parent: Instance, wa: Vector3, wb: Vector3, width: number)
+	local mid = (wa + wb) / 2
+	local along = CFrame.lookAt(mid, mid + (wb - wa).Unit)
+	local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
+	for _, side in { -1, 1 } do
+		local wall = Props.make("BridgeWall", parent, {
+			Size = Vector3.new(3, height, (wb - wa).Magnitude),
+			CFrame = along * CFrame.new(side * (width / 2 + 1.5), -MapLayout.WaterDepth + height / 2, 0),
+			Color = COLORS.Water,
+			Transparency = 1,
+		})
+		wall.CastShadow = false
+		wall.CanQuery = false
+	end
+end
+
 -- Every bridge: deck from beach to beach, invisible side walls (no jumping
 -- into the water), and the area's gate in the middle (contract ZoneGate;
 -- ZoneWall above it so nobody jumps over).
@@ -543,27 +586,12 @@ local function buildBridges(islandModels: { [string]: Model })
 		local zone = Zones.ById[island.Id]
 		-- The bridge that leads ONTO this island belongs to it (with its gate).
 		local folder = Props.model("Bridge", islandModels[island.Id])
-		local walls = folder
 		local a = bridge.Start - bridge.Direction * (BEACH - 2)
 		local b = bridge.Finish + bridge.Direction * (BEACH - 2)
 		buildBridgeDeck(folder, a, b)
 
 		-- Corridor walls along both sides, from coast to coast and a bit inland.
-		local wa = bridge.Start - bridge.Direction * 6
-		local wb = bridge.Finish + bridge.Direction * 6
-		local mid = (wa + wb) / 2
-		local along = CFrame.lookAt(mid, mid + bridge.Direction)
-		local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
-		for _, side in { -1, 1 } do
-			local wall = Props.make("BridgeWall", walls, {
-				Size = Vector3.new(3, height, (wb - wa).Magnitude),
-				CFrame = along * CFrame.new(side * (MapLayout.Bridge.Width / 2 + 1.5), -MapLayout.WaterDepth + height / 2, 0),
-				Color = COLORS.Water,
-				Transparency = 1,
-			})
-			wall.CastShadow = false
-			wall.CanQuery = false
-		end
+		buildCorridor(folder, bridge.Start - bridge.Direction * 6, bridge.Finish + bridge.Direction * 6, MapLayout.Bridge.Width)
 
 		-- The gate in the middle of the bridge, under an arch with the name.
 		local deckTop = bridge.Gate + Vector3.new(0, bridgeDeckY(0.5) + 0.3, 0)
@@ -592,12 +620,59 @@ local function buildBridges(islandModels: { [string]: Model })
 	end
 end
 
+-- A dock: a wooden jetty with a moored rowboat leaving the coast at
+-- `coast` toward `dir`, boxed in by invisible walls (the shore wall opens
+-- where it leaves the beach); the deck starts `inland` studs in from the
+-- coast. The library jetty is made for
+-- MapLayout.DockLength; other lengths scale it.
+local function buildDock(parent: Instance, coast: Vector3, dir: Vector3, length: number, inland: number): Model
+	local scale = length / MapLayout.DockLength
+	local a = coast - dir * inland
+	local b = coast + dir * length
+	local mid = (a + b) / 2
+	local frame = CFrame.lookAt(Vector3.new(mid.X, GROUND_TOP + 0.3, mid.Z), Vector3.new(b.X, GROUND_TOP + 0.3, b.Z))
+	local dock = Props.model("Dock", parent)
+	dock.WorldPivot = frame
+	local width = MapLayout.Bridge.Width * scale
+	if not Props.fromLibrary("Dock", dock, frame, scale) then
+		buildBridgeDeck(dock, flatY(a), flatY(b), width, 0)
+	end
+	local side = dir:Cross(Vector3.yAxis)
+	local berth = side * 12 * scale
+	Props.fromLibrary("Boat", dock, CFrame.lookAt(flatY(b - dir * 8 * scale + berth), flatY(b + berth)) + Vector3.new(0, WATER_LEVEL - 1, 0), scale)
+	local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
+	local boxLength = (b - coast).Magnitude + 4
+	local box = CFrame.lookAt(coast + dir * (boxLength / 2 - 2), b)
+	for _, s in { -1, 1 } do
+		local wall = Props.make("DockWall", dock, {
+			Size = Vector3.new(3, height, boxLength),
+			CFrame = box * CFrame.new(s * (width / 2 + 2.5), -MapLayout.WaterDepth + height / 2, 0),
+			Color = COLORS.Water,
+			Transparency = 1,
+		})
+		wall.CastShadow = false
+		wall.CanQuery = false
+	end
+	local cap = Props.make("DockWall", dock, {
+		Size = Vector3.new(width + 8, height, 3),
+		CFrame = box * CFrame.new(0, -MapLayout.WaterDepth + height / 2, -boxLength / 2),
+		Color = COLORS.Water,
+		Transparency = 1,
+	})
+	cap.CastShadow = false
+	cap.CanQuery = false
+	return dock
+end
+
 -- Invisible walls just offshore around every island, open where bridges
 -- (and the last island's pier) leave the coast.
 local function buildShoreWalls(islandModels: { [string]: Model }, openings: { { Point: Vector3, Direction: Vector3 } })
 	local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
 	local halfLane = MapLayout.Bridge.Width / 2 + 1
 	for _, island in Geo.Islands do
+		if not islandModels[island.Id] then
+			continue
+		end
 		local walls = Props.model("ShoreWalls", islandModels[island.Id])
 		local count = math.ceil(2 * math.pi * island.Def.Radius * 1.25 / 4)
 		local points = {}
@@ -634,9 +709,9 @@ end
 
 -- Build ---------------------------------------------------------------------------
 
-local function buildSpawn(at: CFrame, parent: Instance)
+local function buildSpawn(at: CFrame, parent: Instance, name: string?): SpawnLocation
 	local spawn = Instance.new("SpawnLocation")
-	spawn.Name = "GameSpawn"
+	spawn.Name = name or "GameSpawn"
 	spawn.Anchored = true
 	spawn.Size = Vector3.new(6, 0.4, 6)
 	spawn.CFrame = at + Vector3.new(0, 0.2, 0)
@@ -650,6 +725,35 @@ local function buildSpawn(at: CFrame, parent: Instance)
 		decal:Destroy()
 	end
 	spawn.Parent = parent
+	return spawn
+end
+
+-- The generic builders the personal bases are made with (Map/Bases).
+function kit(): Bases.Kit
+	return {
+		BridgeDeck = buildBridgeDeck,
+		Corridor = buildCorridor,
+		Path = buildPath,
+		Dock = buildDock,
+		Spawn = buildSpawn,
+		SurfaceAt = surfaceAt,
+		WaterTop = WATER_LEVEL - SURFACE_LIFT,
+		Bottom = -MapLayout.WaterDepth - 6,
+		SurfaceLift = SURFACE_LIFT,
+	}
+end
+
+-- The promenade on the home island: a dirt path all the way round, a
+-- little in from the coast, passing the foot of every base's bridge and
+-- of the bridge to the next island.
+local function promenadeRoute(): { Vector3 }
+	local home = Geo.Islands[1]
+	local inland = BasesConfig.Promenade.Inland
+	local points = {}
+	for angle = 0, 360, 8 do
+		table.insert(points, home.Center + Geo.Direction(angle) * (Geo.CoastRadius(home, angle) - inland))
+	end
+	return spline(points)
 end
 
 function MapService.BuildIfMissing()
@@ -712,26 +816,32 @@ function MapService.BuildIfMissing()
 	-- coast, with a short path to it. The first island has the player's
 	-- base (the cabin) where you spawn.
 	local spawnAt = CFrame.new()
-	local baseModel: Model? = nil
+	local homeModel: Model? = nil
+	local homeRoute: { Vector3 }? = nil
 	local houseAt: { [string]: Vector3 } = {}
 	for _, island in Geo.Islands do
 		local zone = Zones.ById[island.Id]
 		local departure = Geo.Departure(island)
 		local arrival: Vector3, forward: Vector3
 		if island.Def.ShopAt == "House" then
-			-- The base stands on the far side from the first bridge, facing it.
+			-- The home island is everybody's: cabins and hay yards stand on
+			-- the personal bases around it (Map/Bases). Its path starts on
+			-- the far side from the first bridge, where players who have no
+			-- base appear; its only path is the promenade round its coast,
+			-- which every bridge lands on.
 			local toward = if departure then (departure - island.Center).Unit else Vector3.new(0, 0, -1)
-			local housePos = island.Center - toward * (island.Def.Radius * 0.42)
-			local base = ShopInterior.BuildHome(islandModels[island.Id], facing(housePos, housePos + toward), "My Base")
-			base.WorldPivot = facing(housePos, housePos + toward)
-			baseModel = base
-			claim(housePos, ShopInterior.Radius - 4)
-			houseAt[island.Id] = housePos
-			local entrance = base:GetAttribute("Entrance") :: Vector3?
-			arrival = if entrance then flatY(entrance) + toward * 2 else housePos + toward * 24
+			arrival = island.Center
 			forward = toward
-			spawnAt = CFrame.lookAt(ground(arrival + toward * 6), ground(arrival + toward * 20))
-			claim(arrival + toward * 6, 6) -- open space around the spawn point
+			homeModel = islandModels[island.Id]
+			spawnAt = CFrame.lookAt(ground(arrival), ground(arrival + toward * 20))
+			claim(arrival, 6) -- open space around the spawn point
+			homeRoute = promenadeRoute()
+			local walk = Props.model("Promenade", islandModels[island.Id])
+			buildPath(walk, homeRoute, BasesConfig.Promenade.Width)
+			walk.WorldPivot = pathModels[island.Id].WorldPivot
+			for _, point in homeRoute do
+				markDisc(blocked, point, BasesConfig.Promenade.Width / 2 + 2)
+			end
 		else
 			arrival, forward = Geo.Arrival(island)
 		end
@@ -740,12 +850,9 @@ function MapService.BuildIfMissing()
 			local st = MapLayout.Stations.Sell
 			local pos = arrival + forward * st.Forward + right * st.Side
 			local cf = facing(pos, arrival + forward * st.Forward)
-			-- The base gets the hay yard (baler, stack, silo); the other
-			-- islands a drop-off pad that sends grass to it.
-			local yard = if island.Def.ShopAt == "House" then HayYard.Build(islandModels[island.Id], cf * HayYardConfig.StationOffset) else nil
-			if yard then
-				claim(pos, HayYard.Radius)
-			else
+			-- Hay yards are on the personal bases; every island past the
+			-- home one has a drop-off pad that sends grass to its player's.
+			if island.Def.ShopAt ~= "House" then
 				local station = Props.model("SellStation", islandModels[island.Id])
 				Props.sellPad(station, cf, 0, 0)
 				station.WorldPivot = cf
@@ -761,9 +868,13 @@ function MapService.BuildIfMissing()
 		local bend = island.Center + Vector3.new(rng:NextNumber() - 0.5, 0, rng:NextNumber() - 0.5) * island.Def.Radius * 0.5
 		local route = spline({ arrival - forward * 2, arrival + forward * 14, bend, finish - (finish - bend).Unit * 10, finish })
 		local paths = pathModels[island.Id]
-		buildPath(paths, route, MapLayout.PathWidth)
-		for _, point in route do
-			markDisc(blocked, point, MapLayout.PathWidth / 2 + 2)
+		if island.Def.ShopAt == "House" and homeRoute then
+			route = homeRoute -- the home island's only path is its promenade
+		else
+			buildPath(paths, route, MapLayout.PathWidth)
+			for _, point in route do
+				markDisc(blocked, point, MapLayout.PathWidth / 2 + 2)
+			end
 		end
 
 		-- The farmer's stand: off to the side of the arrival, near the coast,
@@ -912,44 +1023,9 @@ function MapService.BuildIfMissing()
 		Props.sign(pier, signAt, 0, 0, "MORE ISLANDS\nComing soon", COLORS.BarnRed)
 		isletTrees(Props.model("FarIsland", land), farCenter, MapLayout.FarIsland.Radius, 18, Random.new(MapLayout.Seed + 9))
 	end
-	-- Docks: a wooden jetty with a moored rowboat, boxed in by invisible
-	-- walls (the shore wall opens where it leaves the beach).
 	for id, dir in dockDir do
 		local island = Geo.ById[id]
-		local coast = island.Center + dir * Geo.CoastRadius(island, Geo.AngleOf(dir))
-		local a = coast - dir * (BEACH - 4)
-		local b = coast + dir * MapLayout.DockLength
-		local mid = (a + b) / 2
-		local frame = CFrame.lookAt(Vector3.new(mid.X, GROUND_TOP + 0.3, mid.Z), Vector3.new(b.X, GROUND_TOP + 0.3, b.Z))
-		local dock = Props.model("Dock", islandModels[id])
-		dock.WorldPivot = frame
-		local walls = dock
-		if not Props.fromLibrary("Dock", dock, frame, nil) then
-			buildBridgeDeck(dock, flatY(a), flatY(b))
-		end
-		local side = dir:Cross(Vector3.yAxis)
-		Props.fromLibrary("Boat", dock, CFrame.lookAt(flatY(b - dir * 8 + side * 12), flatY(b + side * 12)) + Vector3.new(0, WATER_LEVEL - 1, 0), nil)
-		local height = MapLayout.ShoreWallHeight + MapLayout.WaterDepth
-		local length = (b - coast).Magnitude + 4
-		local box = CFrame.lookAt(coast + dir * (length / 2 - 2), b)
-		for _, s in { -1, 1 } do
-			local wall = Props.make("DockWall", walls, {
-				Size = Vector3.new(3, height, length),
-				CFrame = box * CFrame.new(s * (MapLayout.Bridge.Width / 2 + 2.5), -MapLayout.WaterDepth + height / 2, 0),
-				Color = COLORS.Water,
-				Transparency = 1,
-			})
-			wall.CastShadow = false
-			wall.CanQuery = false
-		end
-		local cap = Props.make("DockWall", walls, {
-			Size = Vector3.new(MapLayout.Bridge.Width + 8, height, 3),
-			CFrame = box * CFrame.new(0, -MapLayout.WaterDepth + height / 2, -length / 2),
-			Color = COLORS.Water,
-			Transparency = 1,
-		})
-		cap.CastShadow = false
-		cap.CanQuery = false
+		buildDock(islandModels[id], island.Center + dir * Geo.CoastRadius(island, Geo.AngleOf(dir)), dir, MapLayout.DockLength, BEACH - 4)
 	end
 	buildShoreWalls(islandModels, openings)
 
@@ -1046,8 +1122,9 @@ function MapService.BuildIfMissing()
 	end
 
 	zonesFolder.Parent = Workspace
-	buildSpawn(spawnAt, baseModel or Workspace)
-	stampTerrain({})
+	buildSpawn(spawnAt, homeModel or Workspace)
+	Bases.Build(kit())
+	stampTerrain({}, {})
 	print(("[MowIt][Map] Land built: %d lawn cells on %d islands."):format(count, #Geo.Islands))
 end
 
@@ -1067,7 +1144,55 @@ function MapService.Restamp()
 			moved[island.Id] = m:GetPivot() * baked:Inverse()
 		end
 	end
-	stampTerrain(moved)
+	stampTerrain(moved, Bases.Moved())
+end
+
+-- Redraws ONE island's ground where its Model stands (after changing its
+-- row in MapLayout, e.g. `Radius` or `Wobble`), leaving the rest of the
+-- terrain alone: its old ground goes back to sea first, then the island,
+-- its sea rocks, the personal bases next to it and the lawns are stamped.
+--   require(game.ServerScriptService.Services.MapService).RestampIsland("front_yard")
+function MapService.RestampIsland(islandId: string)
+	local island = Geo.ById[islandId]
+	local model = Workspace:FindFirstChild("Zones") and Workspace.Zones:FindFirstChild(islandId)
+	if not island or not model or not model:IsA("Model") then
+		return
+	end
+	local baked = model:GetAttribute("BakedPivot")
+	local delta = if typeof(baked) == "CFrame" then model:GetPivot() * baked:Inverse() else CFrame.identity
+	local back = delta:Inverse()
+	local plan = coastPlan()
+	local tools = kit()
+	local reach = island.Def.Radius * 1.3 + 44
+	local c = delta * island.Center
+	local floorTop = -MapLayout.WaterDepth
+	local cleared = 0
+	for ix = math.floor((c.X - reach) / CELL), math.floor((c.X + reach) / CELL) do
+		for iz = math.floor((c.Z - reach) / CELL), math.floor((c.Z + reach) / CELL) do
+			local center = Vector3.new(ix * CELL + CELL / 2, 0, iz * CELL + CELL / 2)
+			local nearest, edge = Geo.Nearest(back * center)
+			if nearest == island and edge <= 44 then
+				terrain:FillBlock(CFrame.new(center.X, tools.Bottom + 28, center.Z), Vector3.new(CELL, 56, CELL), Enum.Material.Air)
+				terrain:FillBlock(CFrame.new(center.X, (tools.Bottom + tools.WaterTop) / 2, center.Z), Vector3.new(CELL, tools.WaterTop - tools.Bottom, CELL), Enum.Material.Water)
+				terrain:FillBlock(CFrame.new(center.X, (tools.Bottom - 2 + floorTop) / 2, center.Z), Vector3.new(CELL, floorTop - tools.Bottom + 2, CELL), MapService.Materials.Beach)
+				cleared += 1
+				if cleared % 400 == 0 then
+					task.wait()
+				end
+			end
+		end
+	end
+	stampIsland(island, delta, plan, {})
+	for _, rock in plan.SeaRocks do
+		if rock.IslandId == islandId then
+			local p = delta * rock.Point
+			terrain:FillBall(Vector3.new(p.X, WATER_LEVEL - 1.5, p.Z), rock.Radius, MapService.Materials.Rock)
+		end
+	end
+	Bases.Stamp(tools, Bases.Moved())
+	for _, cell in LawnCells.Collect() do
+		terrain:ReplaceMaterial(columnRegion(cell.Center), CELL, MapService.Materials.Wild, MapService.Materials.Lawn)
+	end
 end
 
 -- Edit-mode "bake": run from the Command Bar (or Studio MCP) to build the
@@ -1076,6 +1201,56 @@ end
 -- Does nothing if Workspace/Zones already exists. See docs/EDITING.md.
 function MapService.Bake()
 	MapService.BuildIfMissing()
+end
+
+-- For a place baked before personal bases existed (Edit mode, then Ctrl+S):
+--   require(game.ServerScriptService.Services.MapService).BakeBases()
+-- Builds Workspace/Bases around the home island and its ground, the
+-- promenade to their bridges, and a spawn for players without a base. The
+-- home island's own cabin, hay yard and dock leave for ServerStorage
+-- (`<Name>_<zone>_backup`), and its shore wall is rebuilt, open at the
+-- new bridges.
+-- Does nothing when the bases already exist.
+function MapService.BakeBases()
+	local zones = Workspace:FindFirstChild("Zones")
+	local home = zones and zones:FindFirstChild(Geo.Islands[1].Id)
+	if not home or SharedBases.Folder() then
+		return
+	end
+	rng = Random.new(MapLayout.Seed + 21)
+	local spawnAt: CFrame? = nil
+	local oldSpawn = home:FindFirstChild("GameSpawn", true)
+	if oldSpawn and oldSpawn:IsA("BasePart") then
+		spawnAt = oldSpawn.CFrame - Vector3.new(0, oldSpawn.Size.Y / 2, 0)
+	end
+	for _, name in { "PlayerBase", "HayYard", "Dock" } do
+		local piece = home:FindFirstChild(name)
+		if piece then
+			piece.Name = ("%s_%s_backup"):format(name, home.Name)
+			piece.Parent = game:GetService("ServerStorage")
+		end
+	end
+	if spawnAt and not home:FindFirstChild("GameSpawn", true) then
+		buildSpawn(spawnAt, home)
+	end
+
+	Bases.Build(kit())
+	if not home:FindFirstChild("Promenade") then
+		buildPath(Props.model("Promenade", home), promenadeRoute(), BasesConfig.Promenade.Width)
+	end
+
+	-- The home island's shore wall, rebuilt open at the bases' bridges (and
+	-- closed where its dock was).
+	local walls = home:FindFirstChild("ShoreWalls")
+	if walls then
+		walls:Destroy()
+	end
+	buildShoreWalls({ [home.Name] = home :: Model }, coastPlan().Openings)
+	Bases.Stamp(kit(), {})
+	for _, cell in LawnCells.Collect() do
+		terrain:ReplaceMaterial(columnRegion(cell.Center), CELL, MapService.Materials.Wild, MapService.Materials.Lawn)
+	end
+	print(("[MowIt][Map] %d personal bases built."):format(#Bases.Slots))
 end
 
 return MapService

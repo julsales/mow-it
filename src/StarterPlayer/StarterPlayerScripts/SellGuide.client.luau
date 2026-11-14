@@ -13,6 +13,7 @@ local Workspace = game:GetService("Workspace")
 local GrassBag = require(ReplicatedStorage:WaitForChild("Shared").GrassBag)
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local LandState = require(script.Parent:WaitForChild("LandState"))
+local Bases = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Bases"))
 
 local Guide = require(script.Parent:WaitForChild("WorldGuide"))
 local Ui = require(script.Parent:WaitForChild("UiKit"))
@@ -61,6 +62,13 @@ local function nearestPad(from: Vector3): BasePart?
 		return nil
 	end
 	local best: BasePart?, bestDistance = nil, math.huge
+	-- The baler's loading deck on the player's own base...
+	local yard = Bases.Piece(player.UserId, "HayYard")
+	local deck = yard and yard:FindFirstChild("SellPad", true)
+	if deck and deck:IsA("BasePart") then
+		best, bestDistance = deck, (deck.Position - from).Magnitude
+	end
+	-- ...or a drop-off pad on an island they have unlocked.
 	for _, zone in zones:GetChildren() do
 		if LandState.IsUnlocked(zone.Name) then
 			for _, d in zone:GetDescendants() do

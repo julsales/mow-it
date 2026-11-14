@@ -57,8 +57,12 @@ Read before working in this repo:
 ## Map rules (direction from the project owner)
 
 11. The map is a **chain of islands, never grid-like or maze-like**: one
-    island per area in unlock order, the small home island (the player's
-    base, where they spawn) first and every next island clearly bigger.
+    island per area in unlock order, the small round home island first
+    and every next island clearly bigger. The islands are **shared**;
+    progression is **per player** (gates open per player, everyone mows
+    their own grass: `GrassService`). Round the home island stand the six
+    **personal bases** (`Map/Bases`, `Config/Bases`): identical small
+    islands on evenly spaced bridges, where each player spawns.
     The chain wanders irregularly; the next island is always in sight
     across the water. Lawns cover most of every island (grass is the
     game). Coasts, trees and props are irregular (curves, clusters, varied
@@ -68,9 +72,10 @@ Read before working in this repo:
     offshore stop swimming).
 12. Islands are joined by **wooden bridges**; each area's gate (and the
     invisible wall above it) stands on its bridge, so there are no fences
-    on land. The home island has the **hay yard** by the base (baler, bale
-    stack, silo: `Map/HayYard`, docs/HAY_YARD.md); every other island has
-    a drop-off **SellPad** by the bridge arrival that sends grass to it;
+    on land. Every personal base has its owner's **hay yard** (baler, bale
+    stack, silo: `Map/HayYard`, docs/HAY_YARD.md); every island past the
+    home one has a drop-off **SellPad** by the bridge arrival that sends
+    grass to the player's own yard;
     every island has a **farmer's tool stand** off to the side near the coast
     (`Map/FarmerStand`), with room kept for a future quick-travel pad.
     Layout = data in `Config/MapLayout.luau` (a new area is a config row).

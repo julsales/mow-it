@@ -1,7 +1,7 @@
 --!strict
 -- Mow It! server entry point. One codebase, two places:
 --   * Lobby place (start place) -> queue pad + teleport (LobbyService)
---   * Land place                -> the host's land: mowing loop (Land/Grass/Economy/Shop)
+--   * Land place                -> the shared islands and everyone's personal base: the mowing loop
 -- Which one runs is decided by GameConfig place IDs; in Studio (PlaceId 0
 -- for unpublished places) BOTH grayboxes are built so Play Solo can test
 -- the loop and the queue without publishing anything.
@@ -19,7 +19,6 @@ local GrassService = require(Services.GrassService)
 local EconomyService = require(Services.EconomyService)
 local ShopService = require(Services.ShopService)
 local LevelService = require(Services.LevelService)
-local LandService = require(Services.LandService)
 local GrassBag = require(Shared.GrassBag)
 local ProgressionService = require(Services.ProgressionService)
 local WeatherService = require(Services.WeatherService)
@@ -55,6 +54,10 @@ local REMOTE_NAMES = {
 	"HayTip", -- server -> client: (coins) the customer paid at the counter
 	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
 	"LevelUp", -- server -> client: (newLevel) when the Company Level goes up
+	"GrassCut", -- server -> client: (centers, regrowDelays) cells mowed on this player's own lawn
+	"GrassPatch", -- server -> client: (centers, typeIds, looks) rare patches on this player's lawn ("" = gone)
+	"GrassSync", -- client -> server: ready to draw; send my lawn (patches, cells still cut)
+	"Travel", -- client -> server: (destination) sail from a jetty: "Home" or a zone id
 }
 
 local remotes = Instance.new("Folder")
@@ -111,11 +114,12 @@ ProfileService.OnChanged(syncProfile)
 if isLandPlace then
 	ToolArtService.Init() -- tool meshes first: the shop displays use them
 	MapService.BuildIfMissing()
+	MapService.BakeBases() -- a place baked before personal bases existed gets them for this session
 	require(Services.Map.ShopDisplay).Refresh() -- baked displays get the current tool art
-	LandService.Init()
-	GrassService.Init()
+	require(Services.BaseService).Init()
+	GrassService.Init(remotes)
 	LevelService.Init(remotes)
-	require(Services.HayService).Init(remotes) -- before EconomyService: it may build the yard's SellPad
+	require(Services.HayService).Init(remotes)
 	EconomyService.Init(remotes)
 	ProgressionService.Init(remotes, EconomyService)
 	WeatherService.Init(remotes)
@@ -183,13 +187,6 @@ if RunService:IsStudio() then
 		return profile and profile.Level
 	end
 	giveXp.Parent = game:GetService("ServerStorage")
-
-	-- ServerStorage.DevSetLandHost:Invoke(userId, name, { zoneIds }): makes
-	-- the session someone else's land, to try the helper experience solo.
-	local setHost = Instance.new("BindableFunction")
-	setHost.Name = "DevSetLandHost"
-	setHost.OnInvoke = LandService.DevSetHost
-	setHost.Parent = game:GetService("ServerStorage")
 
 	-- Same, from the HUD's "+1M (Studio)" button (Shop.client.luau).
 	local devRemote = Instance.new("RemoteEvent")

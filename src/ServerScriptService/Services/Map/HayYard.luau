@@ -3,7 +3,8 @@
 -- the bales are stacked on and the silo with its elevator and counter,
 -- from the Blender models in ReplicatedStorage/YardArt.
 --
--- Contract (docs/EDITING.md): one Model "HayYard" inside the home island,
+-- Contract (docs/EDITING.md): one Model "HayYard" inside every personal
+-- base (Map/Bases),
 -- holding the Models "Baler", "BaleStack" and "Silo" (drag each one
 -- freely: the animations read where they stand), "Ground" (packed dirt),
 -- the invisible contract part "SellPad" on the baler's loading deck (where
@@ -121,30 +122,6 @@ function HayYard.Build(parent: Instance, cf: CFrame): Model?
 	HayYard.BuildLoadZone(yard)
 	hidden("CustomerSpawn", yard, cf * CFrame.new(Config.CustomerSpawn + Vector3.new(0, 0.5, 0)), Vector3.new(2, 1, 2), false)
 	return yard
-end
-
-function HayYard.Find(): Model?
-	local zones = Workspace:FindFirstChild("Zones")
-	local yard = zones and zones:FindFirstChild("HayYard", true)
-	return if yard and yard:IsA("Model") then yard else nil
-end
-
--- A place baked before the hay yard existed: the yard takes the place of
--- the home island's old sell station (for this session; bake it in Studio
--- to keep it, docs/EDITING.md).
-function HayYard.EnsureBuilt()
-	if HayYard.Find() then
-		return
-	end
-	local zones = Workspace:FindFirstChild("Zones")
-	local home = zones and zones:FindFirstChild(Zones.List[1].Id)
-	local station = home and home:FindFirstChild("SellStation")
-	if not home or not station or not station:IsA("Model") then
-		return
-	end
-	if HayYard.Build(home, station:GetPivot() * Config.StationOffset) then
-		station:Destroy()
-	end
 end
 
 -- The people who shop at the silo: one template each in

@@ -4,11 +4,12 @@
 -- `Looks`) and lucky/golden/next-area patches stand out.
 --
 -- * Where: lawn cells from the GrassArea contract parts (Shared/LawnCells).
--- * Which look: the cell's area, unless the server put a patch marker on it
---   (Workspace/RareGrass, attribute `Look`).
--- * Standing or mowed: read from the terrain itself (tall Grass material =
---   standing), so it follows every player's cuts and regrowth without
---   extra network traffic.
+-- * Which look: the cell's area, unless it has a patch marker
+--   (Workspace/RareGrass, attribute `Look`; GrassState puts them there for
+--   the local player's own patches).
+-- * Standing or mowed: read from this client's terrain (tall Grass
+--   material = standing), which GrassState paints as the local player
+--   mows: every player sees their own lawn.
 --
 -- Only chunks near the camera are drawn (RADIUS); blades are anchored,
 -- non-colliding parts built once per chunk and hidden while mowed.
@@ -224,13 +225,14 @@ function GrassTufts.Start()
 	folder.Name = "GrassTufts (local)"
 	folder.Parent = Workspace
 
-	-- Lawns: everything already there, and parts that stream in later.
+	-- Lawns: everything already there, and parts that stream in later (on
+	-- the islands and on the personal bases).
 	task.spawn(function()
-		local zones = Workspace:WaitForChild("Zones")
+		Workspace:WaitForChild("Zones")
 		local seen: { [string]: boolean } = {}
 		local function fromPart(p: Instance)
 			if p.Name == "GrassArea" and p:IsA("BasePart") then
-				local zoneId = LawnCells.ZoneOf(p, zones)
+				local zoneId = LawnCells.ZoneOf(p)
 				if zoneId then
 					local list = {}
 					LawnCells.InPart(p, zoneId, seen, list)
@@ -238,10 +240,12 @@ function GrassTufts.Start()
 				end
 			end
 		end
-		for _, d in zones:GetDescendants() do
-			fromPart(d)
+		for _, root in LawnCells.Roots() do
+			for _, d in root:GetDescendants() do
+				fromPart(d)
+			end
+			root.DescendantAdded:Connect(fromPart)
 		end
-		zones.DescendantAdded:Connect(fromPart)
 	end)
 	task.spawn(function()
 		local markers = Workspace:WaitForChild("RareGrass")

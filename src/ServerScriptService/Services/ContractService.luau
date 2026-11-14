@@ -8,7 +8,6 @@ local Zones = require(Shared.Config.Zones)
 local Rules = require(Shared.ProgressionRules)
 local Profiles = require(script.Parent.ProfileService)
 local Levels = require(script.Parent.LevelService)
-local Land = require(script.Parent.LandService)
 local Quests = require(script.Parent.QuestService)
 local ContractService = {}
 local active: any = nil
@@ -21,7 +20,6 @@ local function publish()
 	workspace:SetAttribute("ContractZone", if active then active.ZoneId else "")
 end
 function ContractService.Accept(player: Player, id: string): string
-	if not Land.IsHost(player) then return "Only the land owner can choose a party job." end
 	if active then return "Finish or abandon the current job first." end
 	if not Quests.CanAccept(player, id) then return "Talk to this job's NPC nearby first." end
 	local profile = Profiles.Get(player)
@@ -29,7 +27,7 @@ function ContractService.Accept(player: Player, id: string): string
 	for _, def in Config.Bands do
 		if def.Id == id then
 			local zone = Zones.List[def.MinExpansion]
-			if not Land.IsUnlocked(zone.Id) or not profile.UnlockedZoneIds[zone.Id] then return "Unlock that expansion first." end
+			if not profile.UnlockedZoneIds[zone.Id] then return "Unlock that expansion first." end
 			local members = {}
 			for _, member in Players:GetPlayers() do
 				local data = Profiles.Get(member)
@@ -47,7 +45,6 @@ function ContractService.Accept(player: Player, id: string): string
 	return "Unknown job."
 end
 function ContractService.Abandon(player: Player): string
-	if not Land.IsHost(player) then return "Only the land owner can abandon a party job." end
 	active = nil; publish()
 	return "Job abandoned. You can accept another."
 end

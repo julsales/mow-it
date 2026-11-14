@@ -28,6 +28,7 @@ local Colors = require(Shared.Config.Interface).Colors
 local Format = require(Shared.Format)
 local GrassBag = require(Shared.GrassBag)
 local Hay = require(Shared.Hay)
+local Bases = require(Shared.Bases)
 
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local Bales = require(script.Parent:WaitForChild("HayBales"))
@@ -553,8 +554,8 @@ end
 -- Wiring ---------------------------------------------------------------------------------------
 
 local function findYard(): (Model?, Model?, Model?, Model?)
-	local zones = Workspace:FindFirstChild("Zones")
-	local yard = zones and zones:FindFirstChild("HayYard", true)
+	-- The local player's own yard: the one on their personal base.
+	local yard = Bases.Piece(player.UserId, "HayYard")
 	if not yard or not yard:IsA("Model") then
 		return nil
 	end

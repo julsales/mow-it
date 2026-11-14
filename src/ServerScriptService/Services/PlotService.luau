@@ -6,7 +6,6 @@ local Zones = require(Shared.Config.Zones)
 local Tuning = require(Shared.Config.Progression)
 local GrassBag = require(Shared.GrassBag)
 local Profiles = require(script.Parent.ProfileService)
-local Land = require(script.Parent.LandService)
 local Layout = require(Shared.PlantingPlots)
 local PlotService = {}
 local function areaOf(zoneId: string): BasePart?
@@ -23,7 +22,6 @@ function PlotService.Plant(player: Player, id: string): string
 	local profile = Profiles.Get(player)
 	local seed = Seeds.ById[id]
 	if not profile or not seed then return "Unknown seed." end
-	if not Land.IsHost(player) then return "Plant seeds on your own land." end
 	if not profile.UnlockedZoneIds[seed.Expansion] then return "Unlock that expansion first." end
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if not root then return "Wait for your character." end
@@ -43,7 +41,7 @@ function PlotService.Plant(player: Player, id: string): string
 end
 function PlotService.CutNear(player: Player, position: Vector3, radius: number): number
 	local profile = Profiles.Get(player)
-	if not profile or not Land.IsHost(player) then return 0 end
+	if not profile then return 0 end
 	local gained = 0
 	for key, plot in profile.Plots do
 		local center = PlotService.Position(plot.ZoneId, plot.Slot)

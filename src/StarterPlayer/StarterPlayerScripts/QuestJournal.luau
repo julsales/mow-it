@@ -9,7 +9,6 @@ local Zones = require(Shared.Config.Zones)
 local Format = require(Shared.Format)
 local Client = require(script.Parent:WaitForChild("QuestClient"))
 local Ui = require(script.Parent:WaitForChild("UiKit"))
-local Land = require(script.Parent:WaitForChild("LandState"))
 local T, Images = Ui.Theme, Ui.Images
 local Journal = {}
 local CARD_HEIGHT = 268
@@ -83,7 +82,7 @@ function Journal.Render(parent: Instance, profile, send, leave)
 			line(card, "Follow the trail to " .. contact.NpcName .. " in " .. zone .. ".", 84)
 			line(card, "Talk to your neighbor to discover their local job.", 136, 16, T.TextMuted)
 		end
-		local accepting = known and not running and active == "" and Client.Near(contact.Id) and Land.IsHost()
+		local accepting = known and not running and active == "" and Client.Near(contact.Id)
 		local action = Ui.Button(card, if accepting then "Accept" else "Talk", if accepting then "ACCEPT JOB" else "SHOW ROUTE", function()
 			if accepting then send("Contract", contact.Id); Client.Clear(); leave()
 			else Client.Focus(contact.Id); leave() end
@@ -93,8 +92,8 @@ function Journal.Render(parent: Instance, profile, send, leave)
 		if running then
 			-- The running job keeps its green "In progress" state; the host
 			-- can still drop it from the small button beside it.
-			Ui.Paint(action, "Progress", if Land.IsHost() then "IN PROGRESS" else "HELP YOUR PARTY", false)
-			if Land.IsHost() then
+			Ui.Paint(action, "Progress", "IN PROGRESS", false)
+			do
 				action.Size = UDim2.new(1, -150, 0, 48)
 				local abandon = Ui.Button(card, "Abandon", "ABANDON", function() send("AbandonContract") end, "Close")
 				abandon.AnchorPoint = Vector2.new(1, 1)

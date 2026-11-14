@@ -7,7 +7,7 @@ local Zones = require(Shared.Config.Zones)
 local Rules = require(Shared.ProgressionRules)
 local GrassBag = require(Shared.GrassBag)
 local Profiles = require(script.Parent.ProfileService)
-local Land = require(script.Parent.LandService)
+local Bases = require(script.Parent.BaseService)
 local Crew = require(Shared.Config.Crew)
 local Contracts = require(script.Parent.ContractService)
 local Quests = require(script.Parent.QuestService)
@@ -77,7 +77,7 @@ local function action(player: Player, name: any, id: any)
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		if entry and table.find(profile.EquippedCrew, id) and root then
 			if entry.Mode == "Station" then entry.Mode = "Follow"; entry.Position = nil
-			elseif Land.IsHost(player) then
+			else
 				for _, zone in Zones.List do
 					local folder = workspace.Zones:FindFirstChild(zone.Id)
 					if not profile.UnlockedZoneIds[zone.Id] then continue end
@@ -88,18 +88,15 @@ local function action(player: Player, name: any, id: any)
 						break
 					end
 				end
-			else message = "Station Crew on your own land." end
+			end
 		end
 	elseif name == "Contract" then message = Contracts.Accept(player, id)
 	elseif name == "AbandonContract" then message = Contracts.Abandon(player)
 	elseif name == "Plant" then message = Plots.Plant(player, id)
 	elseif name == "CollectOffline" then
-		if not Land.IsHost(player) then message = "Collect offline grass on your own land."
-		else
-			local stored = GrassBag.Add(profile, "normal", profile.OfflineGrass)
-			profile.OfflineGrass -= stored
-			message = if stored > 0 then "Offline grass collected. Take it to your Baler to cash it in." else "No grass collected. Check your storage and offline production."
-		end
+		local stored = GrassBag.Add(profile, "normal", profile.OfflineGrass)
+		profile.OfflineGrass -= stored
+		message = if stored > 0 then "Offline grass collected. Take it to your Baler to cash it in." else "No grass collected. Check your storage and offline production."
 	elseif name == "Daily" then
 		local time = os.time()
 		local ready, streak = Rules.DailyStatus(profile, time)
@@ -111,19 +108,17 @@ local function action(player: Player, name: any, id: any)
 			message = "Day " .. streak .. " reward collected!"
 		end
 	elseif name == "FranchisePreview" then
-		if not Land.IsHost(player) then message = "Franchise on your own land."
-		elseif Rules.FranchiseAward(profile) <= 0 then message = "Unlock Mega Fields and reach the required run earnings first."
+		if Rules.FranchiseAward(profile) <= 0 then message = "Unlock Mega Fields and reach the required run earnings first."
 		else
 			confirmUntil[player] = now + 30;
 			(remotes.FranchiseOffer :: RemoteEvent):FireClient(player, Rules.FranchiseAward(profile))
 		end
 	elseif name == "FranchiseConfirm" then
-		if Land.IsHost(player) and (confirmUntil[player] or 0) >= now then
+		if (confirmUntil[player] or 0) >= now then
 			confirmUntil[player] = nil
 			if Rules.Franchise(profile) then
 				Contracts.Abandon(player)
-				local spawn = workspace:FindFirstChild("GameSpawn", true) -- inside the player's base model
-				if spawn and spawn:IsA("BasePart") and player.Character then player.Character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0)) end
+				Bases.SendHome(player)
 				message = "New franchise started! Your Crew and permanent upgrades are safe."
 			end
 		end
@@ -177,7 +172,7 @@ function ProgressionService.Init(folder: Folder, economy)
 					if not def then continue end
 					local position = root.Position + Vector3.new(math.cos(index * 2) * Tuning.CrewFollowSpacing, 0, math.sin(index * 2) * Tuning.CrewFollowSpacing)
 					if entry.Mode == "Station" then
-						if not Land.IsHost(player) or not entry.Position or not Land.IsUnlocked(entry.ZoneId) then continue end
+						if not entry.Position or not profile.UnlockedZoneIds[entry.ZoneId] then continue end
 						position = Vector3.new(table.unpack(entry.Position))
 					end
 					local power = def.Power * Tuning.EvolutionPower ^ entry.Evolution * (1 + (profile.FranchiseRanks.crew_engine or 0) * Tuning.CrewPowerPerRank)

@@ -18,6 +18,7 @@
 
 export type AreaDef = {
 	Radius: number, -- average island radius (the coast wobbles around it)
+	Wobble: number?, -- how much the coast wobbles: 1 (default) = organic, 0 = a circle
 	Heading: number, -- direction from the previous island (ignored on the first)
 	Gap: number, -- water between the previous island's coast and this one's
 	Cliffs: number, -- 0..1, how much of the coast is rock cliff instead of beach
@@ -26,7 +27,7 @@ export type AreaDef = {
 		Holes: number, -- small organic clearings inside the fields
 	},
 	Props: { string }, -- Props.Kinds names, grouped in one cluster (a farmyard), the first is its center
-	ShopAt: string?, -- "House": the player's base (the cabin) stands here, where you spawn
+	ShopAt: string?, -- "House": the home island, with the players' personal bases around it (Config/Bases)
 	Trees: number, -- trees along the island's rim, in clusters
 	Dock: boolean?, -- a little dock with a moored rowboat on the coast
 	Patches: { [string]: number }, -- chance a regrown cell starts a patch of that grass (GrassTypes)
@@ -67,13 +68,13 @@ local MapLayout = {
 	Areas = {
 		front_yard = {
 			Radius = 66,
+			Wobble = 0.3, -- nearly round: the promenade and the bases' bridges ring it
 			Heading = 0,
 			Gap = 0,
-			Cliffs = 0.15,
+			Cliffs = 0, -- beach all round: bridges land everywhere
 			Lawns = { Rim = 22, Holes = 0 },
-			Props = { "Planters", "Mailbox" }, -- the house is placed first (ShopAt)
-			ShopAt = "House",
-			Dock = true,
+			Props = { "Planters", "Mailbox" },
+			ShopAt = "House", -- the home island: the personal bases stand around it (Config/Bases)
 			Trees = 16,
 			Patches = { lucky = 0.002, golden = 0.0006, next = 0.0024 },
 		},

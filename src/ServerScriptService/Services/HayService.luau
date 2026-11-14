@@ -30,13 +30,13 @@ local Rules = require(Shared.ProgressionRules)
 local ProfileService = require(script.Parent.ProfileService)
 local LevelService = require(script.Parent.LevelService)
 local Yard = require(script.Parent.Map.HayYard)
+local Bases = require(Shared.Bases)
 
 local HayService = {}
 
 local TICK = 0.2
 
 local remotes: Folder
-local yard: Model? = nil
 local nextBaleAt: { [Player]: number } = {}
 local nextCustomerAt: { [Player]: number } = {}
 local rng = Random.new()
@@ -55,9 +55,15 @@ function HayService.LoadValue(profile: any): number
 	return GrassBag.SellValue(profile, bestValue)
 end
 
--- True when this place has a hay yard to sell through.
-function HayService.HasYard(): boolean
-	return yard ~= nil
+-- The player's own hay yard: the one on their personal base (BaseService).
+local function yardOf(player: Player): Model?
+	local yard = Bases.Piece(player.UserId, "HayYard")
+	return if yard and yard:IsA("Model") then yard else nil
+end
+
+-- True when the player has a hay yard to sell through.
+function HayService.HasYard(player: Player): boolean
+	return yardOf(player) ~= nil
 end
 
 -- Moves everything the player carries into the baler's hopper.
@@ -117,6 +123,7 @@ end
 local function nearYard(player: Player): boolean
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local yard = yardOf(player)
 	local stack = yard and yard:FindFirstChild("BaleStack")
 	if not root or not stack or not stack:IsA("Model") then
 		return false
@@ -207,13 +214,7 @@ end
 
 function HayService.Init(remoteFolder: Folder)
 	remotes = remoteFolder
-	Yard.EnsureBuilt()
 	Yard.BuildCustomers()
-	yard = Yard.Find()
-	if not yard then
-		warn("[MowIt][HayYard] No HayYard in this place: sell pads pay out directly.")
-		return
-	end
 
 	local lastAction: { [Player]: number } = {};
 	(remotes:WaitForChild("HayAction") :: RemoteEvent).OnServerEvent:Connect(function(player, action, baleId)
