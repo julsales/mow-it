@@ -11,7 +11,7 @@
 -- where it was authored, whatever unit scale the importer picked.
 --
 -- Moving pieces (ToolAnimations.client) are meshes named "…#Rig": SpinN /
--- Reel turn with the ground speed, Rotor*/Head/Prop/Drill/Portal spin all
+-- Reel turn with the ground speed, Drum turns all the time, Rotor*/Head/Prop/Drill/Portal spin all
 -- the time, Orbit circles the player, Buzz shakes and SnipL/SnipR/Lever
 -- open and close around `Snip.Pivot` (authored coordinates) on each cut.
 
