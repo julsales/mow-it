@@ -12,7 +12,7 @@ direction (`Heading`) and water `Gap` are rows in `MapLayout.luau`. A
 wooden bridge joins each island to the next, with that area's gate in the
 middle. On every island: big lawns, a dirt path from bridge to bridge,
 the sell pad where the bridge arrives, the farmer's tool stand off to the
-side near the coast, the island's props grouped together, trees and
+side near the coast (in the middle of the home island), the island's props grouped together, trees and
 bushes along the coast, beaches and rock cliffs. Around it all: wooded
 islets, sea rocks and water to the horizon (terrain water near the land,
 flat `FarSea` plates further out). Past the last island a closed pier

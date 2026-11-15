@@ -58,8 +58,10 @@ local MapLayout = {
 	Stations = {
 		Sell = { Forward = 18, Side = 13 },
 		-- The farmer's tool stand: `Angle` degrees around the coast from the
-		-- arrival (alternating sides), `Inland` studs in from the coast.
-		Farmer = { Angle = 48, Inland = 30 },
+		-- arrival (alternating sides), `Inland` studs in from the coast. On
+		-- the home island it stands `HomeOffset` studs from the center instead,
+		-- facing it (behind the spawn, away from the first bridge).
+		Farmer = { Angle = 48, Inland = 30, HomeOffset = 13 },
 		-- Kept free for a future quick-travel pad (not built yet).
 		Travel = { Forward = 12, Side = -11, Radius = 6 },
 	},

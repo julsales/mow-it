@@ -77,7 +77,8 @@ Read before working in this repo:
     home one has a drop-off **SellPad** by the bridge arrival that sends
     grass to the player's own yard;
     every island has a **farmer's tool stand** off to the side near the coast
-    (`Map/FarmerStand`). **Boat travel** (`Config/Travel`, `TravelService`,
+    (`Map/FarmerStand`; on the home island it stands in the middle, facing
+    the center). **Boat travel** (`Config/Travel`, `TravelService`,
     `Shared/Jetties`): a jetty with a rowboat by each island's bridge
     arrival sails the player home to their base, and the base's jetty to
     any island they unlocked.

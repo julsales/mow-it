@@ -900,13 +900,20 @@ function MapService.BuildIfMissing()
 		-- The farmer's stand: off to the side of the arrival, near the coast,
 		-- facing inland. Tries angles further and further round the coast
 		-- until the footprint is clear of the base, props, paths and bridges.
+		-- On the home island it stands in the middle instead, just behind the
+		-- spawn (away from the first bridge), its counter facing the center
+		-- so every base's bridge looks at it and no bridge landing is blocked.
 		do
 			local st = MapLayout.Stations.Farmer
 			local first = if island.Index % 2 == 0 then 1 else -1
 			local from = if houseAt[island.Id] then houseAt[island.Id] else arrival
 			local baseAngle = Geo.AngleOf(from - island.Center)
 			local pos: Vector3? = nil
-			for step = 0, 16 do
+			if island.Def.ShopAt == "House" then
+				local away = if departure then (island.Center - departure).Unit else Vector3.new(0, 0, 1)
+				pos = island.Center + flatY(away) * st.HomeOffset
+			end
+			for step = 0, if pos then -1 else 16 do
 				for _, side in { first, -first } do
 					local angle = baseAngle + side * (st.Angle + step * 10)
 					local p = island.Center + Geo.Direction(angle) * (Geo.CoastRadius(island, angle) - st.Inland)
@@ -934,6 +941,9 @@ function MapService.BuildIfMissing()
 			local toolIds = ShopDisplay.ToolsForZone(Geo.Order[island.Id] or 1)
 			FarmerStand.Build(islandModels[island.Id], cf, toolIds, if contact then contact.NpcName else "Farmer", zone.ThemeColor)
 			claim(pos, FarmerStand.Radius)
+			if island.Def.ShopAt == "House" then
+				continue -- in the middle of the home lawn: no spur path to the promenade
+			end
 			-- A short path from the stand's front to the nearest point of the main path.
 			local front = (pos :: Vector3) + cf.LookVector * -8
 			local nearest = route[1]
