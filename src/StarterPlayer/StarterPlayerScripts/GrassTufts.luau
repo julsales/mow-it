@@ -11,8 +11,9 @@
 --   material = standing), which GrassState paints as the local player
 --   mows: every player sees their own lawn.
 -- * Snipped blades: the first hand tools cut single blades (Config/Tools
---   `Blades`); the server says how many of a standing cell's blades are
---   gone (GrassTrim) and those are hidden until the cell regrows.
+--   `Blades`). A cell being cut that way (GrassState.Snipped) is drawn as
+--   GrassTypes.SnipBlades single blades on short ground, minus the ones
+--   already gone, so it thins out blade by blade until it is mowed.
 --
 -- Only chunks near the camera are drawn (RADIUS); blades are anchored,
 -- non-colliding parts built once per chunk and hidden while mowed.
@@ -23,6 +24,7 @@ local RunService = game:GetService("RunService")
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local GrassTypes = require(Shared.Config.GrassTypes)
 local LawnCells = require(Shared.LawnCells)
+local GrassState = require(script.Parent:WaitForChild("GrassState"))
 
 local GrassTufts = {}
 
@@ -39,6 +41,7 @@ type Chunk = {
 	Folder: Folder,
 	Parts: { [string]: { BasePart } }, -- cell key -> the parts of its blades
 	BladeOf: { [string]: { number } }, -- cell key -> which blade (1..n) each part belongs to
+	Thin: { [string]: boolean }, -- cell key -> built as single snippable blades
 	Shown: { [string]: boolean },
 	Looks: { [string]: string },
 }
@@ -46,7 +49,6 @@ type Chunk = {
 local cellsByChunk: { [string]: { Cell } } = {}
 local cellByKey: { [string]: Cell } = {}
 local lookOverride: { [string]: string } = {} -- cell key -> look (patches)
-local trimmed: { [string]: number } = {} -- standing cell key -> blades already snipped
 local snips: { [string]: { Vector3 } } = {} -- cell key -> where its blades were just snipped (TakeSnip)
 local chunks: { [string]: Chunk } = {}
 local folder: Folder
@@ -132,10 +134,10 @@ local function buildCell(parent: Instance, cell: Cell, look: GrassTypes.Look): (
 end
 
 -- Shows the cell's blades that are still there: none while mowed, all but
--- the snipped ones (the first `trimmed` blades) while standing.
+-- the snipped ones (the first blades) while standing.
 local function paint(chunk: Chunk, k: string)
 	local shown = chunk.Shown[k] ~= false
-	local gone = trimmed[k] or 0
+	local gone = GrassState.Snipped(k) or 0
 	local bladeOf = chunk.BladeOf[k]
 	for index, p in chunk.Parts[k] or {} do
 		p.Transparency = if shown and bladeOf[index] > gone then 0 else 1
@@ -147,10 +149,6 @@ local function setShown(chunk: Chunk, k: string, shown: boolean)
 		return
 	end
 	chunk.Shown[k] = shown
-	if not shown then
-		trimmed[k] = nil -- mowed: it regrows whole
-		snips[k] = nil
-	end
 	paint(chunk, k)
 end
 
@@ -161,7 +159,14 @@ local function rebuildCell(chunk: Chunk, cell: Cell)
 	end
 	local id, look = lookOf(cell)
 	chunk.Looks[k] = id
-	if look then
+	local thin = GrassState.Snipped(k) ~= nil
+	chunk.Thin[k] = thin
+	if look and thin then
+		-- Being cut blade by blade: the same grass as single blades.
+		local single = table.clone(look)
+		single.Blades = GrassTypes.SnipBlades
+		chunk.Parts[k], chunk.BladeOf[k] = buildCell(chunk.Folder, cell, single)
+	elseif look then
 		chunk.Parts[k], chunk.BladeOf[k] = buildCell(chunk.Folder, cell, look)
 	else
 		chunk.Parts[k], chunk.BladeOf[k] = {}, {}
@@ -172,7 +177,7 @@ local function rebuildCell(chunk: Chunk, cell: Cell)
 end
 
 local function loadChunk(key: string)
-	local chunk: Chunk = { Folder = Instance.new("Folder"), Parts = {}, BladeOf = {}, Shown = {}, Looks = {} }
+	local chunk: Chunk = { Folder = Instance.new("Folder"), Parts = {}, BladeOf = {}, Thin = {}, Shown = {}, Looks = {} }
 	chunk.Folder.Name = key
 	for _, cell in cellsByChunk[key] do
 		rebuildCell(chunk, cell)
@@ -197,7 +202,13 @@ local function readChunk(key: string, chunk: Chunk)
 	for _, cell in cells do
 		local column = materials[cell.Ix - cx * CHUNK_CELLS + 1]
 		local material = column and column[1] and column[1][cell.Iz - cz * CHUNK_CELLS + 1]
-		setShown(chunk, LawnCells.Key(cell.Ix, cell.Iz), material == TALL)
+		local k = LawnCells.Key(cell.Ix, cell.Iz)
+		local snipped = GrassState.Snipped(k) ~= nil
+		if material == TALL and chunk.Thin[k] and not snipped then
+			rebuildCell(chunk, cell) -- regrown whole: thick grass again
+		end
+		-- A cell being snipped stands on short ground already (GrassState).
+		setShown(chunk, k, material == TALL or snipped)
 	end
 end
 
@@ -247,22 +258,34 @@ function GrassTufts.ColorAt(point: Vector3): Color3?
 	return look and look.Color
 end
 
--- `cut` blades of the standing cell at `center` have been snipped.
-local function onTrim(centers: { Vector3 }, cut: { number })
-	for i, center in centers do
-		local ix, iz = LawnCells.Index(center)
-		local k = LawnCells.Key(ix, iz)
-		trimmed[k] = cut[i]
-		local chunk = chunks[(chunkKey(ix, iz))]
-		if chunk and chunk.Parts[k] then
-			paint(chunk, k)
-			local at = table.find(chunk.BladeOf[k], cut[i])
-			if at then
-				local position = chunk.Parts[k][at].Position
-				snips[k] = snips[k] or {}
-				table.insert(snips[k], Vector3.new(position.X, center.Y, position.Z))
-			end
+-- A cell lost a blade (`cut` so far) or was mowed (nil): redraw it now and
+-- remember where the blade stood, for the pickup.
+local function onSnip(center: Vector3, cut: number?)
+	local ix, iz = LawnCells.Index(center)
+	local k = LawnCells.Key(ix, iz)
+	local cell = cellByKey[k]
+	local chunk = chunks[(chunkKey(ix, iz))]
+	if not cell or not chunk or not chunk.Parts[k] then
+		return
+	end
+	if cut and not chunk.Thin[k] then
+		rebuildCell(chunk, cell)
+	end
+	-- The blade that just went: number `cut`, or the last one left.
+	local at = chunk.Thin[k] and table.find(chunk.BladeOf[k], cut or GrassTypes.SnipBlades)
+	if at then
+		local position = chunk.Parts[k][at].Position
+		local list = snips[k] or {}
+		snips[k] = list
+		table.insert(list, Vector3.new(position.X, center.Y, position.Z))
+		if #list > GrassTypes.SnipBlades then
+			table.remove(list, 1)
 		end
+	end
+	if cut then
+		paint(chunk, k)
+	else
+		setShown(chunk, k, false)
 	end
 end
 
@@ -279,8 +302,7 @@ function GrassTufts.Start()
 	folder = Instance.new("Folder")
 	folder.Name = "GrassTufts (local)"
 	folder.Parent = Workspace
-	local remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes");
-	(remotes:WaitForChild("GrassTrim") :: RemoteEvent).OnClientEvent:Connect(onTrim)
+	GrassState.OnSnip(onSnip)
 
 	-- Lawns: everything already there, and parts that stream in later (on
 	-- the islands and on the personal bases).

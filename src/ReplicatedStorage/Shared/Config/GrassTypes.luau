@@ -61,4 +61,10 @@ end
 -- Patch types are rolled rarest first.
 local PatchOrder = { "golden", "lucky", "next" }
 
-return { List = List, ById = ById, Looks = Looks, PatchOrder = PatchOrder }
+-- Cutting blade by blade (the first hand tools; Config/Tools `Blades`): a
+-- cell holds this many single blades, each worth at least 1 grass. The
+-- first snip thins the cell from thick lawn to these blades; they then go
+-- one by one, so a cell never vanishes at once.
+local SnipBlades = 10
+
+return { List = List, ById = ById, Looks = Looks, PatchOrder = PatchOrder, SnipBlades = SnipBlades }

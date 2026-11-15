@@ -8,6 +8,9 @@
 --   * terrain: a mowed cell turns from tall Grass into short striped lawn
 --     in this client's copy of the terrain, and back when it regrows.
 --     Terrain edits made on a client are never sent to anybody else;
+--   * cells being cut blade by blade (GrassTrim): the ground goes short at
+--     the first snip and GrassTufts draws the blades that are left, so the
+--     cell thins out instead of vanishing at once (Snipped / OnSnip);
 --   * patch markers in Workspace/RareGrass (attributes GrassType + Look),
 --     which GrassTufts draws blades for; lucky/golden ones sparkle so they
 --     can be chased from far away.
@@ -28,6 +31,8 @@ local terrain = Workspace.Terrain
 local markers: Folder
 local markerAt: { [string]: BasePart } = {}
 local regrowAt: { [string]: number } = {} -- cut cells -> os.clock() they stand again
+local snipped: { [string]: number } = {} -- standing cells being cut blade by blade -> blades gone
+local snipListeners: { (center: Vector3, cut: number?) -> () } = {}
 local started = false
 
 local function keyOf(center: Vector3): (string, number)
@@ -78,12 +83,41 @@ local function addMarker(key: string, center: Vector3, typeId: string, lookId: s
 	markerAt[key] = marker
 end
 
+-- Blades already snipped from a standing cell, or nil when it is whole
+-- (or mowed).
+function GrassState.Snipped(key: string): number?
+	return snipped[key]
+end
+
+-- `listener(center, cut)` runs right when a cell loses a blade (`cut` =
+-- blades gone so far) and when a cell is mowed (`cut` = nil).
+function GrassState.OnSnip(listener: (center: Vector3, cut: number?) -> ())
+	table.insert(snipListeners, listener)
+end
+
+local function onTrim(centers: { Vector3 }, cut: { number })
+	for i, center in centers do
+		local key, ix = keyOf(center)
+		if not snipped[key] then
+			terrain:ReplaceMaterial(LawnCells.Region(center), CELL, LawnCells.Tall, LawnCells.Mowed(ix))
+		end
+		snipped[key] = cut[i]
+		for _, listener in snipListeners do
+			listener(center, cut[i])
+		end
+	end
+end
+
 local function onCut(centers: { Vector3 }, delays: { number })
 	local now = os.clock()
 	for i, center in centers do
 		local key, ix = keyOf(center)
 		local due = now + (delays[i] or 0)
 		regrowAt[key] = due
+		snipped[key] = nil
+		for _, listener in snipListeners do
+			listener(center, nil)
+		end
 		dropMarker(key) -- a mowed patch cell is gone; the server sends the next one
 		local region = LawnCells.Region(center)
 		local mowed = LawnCells.Mowed(ix)
@@ -119,6 +153,7 @@ function GrassState.Start()
 	markers.Name = "RareGrass"
 	markers.Parent = Workspace
 	local remotes = ReplicatedStorage:WaitForChild("Remotes");
+	(remotes:WaitForChild("GrassTrim") :: RemoteEvent).OnClientEvent:Connect(onTrim);
 	(remotes:WaitForChild("GrassCut") :: RemoteEvent).OnClientEvent:Connect(onCut);
 	(remotes:WaitForChild("GrassPatch") :: RemoteEvent).OnClientEvent:Connect(onPatch);
 	(remotes:WaitForChild("GrassSync") :: RemoteEvent):FireServer()

@@ -15,7 +15,7 @@ The tool catalog SHALL contain about 48 tools in escalating families (manual, el
 - **THEN** their grass-per-minute visibly increases
 
 ### Requirement: The first hand tools cut blade by blade
-The first hand tools SHALL cut single blades of grass instead of whole lawn cells: one swing snips up to the tool's `Blades` (`Config/Tools`), nearest the player first, starting at 1 for the Nail Clipper and growing by one per tool (2, 3, 4...). Each snipped blade SHALL disappear from the player's own lawn and yield grass; a cell is mowed when its last blade is cut. Tools without `Blades` SHALL mow every whole cell in reach.
+The first hand tools SHALL cut single blades of grass instead of whole lawn cells: one swing snips up to the tool's `Blades` (`Config/Tools`), nearest the player first, starting at 1 for the Nail Clipper and growing by one per tool (2, 3, 4...). A lawn cell holds `GrassTypes.SnipBlades` single blades; each snipped blade SHALL disappear from the player's own lawn and yield grass, so the cell thins out gradually and is mowed only when its last blade is cut (it never vanishes at once). Tools without `Blades` SHALL mow every whole cell in reach.
 
 #### Scenario: Nail Clipper
 - **WHEN** a player swings the Nail Clipper on tall grass

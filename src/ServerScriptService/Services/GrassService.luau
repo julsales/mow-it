@@ -227,14 +227,6 @@ local function yieldOf(lawn: Lawn, cell: Cell): number
 	return if patch then patch.Yield else GrassTypes.ById.normal.Yield
 end
 
--- Blades standing in a whole cell of this grass (its look; GrassTufts
--- draws the same number).
-local function bladesIn(lawn: Lawn, cell: Cell): number
-	local patch = lawn.Patches[cell.Key]
-	local look = GrassTypes.Looks[if patch then patch.Look else cell.ZoneId]
-	return if look then look.Blades else 1
-end
-
 -- The cell is mowed: it regrows on its own after a while.
 local function mow(player: Player, lawn: Lawn, cell: Cell)
 	lawn.Health[cell.Key] = nil
@@ -276,7 +268,7 @@ function GrassService.DamageBlade(player: Player, cell: Cell, power: number): (n
 		lawn.Health[cell.Key] = health
 		return nil, true
 	end
-	local blades = bladesIn(lawn, cell)
+	local blades = GrassTypes.SnipBlades
 	local yield = math.max(1, math.round(yieldOf(lawn, cell) / blades))
 	local cut = (lawn.Cut[cell.Key] or 0) + 1
 	if cut >= blades then
