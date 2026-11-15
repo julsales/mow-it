@@ -5,7 +5,8 @@
 --     terrain (striped short lawn) and keeps their rare patches;
 --   * GrassTufts draws each area's own blades (and the rare patches);
 --   * this script sprays clippings, in the grass's color, where the local
---     player's swing mowed cells (positions arrive in CutFeedback).
+--     player's swing mowed cells (positions arrive in CutFeedback);
+--   * GrassPickup flies one blade per unit of grass stored to the player.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,6 +15,7 @@ local Workspace = game:GetService("Workspace")
 
 local GrassTufts = require(script.Parent:WaitForChild("GrassTufts"))
 local GrassState = require(script.Parent:WaitForChild("GrassState"))
+local GrassPickup = require(script.Parent:WaitForChild("GrassPickup"))
 
 local player = Players.LocalPlayer
 GrassState.Start() -- before the tufts: it creates the patch markers they read
@@ -78,7 +80,8 @@ local function throw(from: Vector3, away: Vector3)
 	rise:Play()
 end
 
-(remotes:WaitForChild("CutFeedback") :: RemoteEvent).OnClientEvent:Connect(function(_stored, _full, _hit, cutAt: { Vector3 }?)
+(remotes:WaitForChild("CutFeedback") :: RemoteEvent).OnClientEvent:Connect(function(stored: number, _full, _hit, cutAt: { Vector3 }?)
+	GrassPickup.Collect(stored, cutAt)
 	if not cutAt or #cutAt == 0 then
 		return
 	end

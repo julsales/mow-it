@@ -14,6 +14,17 @@ The tool catalog SHALL contain about 48 tools in escalating families (manual, el
 - **WHEN** a starting player replaces the Nail Clipper with Safety Scissors
 - **THEN** their grass-per-minute visibly increases
 
+### Requirement: Tool rarity shown as stars
+Every tool SHALL have a rarity of 0 to 6 stars (`Stars` in `Config/Tools`, tiers in `Config/Rarity`): the free starter tool has 0, each later family one more, the last family 6. Wherever a tool is shown (shop rows, hotbar, backpack, world price tags) its rarity SHALL appear as stars in the tier's color: a single empty star for 0, otherwise one filled star per star.
+
+#### Scenario: Starter tool
+- **WHEN** a player sees the Nail Clipper in the hotbar, the backpack, the shop or on a stand
+- **THEN** it shows one empty star
+
+#### Scenario: Top tool
+- **WHEN** a player sees MOWZILLA in the shop
+- **THEN** it shows six filled stars
+
 ### Requirement: Rideable tools drive and mow
 From the riding-mower tier upward, tools SHALL be vehicles the player mounts and drives; grass under a moving rideable tool SHALL be cut without swinging.
 

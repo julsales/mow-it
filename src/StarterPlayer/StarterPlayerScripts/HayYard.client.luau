@@ -34,6 +34,7 @@ local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local Bales = require(script.Parent:WaitForChild("HayBales"))
 local Customers = require(script.Parent:WaitForChild("HayCustomers"))
 local Rigs = require(script.Parent:WaitForChild("HayRigs"))
+local WorldPopup = require(script.Parent:WaitForChild("WorldPopup"))
 local Ui = require(script.Parent:WaitForChild("UiKit"))
 
 local player = Players.LocalPlayer
@@ -107,37 +108,7 @@ local function tag(at: Vector3, width: number): (BillboardGui, TextLabel)
 end
 
 -- "+25" rising and fading where something was sold.
-local function popup(at: Vector3, message: string, color: Color3)
-	local host = anchor(at)
-	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromOffset(260, 60)
-	gui.AlwaysOnTop = true
-	gui.LightInfluence = 0
-	gui.MaxDistance = 120
-	gui.Adornee = host
-	local text = Instance.new("TextLabel")
-	text.Size = UDim2.fromScale(1, 1)
-	text.BackgroundTransparency = 1
-	text.Font = Enum.Font.FredokaOne
-	text.TextScaled = true
-	text.TextColor3 = color
-	text.Text = message
-	text.Parent = gui
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Colors.Ink
-	stroke.Thickness = 2.5
-	stroke.Parent = text
-	gui.Parent = host
-	task.spawn(function()
-		Bales.Animate(1.1, function(a)
-			gui.StudsOffsetWorldSpace = Vector3.new(0, 1 + 3.2 * (1 - (1 - a) ^ 2), 0)
-			local fade = math.clamp((a - 0.6) / 0.4, 0, 1)
-			text.TextTransparency = fade
-			stroke.Transparency = fade
-		end)
-		host:Destroy()
-	end)
-end
+local popup = WorldPopup.Show
 
 local function puffs(parent: Instance, color: Color3, size: number, speed: number, up: Vector3): ParticleEmitter
 	local emitter = Instance.new("ParticleEmitter")

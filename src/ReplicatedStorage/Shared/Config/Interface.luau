@@ -3,6 +3,7 @@
 -- (OpenPencil boards 1-5, exports board-*.png next to it). Colors is the warm
 -- world palette (billboards, confetti); Theme is the screen UI from the boards.
 local function hex(value: string): Color3 return Color3.fromHex(value) end
+local Rarity = require(script.Parent.Rarity)
 return {
 	Colors = {
 		Ink = Color3.fromRGB(42, 32, 24), Cream = Color3.fromRGB(251, 243, 223),
@@ -71,6 +72,8 @@ return {
 		-- Classic Roblox hotbar/backpack look (ClassicBackpack), a little bluer.
 		CoreHotbarHeight = 80,
 	},
+	-- Text that rises and fades over the world ("+25 Coins", "+3"): WorldPopup.luau.
+	Popup = { Size = Vector2.new(260, 60), Seconds = 1.1, Lift = 1, Rise = 3.2, MaxDistance = 120 },
 	Passes = { Upper = 3, UpperHeight = 264, LowerHeight = 208, Gap = 12, Icon = 110, WideIcon = 112, CompactWidth = 560 },
 	Backpack = {
 		Slot = 60, Gap = 5, HotbarSlots = 9, Bottom = 8, Radius = 8,
@@ -78,7 +81,8 @@ return {
 		SlotStroke = hex("2C8097"), FilterWidth = 70, FilterHeight = 30,
 		Card = Vector2.new(76, 98), -- backpack cells: icon with the name under it
 		Inventory = Vector2.new(9 * 65 + 15, 300), Filters = { "All", "Tools", "Crew" },
-		Rarity = { Common = hex("A6CBD7"), Uncommon = hex("8DD737"), Rare = hex("35B6FF"), Epic = hex("C066FF"), Legendary = hex("FFB721") },
+		Rarity = Rarity.Colors, -- rim color by rarity (Config/Rarity.luau)
+		Stars = 19, -- largest star text size on a hotbar slot / backpack card
 	},
 	-- Uploaded from build/ui-upload (tools/prepare-ui-uploads.py). Never invent IDs.
 	Images = {

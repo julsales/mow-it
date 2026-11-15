@@ -39,8 +39,9 @@ type Row = {
 	RequiredZone: number,
 }
 
--- Name and stats on the left, one action on the right.
-local function makeRow(index: number, id: string, name: string, stats: string, price: number, requiredZone: number, remoteName: string): Row
+-- Name and stats on the left, one action on the right. Items with a rarity
+-- (tools) show its stars before the stats.
+local function makeRow(index: number, id: string, name: string, stats: string, price: number, requiredZone: number, remoteName: string, stars: number?): Row
 	local frame = UiKit.Surface(list, T.Card, T.CardStroke, 14)
 	frame.Name = id
 	frame.LayoutOrder = index
@@ -50,6 +51,12 @@ local function makeRow(index: number, id: string, name: string, stats: string, p
 	UiKit.FitText(nameLabel, 13, 19)
 	local statsLabel = UiKit.Text(frame, stats, 14, T.TextMuted)
 	statsLabel.Position = UDim2.fromOffset(16, 38); statsLabel.Size = UDim2.new(1, -190, 0, 24)
+	if stars then
+		local starLabel = UiKit.Stars(frame, stars, 26)
+		starLabel.Position = UDim2.fromOffset(14, 36)
+		local taken = starLabel.Size.X.Offset + 6
+		statsLabel.Position = UDim2.fromOffset(16 + taken, 38); statsLabel.Size = UDim2.new(1, -190 - taken, 0, 24)
+	end
 	UiKit.FitText(statsLabel, 11, 14)
 	local action = UiKit.Button(frame, "Action", "", function()
 		(remotes:WaitForChild(remoteName) :: RemoteEvent):FireServer(id)
@@ -63,7 +70,7 @@ end
 local toolRows: { Row } = {}
 for i, def in Tools.List do
 	local stats = ("Power %s · Range %s"):format(Format.Number(def.Power), tostring(def.Radius))
-	table.insert(toolRows, makeRow(i, def.Id, def.DisplayName, stats, def.Price, def.RequiredZone, "BuyTool"))
+	table.insert(toolRows, makeRow(i, def.Id, def.DisplayName, stats, def.Price, def.RequiredZone, "BuyTool", def.Stars))
 end
 local packRows: { Row } = {}
 for i, def in Backpacks.List do

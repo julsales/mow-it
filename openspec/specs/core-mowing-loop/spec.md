@@ -14,6 +14,10 @@ The player SHALL be able to swing or drive their equipped tool to cut grass tuft
 - **WHEN** a player swings a tool next to grass in an area they have unlocked and their storage is not full
 - **THEN** the tuft loses health equal to the tool's power, and when its health reaches zero the player gains grass units
 
+#### Scenario: Collected grass is counted on screen
+- **WHEN** a swing stores grass
+- **THEN** one blade per unit stored (1, 2, 3, 4... up to a cap) jumps out of the lawn where it was cut and flies to the player one after another, and a "+N" with the exact amount rises over the player
+
 #### Scenario: Storage full blocks cutting
 - **WHEN** a player tries to cut while their carried grass equals their storage capacity
 - **THEN** nothing is harvested and the player is told their storage is full

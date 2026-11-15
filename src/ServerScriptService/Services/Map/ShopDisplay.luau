@@ -15,6 +15,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Tools = require(Shared.Config.Tools)
+local Rarity = require(Shared.Config.Rarity)
 local ToolModels = require(Shared.ToolModels)
 
 local Props = require(script.Parent.Props)
@@ -30,6 +31,53 @@ export type Options = {
 	ParkDistance: number?, -- how far in front of the wall mowers park
 	MaxParked: number?, -- mowers shown in front (the rest: Shop panel)
 }
+
+-- Rarity stars on an item's price tag (Config/Rarity; Tools `Stars`): a
+-- row between the name and the price on a floating tag, under the price
+-- on a plaque's sign. Only adds what is missing, so tags baked into the
+-- place before stars existed get theirs from Refresh().
+local STAR_ROWS = {
+	BillboardGui = { Size = UDim2.fromScale(2.4, 1.2), Name = { 0.02, 0.36 }, Stars = { 0.37, 0.27 }, Status = { 0.62, 0.36 } },
+	SurfaceGui = { Status = { 0, 0.64 }, Stars = { 0.6, 0.38 } },
+}
+
+local function addStars(holder: Instance)
+	local def = Tools.ById[holder:GetAttribute("ToolId") :: string]
+	local gui = holder:FindFirstChildWhichIsA("LayerCollector")
+	local rows = gui and STAR_ROWS[gui.ClassName]
+	if not def or not gui or not rows or gui:FindFirstChild("Stars", true) then
+		return
+	end
+	if gui:IsA("BillboardGui") and rows.Size then
+		gui.Size = rows.Size
+	end
+	local function place(label: Instance?, row: { number }?)
+		if label and label:IsA("GuiObject") and row then
+			label.Position = UDim2.new(0, 4, row[1], 0)
+			label.Size = UDim2.new(1, -8, row[2], 0)
+		end
+	end
+	local status = gui:FindFirstChild("Status", true)
+	place(gui:FindFirstChild("ItemName", true), rows.Name)
+	place(status, rows.Status)
+	-- A dark chip behind the stars: on the cream tag a pale filled star
+	-- would read as an empty one.
+	local tier = Rarity.Of(def.Stars)
+	local stars = Instance.new("TextLabel")
+	stars.Name = "Stars"
+	stars.BackgroundColor3 = Color3.fromRGB(42, 32, 24)
+	stars.Font = Enum.Font.GothamBlack
+	stars.TextScaled = true
+	stars.TextColor3 = tier.Color
+	stars.Text = Rarity.StarText(def.Stars)
+	stars.AnchorPoint = Vector2.new(0.5, 0)
+	stars.Position = UDim2.fromScale(0.5, rows.Stars[1])
+	stars.Size = UDim2.fromScale(math.min(0.96, 0.1 + 0.14 * Rarity.StarCount(def.Stars)), rows.Stars[2])
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = stars
+	stars.Parent = if status then status.Parent else gui
+end
 
 -- Prompts are wired at runtime, not when built, so shops baked into the
 -- place in Edit mode work too: every ProximityPrompt named
@@ -235,6 +283,7 @@ local function slot(parent: Instance, toolId: string, at: CFrame, tagHeight: num
 	status.Text = "$" .. def.Price
 	status.Parent = frame
 	tag.Parent = holder
+	addStars(holder)
 	return holder
 end
 
@@ -363,6 +412,7 @@ function ShopDisplay.BuildPlaque(parent: Instance, frame: CFrame, toolId: string
 	status.Text = "$" .. def.Price
 	status.Parent = gui
 	gui.Parent = tag
+	addStars(tag)
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "ShopItemPrompt"
@@ -419,10 +469,14 @@ end
 -- Rebuilds every tool display already in the world (baked into the place
 -- or built earlier) with the current models: hand tools re-hung on their
 -- pegboard or plaque, mowers re-parked where they stood. Tags, prompts and
--- boards stay. Lets new tool art show up without re-baking the map.
+-- boards stay (tags gain their rarity stars if they have none). Lets new
+-- tool art show up without re-baking the map.
 function ShopDisplay.Refresh()
 	local byParent: { [Instance]: { Model } } = {}
 	for _, d in workspace:GetDescendants() do
+		if d.Name == "ShopItem" and d:GetAttribute("ToolId") then
+			addStars(d)
+		end
 		if d:IsA("Model") and string.match(d.Name, "^Display_") and d.Parent then
 			local list = byParent[d.Parent :: Instance] or {}
 			table.insert(list, d)

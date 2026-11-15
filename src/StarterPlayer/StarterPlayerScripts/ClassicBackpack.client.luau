@@ -13,6 +13,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Tools = require(Shared.Config.Tools)
 local Interface = require(Shared.Config.Interface)
 local Rules = require(Shared.ProgressionRules)
+local Rarity = require(Shared.Config.Rarity)
 local State = require(script.Parent:WaitForChild("ClientState"))
 local Ui = require(script.Parent:WaitForChild("UiKit"))
 local B, T, Images = Interface.Backpack, Ui.Theme, Ui.Images
@@ -29,7 +30,7 @@ end)
 local ladder: { [string]: number } = {}
 for index, def in Tools.List do ladder[def.Id] = index end
 
-type Item = { Key: string, Name: string, Tool: Tool?, ToolId: string?, CrewUid: string?, Rarity: string?, Selected: boolean }
+type Item = { Key: string, Name: string, Tool: Tool?, ToolId: string?, CrewUid: string?, Rarity: string?, Stars: number?, Selected: boolean }
 
 local gui = Ui.LocalGui("ClassicBackpack", 3)
 local root = Instance.new("Frame")
@@ -130,12 +131,20 @@ local function slot(parent: Instance, item: Item, number: number?, order: number
 		name.Position = UDim2.fromOffset(3, B.Card.X - 4); name.Size = UDim2.new(1, -6, 1, -B.Card.X + 2)
 		Ui.FitText(name, 8, 12)
 	end
+	if item.Stars then
+		-- Rarity stars along the bottom of the icon.
+		local stars = Ui.Stars(button, item.Stars, B.Stars)
+		stars.AnchorPoint = Vector2.new(0.5, 1); stars.TextXAlignment = Enum.TextXAlignment.Center
+		stars.Size = UDim2.new(1, -4, 0, B.Stars); Ui.FitText(stars, 6, B.Stars) -- six stars shrink to fit
+		stars.Position = if labeled then UDim2.new(0.5, 0, 0, B.Card.X - 4) else UDim2.new(0.5, 0, 1, -2)
+	end
 	if number then
 		local key = Ui.Heading(button, tostring(number), 13)
 		key.Name = "Key"; key.Position = UDim2.fromOffset(5, 2); key.Size = UDim2.fromOffset(14, 16)
 	end
 	button.MouseEnter:Connect(function()
-		tooltip.Text = item.Name; tooltip.Visible = true
+		tooltip.Text = if item.Stars then item.Name .. "  " .. Rarity.StarText(item.Stars) else item.Name
+		tooltip.Visible = true
 		tooltip.Position = UDim2.fromOffset(button.AbsolutePosition.X - root.AbsolutePosition.X + button.AbsoluteSize.X / 2, button.AbsolutePosition.Y - root.AbsolutePosition.Y - 4)
 		local scale = root:FindFirstChildOfClass("UIScale")
 		if scale and scale.Scale > 0 then
@@ -154,7 +163,8 @@ local function toolItems(): { Item }
 		for _, child in if container then container:GetChildren() else {} do
 			local id = child:GetAttribute("ToolId")
 			if child:IsA("Tool") and type(id) == "string" and ladder[id] then
-				table.insert(items, { Key = id, Name = child.Name, Tool = child, ToolId = id, Selected = child == held })
+				local tier = Rarity.Of(Tools.ById[id].Stars)
+				table.insert(items, { Key = id, Name = child.Name, Tool = child, ToolId = id, Rarity = tier.Id, Stars = tier.Stars, Selected = child == held })
 			end
 		end
 	end

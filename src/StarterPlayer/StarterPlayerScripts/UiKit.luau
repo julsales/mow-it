@@ -10,6 +10,7 @@ local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Interface = require(game:GetService("ReplicatedStorage").Shared.Config.Interface)
+local Rarity = require(game:GetService("ReplicatedStorage").Shared.Config.Rarity)
 
 local UiKit = {}
 local menuChanged = Instance.new("BindableEvent")
@@ -158,6 +159,20 @@ function UiKit.OutlinedText(parent: Instance, text: string, textSize: number, co
 	label.TextXAlignment = Enum.TextXAlignment.Center
 	label.AutomaticSize = Enum.AutomaticSize.XY
 	UiKit.Stroke(label, math.clamp(math.round(textSize / 9), 2, 5), T.TextDark)
+	return label
+end
+
+-- Rarity as stars (Config/Rarity): one empty star for 0, then 1 to 6
+-- filled stars, in the tier's color with a dark rim. The label is sized
+-- to its stars (`size` is the text size; a star glyph is about 0.6 of it
+-- wide), so callers only place it.
+function UiKit.Stars(parent: Instance, stars: number?, size: number): TextLabel
+	local tier = Rarity.Of(stars)
+	local label = UiKit.Heading(parent, Rarity.StarText(stars), size, tier.Color)
+	label.Name = "Stars"
+	label.TextWrapped = false
+	label.Size = UDim2.fromOffset(math.ceil(Rarity.StarCount(stars) * size * 0.66) + 4, size)
+	UiKit.Stroke(label, math.clamp(size / 12, 1, 2.5), T.TextDark)
 	return label
 end
 
