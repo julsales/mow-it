@@ -2,18 +2,21 @@
 -- Tool ladder, 48 tools in 6 families (spec: openspec/specs/tools-and-vehicles).
 -- Nail Clipper -> MOWZILLA. Rideable tools are driven and mow by contact;
 -- FuelType ~= "None" tools consume fuel (manual / automation / Infinite Fuel pass).
+-- Blades (the first hand tools only) is how many single blades of grass one
+-- swing snips, nearest first: the Nail Clipper takes 1, then 2, 3, 4... Tools
+-- without it mow every whole cell in reach.
 -- Stars is the rarity (Config/Rarity.luau): 0 = the free starter tool (one empty
 -- star), then one more star per family up to 6 for the last one.
 
-export type ToolDef = { Id: string, DisplayName: string, Power: number, Radius: number, Cooldown: number, Price: number, RequiredZone: number, Stars: number, Rideable: boolean, FuelType: string }
+export type ToolDef = { Id: string, DisplayName: string, Power: number, Radius: number, Cooldown: number, Price: number, RequiredZone: number, Stars: number, Blades: number?, Rideable: boolean, FuelType: string }
 
 local Tools: { ToolDef } = {
-	{ Id = "nail_clipper", DisplayName = "Nail Clipper", Power = 1, Radius = 4.0, Cooldown = 0.45, Price = 0, RequiredZone = 1, Stars = 0, Rideable = false, FuelType = "None" },
-	{ Id = "safety_scissors", DisplayName = "Safety Scissors", Power = 4, Radius = 4.8, Cooldown = 0.44, Price = 70, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
-	{ Id = "kitchen_scissors", DisplayName = "Kitchen Scissors", Power = 8, Radius = 5.5, Cooldown = 0.43, Price = 110, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
-	{ Id = "garden_shears", DisplayName = "Garden Shears", Power = 13, Radius = 6.2, Cooldown = 0.43, Price = 150, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
-	{ Id = "hand_sickle", DisplayName = "Hand Sickle", Power = 20, Radius = 7.0, Cooldown = 0.42, Price = 220, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
-	{ Id = "grass_whip", DisplayName = "Grass Whip", Power = 28, Radius = 7.8, Cooldown = 0.41, Price = 320, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
+	{ Id = "nail_clipper", DisplayName = "Nail Clipper", Power = 1, Radius = 4.0, Cooldown = 0.45, Price = 0, RequiredZone = 1, Stars = 0, Blades = 1, Rideable = false, FuelType = "None" },
+	{ Id = "safety_scissors", DisplayName = "Safety Scissors", Power = 4, Radius = 4.8, Cooldown = 0.44, Price = 70, RequiredZone = 1, Stars = 1, Blades = 2, Rideable = false, FuelType = "None" },
+	{ Id = "kitchen_scissors", DisplayName = "Kitchen Scissors", Power = 8, Radius = 5.5, Cooldown = 0.43, Price = 110, RequiredZone = 1, Stars = 1, Blades = 3, Rideable = false, FuelType = "None" },
+	{ Id = "garden_shears", DisplayName = "Garden Shears", Power = 13, Radius = 6.2, Cooldown = 0.43, Price = 150, RequiredZone = 1, Stars = 1, Blades = 4, Rideable = false, FuelType = "None" },
+	{ Id = "hand_sickle", DisplayName = "Hand Sickle", Power = 20, Radius = 7.0, Cooldown = 0.42, Price = 220, RequiredZone = 1, Stars = 1, Blades = 5, Rideable = false, FuelType = "None" },
+	{ Id = "grass_whip", DisplayName = "Grass Whip", Power = 28, Radius = 7.8, Cooldown = 0.41, Price = 320, RequiredZone = 1, Stars = 1, Blades = 6, Rideable = false, FuelType = "None" },
 	{ Id = "reel_mower", DisplayName = "Manual Reel Mower", Power = 37, Radius = 8.5, Cooldown = 0.41, Price = 460, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
 	{ Id = "turbo_reel", DisplayName = "Turbo Reel Mower", Power = 47, Radius = 9.2, Cooldown = 0.40, Price = 670, RequiredZone = 1, Stars = 1, Rideable = false, FuelType = "None" },
 	{ Id = "hedge_trimmer", DisplayName = "Electric Hedge Trimmer", Power = 58, Radius = 10.0, Cooldown = 0.39, Price = 980, RequiredZone = 2, Stars = 2, Rideable = false, FuelType = "Battery" },

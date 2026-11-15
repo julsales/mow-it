@@ -49,7 +49,8 @@ type Patch = { TypeId: string, Look: string, Yield: number, MaxHealth: number }
 -- One player's lawn: only what differs from tall, normal, undamaged grass.
 type Lawn = {
 	RegrowAt: { [string]: number }, -- cut cells -> os.clock() when they stand again
-	Health: { [string]: number }, -- damaged standing cells -> health left
+	Health: { [string]: number }, -- damaged standing cells -> health left (of the blade being cut)
+	Cut: { [string]: number }, -- standing cells snipped blade by blade -> blades already gone
 	Patches: { [string]: Patch },
 	Pending: { [string]: GrassTypes.GrassType }, -- cut cells that regrow as a patch
 }
@@ -63,6 +64,7 @@ local cellList: { Cell } = {}
 local lawns: { [Player]: Lawn } = {}
 local rng = Random.new()
 local cutRemote: RemoteEvent
+local trimRemote: RemoteEvent
 local patchRemote: RemoteEvent
 
 -- The next area in the ladder (for "next" patches), or nil for the last.
@@ -158,6 +160,7 @@ end
 local function grow(lawn: Lawn, cell: Cell, changes: Changes)
 	lawn.RegrowAt[cell.Key] = nil
 	lawn.Health[cell.Key] = nil
+	lawn.Cut[cell.Key] = nil
 	local pending = lawn.Pending[cell.Key]
 	lawn.Pending[cell.Key] = nil
 	if pending then
@@ -207,7 +210,42 @@ end
 -- grass it yields when that mowed it (it then regrows on its own), or nil
 -- when it only got damaged. Call GrassService.Flush(player) after a batch
 -- of hits, so the client hears about all of them at once.
-local pendingCuts: { [Player]: { Centers: { Vector3 }, Delays: { number } } } = {}
+type Batch = { Centers: { Vector3 }, Delays: { number }, TrimCenters: { Vector3 }, TrimCut: { number } }
+local pendingCuts: { [Player]: Batch } = {}
+
+local function batchOf(player: Player): Batch
+	local batch = pendingCuts[player]
+	if not batch then
+		batch = { Centers = {}, Delays = {}, TrimCenters = {}, TrimCut = {} }
+		pendingCuts[player] = batch
+	end
+	return batch
+end
+
+local function yieldOf(lawn: Lawn, cell: Cell): number
+	local patch = lawn.Patches[cell.Key]
+	return if patch then patch.Yield else GrassTypes.ById.normal.Yield
+end
+
+-- Blades standing in a whole cell of this grass (its look; GrassTufts
+-- draws the same number).
+local function bladesIn(lawn: Lawn, cell: Cell): number
+	local patch = lawn.Patches[cell.Key]
+	local look = GrassTypes.Looks[if patch then patch.Look else cell.ZoneId]
+	return if look then look.Blades else 1
+end
+
+-- The cell is mowed: it regrows on its own after a while.
+local function mow(player: Player, lawn: Lawn, cell: Cell)
+	lawn.Health[cell.Key] = nil
+	lawn.Cut[cell.Key] = nil
+	lawn.Patches[cell.Key] = nil -- the client drops the patch's blades with the cut
+	local delay = GameConfig.GrassRespawnSeconds * (0.7 + rng:NextNumber() * 0.8)
+	lawn.RegrowAt[cell.Key] = os.clock() + delay
+	local batch = batchOf(player)
+	table.insert(batch.Centers, cell.Center)
+	table.insert(batch.Delays, delay)
+end
 
 function GrassService.Damage(player: Player, cell: Cell, power: number): number?
 	local lawn = lawns[player]
@@ -219,34 +257,58 @@ function GrassService.Damage(player: Player, cell: Cell, power: number): number?
 		lawn.Health[cell.Key] = health
 		return nil
 	end
-	local patch = lawn.Patches[cell.Key]
-	local yield = if patch then patch.Yield else GrassTypes.ById.normal.Yield
-	lawn.Health[cell.Key] = nil
-	lawn.Patches[cell.Key] = nil -- the client drops the patch's blades with the cut
-	local delay = GameConfig.GrassRespawnSeconds * (0.7 + rng:NextNumber() * 0.8)
-	lawn.RegrowAt[cell.Key] = os.clock() + delay
-	local batch = pendingCuts[player]
-	if not batch then
-		batch = { Centers = {}, Delays = {} }
-		pendingCuts[player] = batch
-	end
-	table.insert(batch.Centers, cell.Center)
-	table.insert(batch.Delays, delay)
+	local yield = yieldOf(lawn, cell)
+	mow(player, lawn, cell)
 	return yield
 end
 
--- Tells the client which cells the hits since the last Flush mowed.
+-- One hit of `power` to a single blade of the cell (tools with `Blades`,
+-- Config/Tools). Returns the grass that blade yields when the hit snipped
+-- it, or nil when it only got damaged, and whether the cell still stands.
+-- The cell's last blade mows the cell, like Damage.
+function GrassService.DamageBlade(player: Player, cell: Cell, power: number): (number?, boolean)
+	local lawn = lawns[player]
+	if not lawn or lawn.RegrowAt[cell.Key] then
+		return nil, false
+	end
+	local health = (lawn.Health[cell.Key] or maxHealth(lawn, cell)) - power
+	if health > 0 then
+		lawn.Health[cell.Key] = health
+		return nil, true
+	end
+	local blades = bladesIn(lawn, cell)
+	local yield = math.max(1, math.round(yieldOf(lawn, cell) / blades))
+	local cut = (lawn.Cut[cell.Key] or 0) + 1
+	if cut >= blades then
+		mow(player, lawn, cell)
+		return yield, false
+	end
+	lawn.Cut[cell.Key] = cut
+	lawn.Health[cell.Key] = nil -- the next blade is whole
+	local batch = batchOf(player)
+	table.insert(batch.TrimCenters, cell.Center)
+	table.insert(batch.TrimCut, cut)
+	return yield, true
+end
+
+-- Tells the client which cells the hits since the last Flush mowed, and
+-- which lost single blades.
 function GrassService.Flush(player: Player)
 	local batch = pendingCuts[player]
 	if batch then
 		pendingCuts[player] = nil
-		cutRemote:FireClient(player, batch.Centers, batch.Delays)
+		if #batch.TrimCenters > 0 then
+			trimRemote:FireClient(player, batch.TrimCenters, batch.TrimCut)
+		end
+		if #batch.Centers > 0 then
+			cutRemote:FireClient(player, batch.Centers, batch.Delays)
+		end
 	end
 end
 
 -- A fresh lawn for a player: everything tall, patches rolled by luck.
 local function plant(player: Player)
-	local lawn: Lawn = { RegrowAt = {}, Health = {}, Patches = {}, Pending = {} }
+	local lawn: Lawn = { RegrowAt = {}, Health = {}, Cut = {}, Patches = {}, Pending = {} }
 	lawns[player] = lawn
 	local changes = newChanges()
 	for _, cell in cellList do
@@ -279,11 +341,20 @@ local function sync(player: Player)
 	if #centers > 0 then
 		cutRemote:FireClient(player, centers, delays)
 	end
+	local trimCenters, trimCut = {}, {}
+	for key, cut in lawn.Cut do
+		table.insert(trimCenters, cells[key].Center)
+		table.insert(trimCut, cut)
+	end
+	if #trimCenters > 0 then
+		trimRemote:FireClient(player, trimCenters, trimCut)
+	end
 end
 
 function GrassService.Init(remotes: Folder)
 	cutRemote = remotes:WaitForChild("GrassCut") :: RemoteEvent
 	patchRemote = remotes:WaitForChild("GrassPatch") :: RemoteEvent
+	trimRemote = remotes:WaitForChild("GrassTrim") :: RemoteEvent
 	if not Workspace.Terrain.Decoration then
 		-- Decoration can't be set from a script at runtime: it is on in the
 		-- project file and must be saved in the place (Terrain > Decoration).

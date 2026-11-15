@@ -55,6 +55,7 @@ local REMOTE_NAMES = {
 	"BuyFeedback", -- server -> client: (kind) after a successful purchase/unlock
 	"LevelUp", -- server -> client: (newLevel) when the Company Level goes up
 	"GrassCut", -- server -> client: (centers, regrowDelays) cells mowed on this player's own lawn
+	"GrassTrim", -- server -> client: (centers, bladesCut) standing cells that lost single blades
 	"GrassPatch", -- server -> client: (centers, typeIds, looks) rare patches on this player's lawn ("" = gone)
 	"GrassSync", -- client -> server: ready to draw; send my lawn (patches, cells still cut)
 	"Travel", -- client -> server: (destination) sail from a jetty: "Home" or a zone id

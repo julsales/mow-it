@@ -70,6 +70,9 @@ end
 local toolRows: { Row } = {}
 for i, def in Tools.List do
 	local stats = ("Power %s · Range %s"):format(Format.Number(def.Power), tostring(def.Radius))
+	if def.Blades then
+		stats = ("%d %s per cut · %s"):format(def.Blades, if def.Blades == 1 then "blade" else "blades", stats)
+	end
 	table.insert(toolRows, makeRow(i, def.Id, def.DisplayName, stats, def.Price, def.RequiredZone, "BuyTool", def.Stars))
 end
 local packRows: { Row } = {}

@@ -14,6 +14,17 @@ The tool catalog SHALL contain about 48 tools in escalating families (manual, el
 - **WHEN** a starting player replaces the Nail Clipper with Safety Scissors
 - **THEN** their grass-per-minute visibly increases
 
+### Requirement: The first hand tools cut blade by blade
+The first hand tools SHALL cut single blades of grass instead of whole lawn cells: one swing snips up to the tool's `Blades` (`Config/Tools`), nearest the player first, starting at 1 for the Nail Clipper and growing by one per tool (2, 3, 4...). Each snipped blade SHALL disappear from the player's own lawn and yield grass; a cell is mowed when its last blade is cut. Tools without `Blades` SHALL mow every whole cell in reach.
+
+#### Scenario: Nail Clipper
+- **WHEN** a player swings the Nail Clipper on tall grass
+- **THEN** exactly one blade disappears from the lawn and the player gains its grass
+
+#### Scenario: Next tool
+- **WHEN** a player swings Safety Scissors on tall grass
+- **THEN** two blades disappear and the player gains the grass of both
+
 ### Requirement: Tool rarity shown as stars
 Every tool SHALL have a rarity of 0 to 6 stars (`Stars` in `Config/Tools`, tiers in `Config/Rarity`): the free starter tool has 0, each later family one more, the last family 6. Wherever a tool is shown (shop rows, hotbar, backpack, world price tags) its rarity SHALL appear as stars in the tier's color: a single empty star for 0, otherwise one filled star per star.
 

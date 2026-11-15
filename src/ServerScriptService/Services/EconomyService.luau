@@ -87,7 +87,7 @@ local function tryCut(player: Player)
 		end
 		return
 	end
-	local stored, hit, cutAt = EconomyService.Harvest(player, root.Position, radius, tool.Power, critChance, true)
+	local stored, hit, cutAt = EconomyService.Harvest(player, root.Position, radius, tool.Power, critChance, true, tool.Blades)
 	if hit > 0 and tool.FuelType ~= "None" then
 		profile.Fuel = math.max(0, profile.Fuel - (Tuning.FuelPerSwing[tool.FuelType] or 0))
 		ProfileService.NotifyChanged(player)
@@ -96,7 +96,9 @@ local function tryCut(player: Player)
 end
 
 -- Shared harvest path for manual cuts and server-owned Crew/automation.
-function EconomyService.Harvest(player: Player, position: Vector3, radius: number, power: number, critChance: number, manual: boolean)
+-- `blades` (Config/Tools `Blades`): the swing snips that many single blades,
+-- nearest first, instead of mowing every cell in reach.
+function EconomyService.Harvest(player: Player, position: Vector3, radius: number, power: number, critChance: number, manual: boolean, blades: number?)
 	local profile = ProfileService.Get(player)
 	if not profile or GrassBag.IsFull(profile) then
 		if profile and EconomyService.CanSellAnywhere(player) then EconomyService.SellAll(player) end
@@ -111,17 +113,38 @@ function EconomyService.Harvest(player: Player, position: Vector3, radius: numbe
 	-- Mature planted grass takes storage priority over the surrounding wild lawn.
 	if manual then stored = Plots.CutNear(player, position, radius) end
 	local cutAt = {}
-	for _, cell in cells do
-		if GrassBag.IsFull(profile) then break end
-		hit += 1
-		local gain = GrassService.Damage(player, cell, power)
-		if gain then
-			if #cutAt < 40 then table.insert(cutAt, cell.Center) end
-			if math.random() < critChance then gain *= 3 end
-			harvested += gain
-			stored += GrassBag.Add(profile, Weather.Variant(profile), gain)
-			xp += Zones.ById[cell.ZoneId].GrassValue * CompanyLevel.XpPerCutValue
-			Progression.OnCut(player, cell.ZoneId, gain)
+	local function collect(cell, gain: number)
+		if #cutAt < 40 then table.insert(cutAt, cell.Center) end
+		if math.random() < critChance then gain *= 3 end
+		harvested += gain
+		stored += GrassBag.Add(profile, Weather.Variant(profile), gain)
+		xp += Zones.ById[cell.ZoneId].GrassValue * CompanyLevel.XpPerCutValue
+		Progression.OnCut(player, cell.ZoneId, gain)
+	end
+	if blades then
+		local function distance(cell): number
+			return (cell.Center.X - position.X) ^ 2 + (cell.Center.Z - position.Z) ^ 2
+		end
+		table.sort(cells, function(a, b) return distance(a) < distance(b) end)
+		local left = blades
+		for _, cell in cells do
+			local standing = true
+			while standing and left > 0 and not GrassBag.IsFull(profile) do
+				left -= 1
+				hit += 1
+				local gain: number?
+				gain, standing = GrassService.DamageBlade(player, cell, power)
+				if not gain then break end -- only damaged: the next hit goes to another cell
+				collect(cell, gain)
+			end
+			if left <= 0 or GrassBag.IsFull(profile) then break end
+		end
+	else
+		for _, cell in cells do
+			if GrassBag.IsFull(profile) then break end
+			hit += 1
+			local gain = GrassService.Damage(player, cell, power)
+			if gain then collect(cell, gain) end
 		end
 	end
 	GrassService.Flush(player)

@@ -132,7 +132,7 @@ function GrassPickup.Collect(amount: number, from: { Vector3 }?)
 		local angle = i * 2.4
 		local offset = if lap > 0 then Vector3.new(math.cos(angle), 0, math.sin(angle)) * Config.Spread * lap else Vector3.zero
 		blade.Busy = true
-		blade.From = spot + offset
+		blade.From = GrassTufts.TakeSnip(spot) or spot + offset
 		blade.StartAt = now + (i - 1) * Config.Stagger
 		blade.Spin = angle
 		blade.Part.Color = Color3.new():Lerp(GrassTufts.ColorAt(spot) or Interface.Colors.Leaf, Config.Brightness)
