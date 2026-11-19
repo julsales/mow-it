@@ -11,7 +11,7 @@
 -- The server owns the type of every cell (GrassService); clients draw the
 -- blades from `Looks` (GrassTufts.luau). A cut cell yields `Yield` grass.
 
-export type Shape = "Blade" | "Flower" | "Stalk" | "Tuft" | "Clover"
+export type Shape = "Blade" | "Flower" | "Stalk" | "Tuft" | "Clover" | "Strand"
 
 export type Look = {
 	Shape: Shape,
@@ -67,4 +67,16 @@ local PatchOrder = { "golden", "lucky", "next" }
 -- one by one, so a cell never vanishes at once.
 local SnipBlades = 10
 
-return { List = List, ById = ById, Looks = Looks, PatchOrder = PatchOrder, SnipBlades = SnipBlades }
+-- How one of those single blades is drawn where the area's grass is plain
+-- "Blade" grass: a little tuft of thin leaves fanning out from one root,
+-- like the thick lawn round it (never one wide triangle).
+local Strand = {
+	Leaves = 5, -- thin leaves per tuft
+	Thickness = 0.05,
+	Width = 0.16, -- leaf width at the root (it tapers to a point)
+	Height = 1.2, -- x the look's Height
+	Lean = 0.45, -- radians the outer leaves fall away from upright
+	Shade = Color3.fromRGB(60, 130, 40), -- leaves vary from the look's color toward this
+}
+
+return { List = List, ById = ById, Looks = Looks, PatchOrder = PatchOrder, SnipBlades = SnipBlades, Strand = Strand }

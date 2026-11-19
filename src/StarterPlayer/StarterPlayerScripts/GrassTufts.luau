@@ -109,6 +109,17 @@ local function buildCell(parent: Instance, cell: Cell, look: GrassTypes.Look): (
 				flower.Shape = Enum.PartType.Ball
 				table.insert(parts, flower)
 			end
+		elseif shape == "Strand" then
+			-- A little tuft of thin leaves from one root (single snippable blade).
+			local S = GrassTypes.Strand
+			for leaf = 1, S.Leaves do
+				local turn = yaw + leaf * math.pi * 2 / S.Leaves + (rng:NextNumber() - 0.5) * 0.8
+				local lean = S.Lean * (0.25 + 0.75 * rng:NextNumber())
+				local leafHeight = h * S.Height * (0.7 + rng:NextNumber() * 0.45)
+				local leafCf = CFrame.new(base + offset) * CFrame.Angles(0, turn, 0) * CFrame.Angles(lean, 0, 0) * CFrame.new(0, leafHeight / 2, 0)
+				local leafColor = look.Color:Lerp(S.Shade, rng:NextNumber() * 0.45):Lerp(tip, rng:NextNumber() * 0.3)
+				table.insert(parts, part(parent, "WedgePart", Vector3.new(S.Thickness, leafHeight, S.Width * (0.8 + rng:NextNumber() * 0.5)), leafCf, leafColor, look.Glow))
+			end
 		elseif shape == "Stalk" then
 			local lean = (rng:NextNumber() - 0.5) * 0.25
 			local stalk = ground * CFrame.Angles(lean, 0, 0)
@@ -165,6 +176,9 @@ local function rebuildCell(chunk: Chunk, cell: Cell)
 		-- Being cut blade by blade: the same grass as single blades.
 		local single = table.clone(look)
 		single.Blades = GrassTypes.SnipBlades
+		if single.Shape == "Blade" then
+			single.Shape = "Strand"
+		end
 		chunk.Parts[k], chunk.BladeOf[k] = buildCell(chunk.Folder, cell, single)
 	elseif look then
 		chunk.Parts[k], chunk.BladeOf[k] = buildCell(chunk.Folder, cell, look)

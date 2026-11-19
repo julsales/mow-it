@@ -6,7 +6,7 @@
 return {
 	MaxBlades = 12, -- blades drawn for one swing
 	PoolSize = 72, -- blades alive at once (fast machines share them)
-	Blade = Vector3.new(0.22, 2.3, 0.75), -- one blade: thickness, height, width
+	Blade = Vector3.new(0.1, 2.4, 0.3), -- one blade: thickness, height, width (a slim leaf, not a wide triangle)
 	Glow = true, -- Neon, so a blade stands out against the lawn it came from
 	Brightness = 0.7, -- x the grass color (Neon at full color glows almost white)
 	Stagger = 0.07, -- seconds between blades, so they can be counted
